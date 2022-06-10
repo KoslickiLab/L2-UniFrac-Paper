@@ -1,2 +1,2 @@
 #!/bin/sh
-git submodule update --init
+git clone https://github.com/KoslickiLab/L2-UniFrac.git
