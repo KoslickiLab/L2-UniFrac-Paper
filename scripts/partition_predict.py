@@ -1,15 +1,15 @@
 import sys, biom, dendropy
-sys.path.append('../L2-Unifrac')
-sys.path.append('../L2-Unifrac/src')
-sys.path.append('../L2-Unifrac/scripts')
+sys.path.append('../L2-UniFrac')
+sys.path.append('../L2-UniFrac/src')
+sys.path.append('../L2-UniFrac/scripts')
 from data import extract_biom, extract_samples, extract_metadata, parse_tree_file, parse_envs
 from random import shuffle
 from math import floor
 
 class TrainingRateTooHighOrLow(Exception):
 
-    def __init__(self, train_rate, msg="Invalid training rate. Rate should be between 10 and 90."):
-        self.train_rate = train_rate
+    def __init__(self, train_percentage, msg="Invalid training rate. Rate should be between 10 and 90."):
+        self.train_percentage = train_percentage
         self.msg = msg
         super().__init__(self.msg)
 
@@ -73,12 +73,12 @@ def extract_samples_direct_by_group(biom_file, tree_file, metadata_file, metadat
 	return group_name_samples, sample_ids, list(group_name_samples.keys())
 
 # Partition between train and test randomly
-def partition_samples(train_rate, biom_file, tree_file, metadata_file, metadata_key):
+def partition_samples(train_percentage, biom_file, tree_file, metadata_file, metadata_key):
 	
 	try:
-		assert train_rate <= 90 and train_rate >= 10
+		assert train_percentage <= 90 and train_percentage >= 10
 	except:
-		raise TrainingRateTooHighOrLow(train_rate)
+		raise TrainingRateTooHighOrLow(train_percentage)
 
 	group_name_samples, sample_ids, classes = extract_samples_direct_by_group(biom_file, tree_file, metadata_file, metadata_key)
 	train_dict = {}
@@ -94,7 +94,7 @@ def partition_samples(train_rate, biom_file, tree_file, metadata_file, metadata_
 			assert l > 100
 		except:
 			raise ClassTooSmall(c)
-		train_num = floor(l*(train_rate/100))
+		train_num = floor(l*(train_percentage/100))
 		test_num = l - train_num
 		base_list = [0 for i in range(train_num)] + [1 for i in range(test_num)]
 		shuffled_list = shuffle(base_list)
@@ -110,9 +110,9 @@ biom_file = '../data/biom/47422_otu_table.biom'
 metadata_file = '../data/metadata/P_1928_65684500_raw_meta.txt'
 tree_file = '../data/trees/gg_13_5_otus_99_annotated.tree'
 metadata_key = 'body_site'
-train_rate = 80
+train_percentage = 80
 #extract_samples_by_group(biom_file, metadata_file, metadata_key)
 #extract_sample_names_by_group(biom_file, metadata_file, metadata_key)
 #extract_samples_direct(biom_file, tree_file)
 #extract_samples_direct_by_group(biom_file, tree_file, metadata_file, metadata_key)
-partition_samples(train_rate, biom_file, tree_file, metadata_file, metadata_key)
+partition_samples(train_percentage, biom_file, tree_file, metadata_file, metadata_key)
