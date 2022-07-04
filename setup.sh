@@ -7,3 +7,4 @@ motus downloadDB
 pip install biom-format
 pip install -U dendropy
 conda -y install numpy
+pip install matplotlib

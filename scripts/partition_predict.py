@@ -6,6 +6,7 @@ from extract_data import extract_biom, extract_samples, extract_metadata, parse_
 from random import shuffle
 from math import floor
 import argparse
+import L2UniFrac as L2U
 
 class TrainingRateTooHighOrLow(Exception):
 
@@ -122,6 +123,20 @@ def partition_samples(train_percentage, biom_file, tree_file, metadata_file, met
 
 	return train_dict, test_dict
 
+def get_average_sample(sample_list, Tint, lint, nodes_in_order):
+	'''
+
+	:param sample_list: a list of vectors of which the average sample vector is to be computed
+	:return: average vector
+	'''
+	all_vectors = []
+	for vector in sample_list:
+		pushed_vector = L2U.push_up(vector, Tint, lint, nodes_in_order)
+		all_vectors.append(pushed_vector)
+	mean_vector = L2U.mean_of_vectors(all_vectors)
+	average_sample_vector = L2U.inverse_push_up(mean_vector, Tint, lint, nodes_in_order)
+	return average_sample_vector
+
 biom_file = 'data/biom/47422_otu_table.biom'
 metadata_file = 'data/metadata/P_1928_65684500_raw_meta.txt'
 tree_file = 'data/trees/gg_13_5_otus_99_annotated.tree'
@@ -139,12 +154,22 @@ if __name__ == '__main__':
 	parser.add_argument('-d', '--dir', type=str, help='A directory containing profiles. Only required if data type is wgs.')
 	parser.add_argument('-msg', '--message', type=str, help='Message printed in the output file before test statistics.')
 	parser.add_argument('-p', '--phenotype', type=str, help='A selected phenotype corresponding to a column name in the metadata file.')
-	parser.add_argument('-t', '--data_type', type=str, help='wgs or 16s.')
+	parser.add_argument('-dt', '--data_type', type=str, help='wgs or 16s.')
 	parser.add_argument('-ot', '--otu_table', type=str, help='Path to the otu table.')
+	parser.add_argument('-t', '--tree', type=str, help='Path to tree file. Only needed if data type is 16s')
 
 	args = parser.parse_args()
 	#if args.data_type == '16s':
-	train_dict, test_dict = partition_samples(train_percentage, biom_file, tree_file, metadata_file, metadata_key)
-	print(len(train_dict.keys()))
-	print(len(test_dict.keys()))
-	print(test_dict)
+	Tint, lint, nodes_in_order = parse_tree_file(args.tree)
+	rep_sample_dict = dict()
+	if args.data_type == '16s':
+		train_dict, test_dict = partition_samples(train_percentage, biom_file, tree_file, metadata_file, metadata_key)
+		for phenotype in train_dict.keys():
+			vectors = train_dict[phenotype].values()
+			rep_sample = get_average_sample(vectors, Tint, lint, nodes_in_order)
+			rep_sample_dict[phenotype] = rep_sample
+	print(rep_sample_dict['skin'])
+
+	#print(len(train_dict.keys()))
+	#print(len(test_dict.keys()))
+	#print(test_dict)
