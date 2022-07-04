@@ -1,14 +1,15 @@
-import sys, biom, dendropy
+import sys, biom
 sys.path.append('../L2-UniFrac')
 sys.path.append('../L2-UniFrac/src')
 sys.path.append('../L2-UniFrac/scripts')
 from data import extract_biom, extract_samples, extract_metadata, parse_tree_file, parse_envs
 from random import shuffle
 from math import floor
+import argparse
 
 class TrainingRateTooHighOrLow(Exception):
 
-    def __init__(self, train_percentage, msg="Invalid training rate. Rate should be between 10 and 90."):
+    def __init__(self, train_percentage, msg="Invalid training percentage. Percentage should be between 10 and 90."):
         self.train_percentage = train_percentage
         self.msg = msg
         super().__init__(self.msg)
@@ -21,6 +22,13 @@ class ClassTooSmall(Exception):
         super().__init__(self.msg)
 
 def extract_samples_by_group(biom_file, metadata_file, metadata_key):
+	'''
+
+	:param biom_file: A .biom file
+	:param metadata_file: Metadata file
+	:param metadata_key: The phenotype of interest. For example, 'body sites'
+	:return:
+	'''
 	Biom = biom.load_table(biom_file)
 	sample_ids = Biom.ids()
 	tree_nodes = Biom.ids(axis='observation')
@@ -74,7 +82,15 @@ def extract_samples_direct_by_group(biom_file, tree_file, metadata_file, metadat
 
 # Partition between train and test randomly
 def partition_samples(train_percentage, biom_file, tree_file, metadata_file, metadata_key):
-	
+	'''
+
+	:param train_percentage: what percentage of the sample should be training samples.
+	:param biom_file: a .biom file
+	:param tree_file:
+	:param metadata_file:
+	:param metadata_key: The phenotype of interest. For example, 'body sites'
+	:return:
+	'''
 	try:
 		assert train_percentage <= 90 and train_percentage >= 10
 	except:
@@ -106,13 +122,29 @@ def partition_samples(train_percentage, biom_file, tree_file, metadata_file, met
 
 	return train_dict, test_dict
 
-biom_file = '../data/biom/47422_otu_table.biom'
-metadata_file = '../data/metadata/P_1928_65684500_raw_meta.txt'
-tree_file = '../data/trees/gg_13_5_otus_99_annotated.tree'
+biom_file = 'data/biom/47422_otu_table.biom'
+metadata_file = 'data/metadata/P_1928_65684500_raw_meta.txt'
+tree_file = 'data/trees/gg_13_5_otus_99_annotated.tree'
 metadata_key = 'body_site'
 train_percentage = 80
 #extract_samples_by_group(biom_file, metadata_file, metadata_key)
 #extract_sample_names_by_group(biom_file, metadata_file, metadata_key)
 #extract_samples_direct(biom_file, tree_file)
 #extract_samples_direct_by_group(biom_file, tree_file, metadata_file, metadata_key)
-partition_samples(train_percentage, biom_file, tree_file, metadata_file, metadata_key)
+#partition_samples(train_percentage, biom_file, tree_file, metadata_file, metadata_key)
+
+if __name__ == '__main__':
+	parser = argparse.ArgumentParser(description='Get testing statistics of classification test.')
+	parser.add_argument('-m', '--meta_file', type=str, help='A metadata file.')
+	parser.add_argument('-d', '--dir', type=str, help='A directory containing profiles. Only required if data type is wgs.')
+	parser.add_argument('-msg', '--message', type=str, help='Message printed in the output file before test statistics.')
+	parser.add_argument('-p', '--phenotype', type=str, help='A selected phenotype corresponding to a column name in the metadata file.')
+	parser.add_argument('-t', '--data_type', type=str, help='wgs or 16s.')
+	parser.add_argument('-ot', '--otu_table', type=str, help='Path to the otu table.')
+
+	args = parser.parse_args()
+	#if args.data_type == '16s':
+	train_dict, test_dict = partition_samples(train_percentage, biom_file, tree_file, metadata_file, metadata_key)
+	print(len(train_dict.keys()))
+	print(len(test_dict.keys()))
+	print(test_dict)
