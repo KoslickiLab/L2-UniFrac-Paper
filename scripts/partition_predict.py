@@ -1,8 +1,8 @@
 import sys, biom
-sys.path.append('../L2-UniFrac')
-sys.path.append('../L2-UniFrac/src')
-sys.path.append('../L2-UniFrac/scripts')
-from data import extract_biom, extract_samples, extract_metadata, parse_tree_file, parse_envs
+sys.path.append('L2-UniFrac')
+sys.path.append('L2-UniFrac/src')
+sys.path.append('L2-UniFrac/scripts')
+from extract_data import extract_biom, extract_samples, extract_metadata, parse_tree_file, parse_envs
 from random import shuffle
 from math import floor
 import argparse
