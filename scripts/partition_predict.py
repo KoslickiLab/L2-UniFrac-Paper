@@ -162,13 +162,15 @@ if __name__ == '__main__':
 	#if args.data_type == '16s':
 	Tint, lint, nodes_in_order = parse_tree_file(args.tree)
 	rep_sample_dict = dict()
+	print('preprocessing completed')
 	if args.data_type == '16s':
 		train_dict, test_dict = partition_samples(train_percentage, biom_file, tree_file, metadata_file, metadata_key)
 		for phenotype in train_dict.keys():
+			print(phenotype)
 			vectors = train_dict[phenotype].values()
 			rep_sample = get_average_sample(vectors, Tint, lint, nodes_in_order)
 			rep_sample_dict[phenotype] = rep_sample
-	print(rep_sample_dict['skin'])
+			print(rep_sample)
 
 	#print(len(train_dict.keys()))
 	#print(len(test_dict.keys()))
