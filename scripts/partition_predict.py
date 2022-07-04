@@ -137,6 +137,18 @@ def get_average_sample(sample_list, Tint, lint, nodes_in_order):
 	average_sample_vector = L2U.inverse_push_up(mean_vector, Tint, lint, nodes_in_order)
 	return average_sample_vector
 
+def get_label(test_sample, rep_sample_dict, Tint, lint, nodes_in_order):
+	min_unifrac = 1000
+	label = ""
+	for phenotype in rep_sample_dict:
+		L2unifrac = L2U.L2UniFrac_weighted_plain(Tint, lint, nodes_in_order, test_sample, rep_sample_dict[phenotype])
+		if L2unifrac < min_unifrac:
+			min_unifrac = L2unifrac
+			label = phenotype
+	return label
+
+
+
 biom_file = 'data/biom/47422_otu_table.biom'
 metadata_file = 'data/metadata/P_1928_65684500_raw_meta.txt'
 tree_file = 'data/trees/gg_13_5_otus_99_annotated.tree'
@@ -157,20 +169,49 @@ if __name__ == '__main__':
 	parser.add_argument('-dt', '--data_type', type=str, help='wgs or 16s.')
 	parser.add_argument('-ot', '--otu_table', type=str, help='Path to the otu table.')
 	parser.add_argument('-t', '--tree', type=str, help='Path to tree file. Only needed if data type is 16s')
+	parser.add_argument('-o', '--out_file', type=str, help='Path to the output file. Results will be printed in this file.')
+	parser.add_argument('-tp', '--train_percentage', type=int, help='What percentage of data used in training.')
 
 	args = parser.parse_args()
 	#if args.data_type == '16s':
 	Tint, lint, nodes_in_order = parse_tree_file(args.tree)
 	rep_sample_dict = dict()
 	print('preprocessing completed')
+	test_results = dict()
 	if args.data_type == '16s':
 		train_dict, test_dict = partition_samples(train_percentage, biom_file, tree_file, metadata_file, metadata_key)
+		#get representative sample dict
 		for phenotype in train_dict.keys():
 			print(phenotype)
 			vectors = train_dict[phenotype].values()
 			rep_sample = get_average_sample(vectors, Tint, lint, nodes_in_order)
 			rep_sample_dict[phenotype] = rep_sample
 			print(rep_sample)
+		#test
+		total_test = 0
+		total_correct = 0
+		for phenotype in test_dict.keys():
+			total_this_pheno = 0
+			total_correct_this_pheno = 0
+			for test_vector in test_dict[phenotype].values():
+				prediction = get_label(test_vector, rep_sample_dict, Tint, lint, nodes_in_order)
+				total_this_pheno+=1
+				total_test+=1
+				if prediction == phenotype:
+					total_correct_this_pheno+=1
+					total_correct+=1
+			accuracy_this_pheno = total_correct_this_pheno/total_this_pheno
+			test_results[phenotype] = accuracy_this_pheno
+		total_acc = total_correct/total_test
+		#print results
+		print(total_acc)
+		print(test_results)
+		with open(args.out_file, 'a+') as f:
+			f.write('#{}\n'.format(args.message))
+			for phenotype in test_results.keys():
+				f.write('{} : {}\n'.format(phenotype, test_results[phenotype]))
+			f.write('Total accuracy : {}\n'.format(total_acc))
+
 
 	#print(len(train_dict.keys()))
 	#print(len(test_dict.keys()))
