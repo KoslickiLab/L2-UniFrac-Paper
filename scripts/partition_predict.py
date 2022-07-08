@@ -7,6 +7,9 @@ from random import shuffle
 from math import floor
 import argparse
 import L2UniFrac as L2U
+import pandas as pd
+from sklearn.cluster import AgglomerativeClustering
+
 
 class TrainingRateTooHighOrLow(Exception):
 
@@ -147,6 +150,11 @@ def get_label(test_sample, rep_sample_dict, Tint, lint, nodes_in_order):
 			label = phenotype
 	return label
 
+def get_traditional_method_accuracy(clustering_method, train_ids, test_ids):
+	pd.read_csv(distance_matrix, header=None)
+	if clustering_method.lower() == "agglomerative": #case insensitive
+		AgglomerativeCluster = AgglomerativeClustering(n_clusters=n_clusters, affinity='precomputed', linkage='complete').fit_predict(distance_matrix)
+
 
 
 biom_file = 'data/biom/47422_otu_table.biom'
@@ -154,6 +162,9 @@ metadata_file = 'data/metadata/P_1928_65684500_raw_meta.txt'
 tree_file = 'data/trees/gg_13_5_otus_99_annotated.tree'
 metadata_key = 'body_site'
 train_percentage = 80
+distance_matrix = 'data/L2-UniFrac-Out.csv'
+n_clusters = 5 # 5 body sites
+sample_id = extract_samples('data/biom/47422_otu_table.biom')
 #extract_samples_by_group(biom_file, metadata_file, metadata_key)
 #extract_sample_names_by_group(biom_file, metadata_file, metadata_key)
 #extract_samples_direct(biom_file, tree_file)
@@ -215,4 +226,4 @@ if __name__ == '__main__':
 
 	#print(len(train_dict.keys()))
 	#print(len(test_dict.keys()))
-	#print(test_dict)
+
