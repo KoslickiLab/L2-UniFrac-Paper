@@ -9,6 +9,7 @@ import argparse
 import L2UniFrac as L2U
 import pandas as pd
 from sklearn.cluster import AgglomerativeClustering
+from collections import Counter
 
 
 class TrainingRateTooHighOrLow(Exception):
@@ -155,7 +156,19 @@ def get_traditional_method_accuracy(clustering_method, train_ids, test_ids):
 	if clustering_method.lower() == "agglomerative": #case insensitive
 		AgglomerativeCluster = AgglomerativeClustering(n_clusters=n_clusters, affinity='precomputed', linkage='complete').fit_predict(distance_matrix)
 
+def decipher_label_by_vote(prediction, training, group_name):
+	'''
 
+	:param prediction: a list of prediction of all samples. e.g. [0,1,3,0,...]
+	:param training: list of training ids.
+	:param group_name: cluster name. e.g. 0,1,2 ...
+	:return: predicted label by vote
+	'''
+	predicted_label = []
+	
+	c = Counter(predicted_label)
+	c.most_common(1)
+	return
 
 biom_file = 'data/biom/47422_otu_table.biom'
 metadata_file = 'data/metadata/P_1928_65684500_raw_meta.txt'
@@ -164,7 +177,8 @@ metadata_key = 'body_site'
 train_percentage = 80
 distance_matrix = 'data/L2-UniFrac-Out.csv'
 n_clusters = 5 # 5 body sites
-sample_id = extract_samples('data/biom/47422_otu_table.biom')
+sample_id = extract_samples(biom_file)
+meta_dict = extract_metadata(biom_file)
 #extract_samples_by_group(biom_file, metadata_file, metadata_key)
 #extract_sample_names_by_group(biom_file, metadata_file, metadata_key)
 #extract_samples_direct(biom_file, tree_file)
