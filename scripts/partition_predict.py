@@ -156,7 +156,7 @@ def get_traditional_method_accuracy(clustering_method, train_ids, test_ids):
 	if clustering_method.lower() == "agglomerative": #case insensitive
 		AgglomerativeCluster = AgglomerativeClustering(n_clusters=n_clusters, affinity='precomputed', linkage='complete').fit_predict(distance_matrix)
 
-def decipher_label_by_vote(prediction, training, group_name):
+def decipher_label_by_vote(prediction, training, group_name, meta_dict):
 	'''
 
 	:param prediction: a list of prediction of all samples. e.g. [0,1,3,0,...]
@@ -164,11 +164,21 @@ def decipher_label_by_vote(prediction, training, group_name):
 	:param group_name: cluster name. e.g. 0,1,2 ...
 	:return: predicted label by vote
 	'''
-	predicted_label = []
-	
-	c = Counter(predicted_label)
-	c.most_common(1)
-	return
+	training_index_dict = get_index_dict(training)
+	predict_pos = training_index_dict.values()
+	predicted_labels = [prediction[i] for i in predict_pos if prediction[i] == group_name]
+	c = Counter(predicted_labels)
+	predicted_by_vote = c.most_common(1)[0][0]
+	return predicted_by_vote
+
+def get_index_dict(lst):
+	'''
+	Get a dictionary with keys being items in the list and values being their respective positions in the list
+	:param lst:
+	:return:
+	'''
+	index_dict = dict(zip(lst, range(len(lst))))
+	return index_dict
 
 biom_file = 'data/biom/47422_otu_table.biom'
 metadata_file = 'data/metadata/P_1928_65684500_raw_meta.txt'
