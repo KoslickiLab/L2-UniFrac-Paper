@@ -27,14 +27,6 @@ def test_partition_sample():
     train_dict, test_dict = pp.partition_samples(train_percentage, biom_file, tree_file, metadata_file, metadata_key)
     print(train_dict.keys())
 
-def test_extract_metadata():
-    metadata_file = 'data/metadata/P_1928_65684500_raw_meta.txt'
-    if os.path.isfile(metadata_file):
-        print("path correct")
-        extract_metadata(metadata_file)
-    else:
-        print("file not found")
 
 if __name__ == '__main__':
-	#test_partition_sample()
-    test_extract_metadata()
+	test_partition_sample()

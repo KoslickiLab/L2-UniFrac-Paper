@@ -188,7 +188,7 @@ train_percentage = 80
 distance_matrix = 'data/L2-UniFrac-Out.csv'
 n_clusters = 5 # 5 body sites
 sample_id = extract_samples(biom_file)
-meta_dict = extract_metadata(biom_file)
+meta_dict = extract_metadata(metadata_file)
 #extract_samples_by_group(biom_file, metadata_file, metadata_key)
 #extract_sample_names_by_group(biom_file, metadata_file, metadata_key)
 #extract_samples_direct(biom_file, tree_file)
