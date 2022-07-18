@@ -142,6 +142,15 @@ def get_average_sample(sample_list, Tint, lint, nodes_in_order):
 	return average_sample_vector
 
 def get_label(test_sample, rep_sample_dict, Tint, lint, nodes_in_order):
+	'''
+	predict label by min unifrac
+	:param test_sample:
+	:param rep_sample_dict:
+	:param Tint:
+	:param lint:
+	:param nodes_in_order:
+	:return:
+	'''
 	min_unifrac = 1000
 	label = ""
 	for phenotype in rep_sample_dict:
@@ -154,19 +163,22 @@ def get_label(test_sample, rep_sample_dict, Tint, lint, nodes_in_order):
 def get_traditional_method_accuracy(clustering_method, train_ids, test_ids):
 	pd.read_csv(distance_matrix, header=None)
 	if clustering_method.lower() == "agglomerative": #case insensitive
-		AgglomerativeCluster = AgglomerativeClustering(n_clusters=n_clusters, affinity='precomputed', linkage='complete').fit_predict(distance_matrix)
+		agglomerative_prediction = AgglomerativeClustering(n_clusters=n_clusters, affinity='precomputed', linkage='complete').fit_predict(distance_matrix)
 
-def decipher_label_by_vote(prediction, training, group_name, meta_dict):
+
+
+def decipher_label_by_vote(prediction, training, group_name, meta_dict, sample_dict):
 	'''
-
 	:param prediction: a list of prediction of all samples. e.g. [0,1,3,0,...]
 	:param training: list of training ids.
+	:param meta_dict: body_site:sample_id dict
 	:param group_name: cluster name. e.g. 0,1,2 ...
 	:return: predicted label by vote
 	'''
-	training_index_dict = get_index_dict(training)
-	predict_pos = training_index_dict.values()
-	predicted_labels = [prediction[i] for i in predict_pos if prediction[i] == group_name]
+	train_id_this_group = [train_id for train_id in training if prediction[sample_dict[train_id]] == group_name]
+	print(train_id_this_group)
+	predicted_labels = [meta_dict[i]['body_site'] for i in train_id_this_group]
+	print(predicted_labels)
 	c = Counter(predicted_labels)
 	predicted_by_vote = c.most_common(1)[0][0]
 	return predicted_by_vote
@@ -188,6 +200,7 @@ train_percentage = 80
 distance_matrix = 'data/L2-UniFrac-Out.csv'
 n_clusters = 5 # 5 body sites
 sample_id = extract_samples(biom_file)
+sample_dict = get_index_dict(sample_id)
 meta_dict = extract_metadata(metadata_file)
 #extract_samples_by_group(biom_file, metadata_file, metadata_key)
 #extract_sample_names_by_group(biom_file, metadata_file, metadata_key)
