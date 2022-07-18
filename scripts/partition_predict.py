@@ -162,8 +162,13 @@ def get_label(test_sample, rep_sample_dict, Tint, lint, nodes_in_order):
 
 def get_traditional_method_accuracy(clustering_method, train_ids, test_ids):
 	pd.read_csv(distance_matrix, header=None)
+	group_label_dict = dict()
 	if clustering_method.lower() == "agglomerative": #case insensitive
 		agglomerative_prediction = AgglomerativeClustering(n_clusters=n_clusters, affinity='precomputed', linkage='complete').fit_predict(distance_matrix)
+		for group in set(agglomerative_prediction):
+			label = decipher_label_by_vote(agglomerative_prediction, train_ids, group, meta_dict, sample_dict)
+			#may need a tie breaker to ensure values are unique
+			group_label_dict[group] = label
 
 
 
