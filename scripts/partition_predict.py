@@ -9,6 +9,9 @@ import argparse
 import L2UniFrac as L2U
 import pandas as pd
 from sklearn.cluster import AgglomerativeClustering
+from sklearn_extra.cluster import KMedoids
+from sklearn.metrics import accuracy_score, rand_score
+from sklearn.metrics.cluster import adjusted_rand_score, normalized_mutual_info_score, adjusted_mutual_info_score, fowlkes_mallows_score
 from collections import Counter
 
 
@@ -160,27 +163,80 @@ def get_label(test_sample, rep_sample_dict, Tint, lint, nodes_in_order):
 			label = phenotype
 	return label
 
-def get_traditional_method_accuracy(clustering_method, train_ids, test_ids):
+def get_score_by_clustering_method(clustering_method, train_dict, test_dict, meta_dict, sample_dict):
 	pd.read_csv(distance_matrix, header=None)
-	group_label_dict = dict()
+	n_clusters = len(train_dict.keys()) #number of classes
 	if clustering_method.lower() == "agglomerative": #case insensitive
 		agglomerative_prediction = AgglomerativeClustering(n_clusters=n_clusters, affinity='precomputed', linkage='complete').fit_predict(distance_matrix)
-		for group in set(agglomerative_prediction):
-			label = decipher_label_by_vote(agglomerative_prediction, train_ids, group, meta_dict, sample_dict)
-			#may need a tie breaker to ensure values are unique
-			group_label_dict[group] = label
+		#accuracy score by body site
+		results = get_clustering_scores(agglomerative_prediction, train_dict,test_dict, meta_dict, sample_dict)
+	if clustering_method.lower() == "kmedoids":
+		kmedois_prediction = KMedoids(n_clusters=n_clusters, metric='precomputed', method='pam', init='heuristic').fit_predict(distance_matrix)
+		results = get_clustering_scores(kmedois_prediction, train_dict, test_dict, meta_dict, sample_dict)
 
 
-
-def decipher_label_by_vote(prediction, training, group_name, meta_dict, sample_dict):
+def get_clustering_scores(predictions, train_dict, test_dict, meta_dict, sample_dict):
 	'''
-	:param prediction: a list of prediction of all samples. e.g. [0,1,3,0,...]
+	Returns a dict of scores for a particular set of predictions
+	:param predictions:
+	:param train_dict:
+	:param test_dict:
+	:param meta_dict:
+	:param sample_dict:
+	:return:
+	'''
+	train_ids = train_dict.values()
+	test_ids = test_dict.values()
+	group_label_dict = dict()
+	results_dict = dict()
+	#decipher label
+	for group in set(predictions):
+		label = decipher_label_by_vote(predictions, train_ids, group, meta_dict, sample_dict)
+		# may need a tie breaker to ensure values are unique
+		group_label_dict[group] = label
+	for body_site in test_dict.keys():
+		test_ids_this_bs = test_dict[body_site]
+		test_indices_this_bs = [sample_dict[sample_id] for sample_id in test_ids_this_bs]
+		predicted_group_test_this_bs = [predictions[i] for i in test_indices_this_bs]
+		predicted_labels_this_bs = [group_label_dict[group] for group in predicted_group_test_this_bs]
+		true_labels_this_bs = [meta_dict[i]['body_site'] for i in test_indices_this_bs]
+		results_dict[body_site]['accuracy_score'] = accuracy_score(true_labels_this_bs, predicted_labels_this_bs)
+		results_dict[body_site]['rand_score'] = rand_score(true_labels_this_bs, predicted_labels_this_bs)
+		results_dict[body_site]['adjusted_rand_score'] = adjusted_rand_score(true_labels_this_bs, predicted_labels_this_bs)
+		results_dict[body_site]['adjusted_mutual_info_score'] = adjusted_mutual_info_score(true_labels_this_bs, predicted_labels_this_bs)
+		results_dict[body_site]['normalized_mutual_info_score'] = normalized_mutual_info_score(true_labels_this_bs,predicted_labels_this_bs)
+		results_dict[body_site]['fawlkes_mallows_score'] = fowlkes_mallows_score(true_labels_this_bs,predicted_labels_this_bs)
+	test_indices = [sample_dict[sample_id] for sample_id in test_ids]
+	predicted_group_test = [predictions[i] for i in test_indices]
+	predicted_labels = [group_label_dict[group] for group in predicted_group_test]
+	true_labels = [meta_dict[i]['body_site'] for i in test_ids]
+	results_dict['overall']['accuracy_score'] = accuracy_score(true_labels, predicted_labels)
+	results_dict['overall']['rand_score'] = rand_score(true_labels, predicted_labels)
+	results_dict['overall']['adjusted_rand_score'] = adjusted_rand_score(true_labels, predicted_labels)
+	results_dict['overall']['adjusted_mutual_info_score'] = adjusted_mutual_info_score(true_labels,predicted_labels)
+	results_dict['overall']['normalized_mutual_info_score'] = normalized_mutual_info_score(true_labels, predicted_labels)
+	results_dict['overall']['fawlkes_mallows_score'] = fowlkes_mallows_score(true_labels, predicted_labels_this_bs)
+	return results_dict
+
+def compile_dataframe(n_repeat):
+	col_names = ["Method", "Score type", "Score"]
+	df_agg = pd.DataFrame(col_names=col_names)
+	df_agg["Method"] = "Agglomerative"
+	for i in range(n_repeat):
+		train_dict, test_dict = partition_samples(train_percentage, biom_file, tree_file, metadata_file, metadata_key)
+
+
+
+
+def decipher_label_by_vote(predictions, training, group_name, meta_dict, sample_dict):
+	'''
+	:param predictions: a list of prediction of all samples. e.g. [0,1,3,0,...]
 	:param training: list of training ids.
 	:param meta_dict: body_site:sample_id dict
 	:param group_name: cluster name. e.g. 0,1,2 ...
 	:return: predicted label by vote
 	'''
-	train_id_this_group = [train_id for train_id in training if prediction[sample_dict[train_id]] == group_name]
+	train_id_this_group = [train_id for train_id in training if predictions[sample_dict[train_id]] == group_name]
 	print(train_id_this_group)
 	predicted_labels = [meta_dict[i]['body_site'] for i in train_id_this_group]
 	print(predicted_labels)
