@@ -336,10 +336,10 @@ if __name__ == '__main__':
 	parser.add_argument('-s', '--save', type=str, help="Save the dataframe file as.")
 
 	args = parser.parse_args()
-	Tint, lint, nodes_in_order = parse_tree_file(args.tree)
+	tree_file = 'data/trees/gg_13_5_otus_99_annotated.tree'
+	Tint, lint, nodes_in_order = parse_tree_file(tree_file)
 	biom_file = args.biom_file
 	metadata_file = args.meta_file
-	tree_file = 'data/trees/gg_13_5_otus_99_annotated.tree'
 	metadata_key = args.phenotype
 	train_percentage = args.train_percentage
 	distance_matrix = args.distance_matrix
