@@ -28,6 +28,27 @@ def test_partition_sample():
     print(train_dict.keys())
     print(train_dict['skin'])
 
+def test_decipher_label():
+    prediction = [0,0,0,1,1,1,0,1,0,1,0,1,0,1,0,1]
+    group_name = 1
+    training = ['a','b','c','d','e','f','g','h','i','j']
+    meta_dict = {'a':{'body_site':'gut'},
+                 'b':{'body_site':'gut'},
+                 'c':{'body_site': 'gut'},
+                 'd': {'body_site': 'gut'},
+                 'e': {'body_site': 'skin'},
+                 'f': {'body_site': 'skin'},
+                 'g': {'body_site': 'gut'},
+                 'h': {'body_site': 'skin'},
+                 'i': {'body_site': 'skin'},
+                 'j': {'body_site': 'skin'},
+                 'k': {'body_site': 'gut'},
+                 'l': {'body_site': 'skin'},
+                 }
+    sample_dict = {'a':0, 'b':1, 'c':2, 'd':3, 'e':4, 'f':5,'g':6,'h':7,'i':8,'j':9,'k':10,'l':11}
+    label = pp.decipher_label_by_vote(prediction, training, group_name, meta_dict, sample_dict)
+    print(label)
 
 if __name__ == '__main__':
-	test_partition_sample()
+	#test_partition_sample()
+    test_decipher_label()
