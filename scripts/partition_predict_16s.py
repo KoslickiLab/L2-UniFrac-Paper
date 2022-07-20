@@ -163,8 +163,8 @@ def get_label(test_sample, rep_sample_dict, Tint, lint, nodes_in_order):
 			label = phenotype
 	return label
 
-def get_score_by_clustering_method(clustering_method, train_dict, test_dict, meta_dict, sample_dict):
-	pd.read_csv(distance_matrix, header=None)
+def get_score_by_clustering_method(clustering_method, train_dict, test_dict, meta_dict, sample_dict, distance_matrix_file):
+	distance_matrix = pd.read_csv(distance_matrix_file, header=None)
 	n_clusters = len(train_dict.keys()) #number of classes
 	if clustering_method.lower() == "agglomerative": #case insensitive
 		agglomerative_prediction = AgglomerativeClustering(n_clusters=n_clusters, affinity='precomputed', linkage='complete').fit_predict(distance_matrix)
@@ -253,7 +253,7 @@ def get_L2UniFrac_accuracy_results(train_dict, test_dict,Tint, lint, nodes_in_or
 	results_dict['overall']['fowlkes_mallows_score'] = fowlkes_mallows_score(all_true_labels, overall_predictions)
 	return results_dict
 
-def compile_dataframe(n_repeat, train_percentage, biom_file, tree_file, metadata_file, metadata_key, sample_dict):
+def compile_dataframe(n_repeat, train_percentage, biom_file, tree_file, metadata_file, metadata_key, sample_dict, dm_file):
 
 	col_names = ["Method", "Site", "Score_type", "Score"]
 	df = pd.DataFrame(columns=col_names)
@@ -264,7 +264,8 @@ def compile_dataframe(n_repeat, train_percentage, biom_file, tree_file, metadata
 	for i in range(n_repeat):
 		train_dict, test_dict = partition_samples(train_percentage, biom_file, tree_file, metadata_file, metadata_key)
 		#agglomerative clustering
-		results = get_score_by_clustering_method("agglomerative", train_dict, test_dict, meta_dict, sample_dict)
+		results = get_score_by_clustering_method("agglomerative", train_dict, test_dict, meta_dict, sample_dict, dm_file)
+		print(results.items()[0]) #debug
 		for site in results.keys(): #skin, gut, overall ...
 			for score_type in results[site].keys():
 				method_col.append("Agglomerative")
@@ -272,7 +273,7 @@ def compile_dataframe(n_repeat, train_percentage, biom_file, tree_file, metadata
 				score_type_col.append(score_type)
 				score_col.append(results[site[score_type]])
 		#kmedoids clustering
-		results = get_score_by_clustering_method("kmedoids", train_dict, test_dict, meta_dict, sample_dict)
+		results = get_score_by_clustering_method("kmedoids", train_dict, test_dict, meta_dict, sample_dict, dm_file)
 		for site in results.keys():  # skin, gut, overall ...
 			for score_type in results[site].keys():
 				method_col.append("KMedoids")
@@ -348,6 +349,6 @@ if __name__ == '__main__':
 	meta_dict = extract_metadata(metadata_file)
 	n_repeat = args.num_repeats
 
-	df = compile_dataframe(n_repeat, train_percentage, biom_file, tree_file, metadata_file, metadata_key, sample_dict)
+	df = compile_dataframe(n_repeat, train_percentage, biom_file, tree_file, metadata_file, metadata_key, sample_dict, distance_matrix)
 	print(df)
 	df.to_csv(args.save, sep="\t")
