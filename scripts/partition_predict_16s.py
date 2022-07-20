@@ -173,6 +173,7 @@ def get_score_by_clustering_method(clustering_method, train_dict, test_dict, met
 	if clustering_method.lower() == "kmedoids":
 		kmedois_prediction = KMedoids(n_clusters=n_clusters, metric='precomputed', method='pam', init='heuristic').fit_predict(distance_matrix)
 		results = get_clustering_scores(kmedois_prediction, train_dict, test_dict, meta_dict, sample_dict)
+	return results
 
 
 def get_clustering_scores(predictions, train_dict, test_dict, meta_dict, sample_dict):
@@ -205,7 +206,7 @@ def get_clustering_scores(predictions, train_dict, test_dict, meta_dict, sample_
 		results_dict[body_site]['adjusted_rand_score'] = adjusted_rand_score(true_labels_this_bs, predicted_labels_this_bs)
 		results_dict[body_site]['adjusted_mutual_info_score'] = adjusted_mutual_info_score(true_labels_this_bs, predicted_labels_this_bs)
 		results_dict[body_site]['normalized_mutual_info_score'] = normalized_mutual_info_score(true_labels_this_bs,predicted_labels_this_bs)
-		results_dict[body_site]['fawlkes_mallows_score'] = fowlkes_mallows_score(true_labels_this_bs,predicted_labels_this_bs)
+		results_dict[body_site]['fowlkes_mallows_score'] = fowlkes_mallows_score(true_labels_this_bs,predicted_labels_this_bs)
 	test_indices = [sample_dict[sample_id] for sample_id in test_ids]
 	predicted_group_test = [predictions[i] for i in test_indices]
 	predicted_labels = [group_label_dict[group] for group in predicted_group_test]
@@ -215,18 +216,82 @@ def get_clustering_scores(predictions, train_dict, test_dict, meta_dict, sample_
 	results_dict['overall']['adjusted_rand_score'] = adjusted_rand_score(true_labels, predicted_labels)
 	results_dict['overall']['adjusted_mutual_info_score'] = adjusted_mutual_info_score(true_labels,predicted_labels)
 	results_dict['overall']['normalized_mutual_info_score'] = normalized_mutual_info_score(true_labels, predicted_labels)
-	results_dict['overall']['fawlkes_mallows_score'] = fowlkes_mallows_score(true_labels, predicted_labels_this_bs)
+	results_dict['overall']['fowlkes_mallows_score'] = fowlkes_mallows_score(true_labels, predicted_labels)
 	return results_dict
 
-def compile_dataframe(n_repeat):
-	col_names = ["Method", "Score type", "Score"]
-	df_agg = pd.DataFrame(col_names=col_names)
-	df_agg["Method"] = "Agglomerative"
+def get_L2UniFrac_accuracy_results(train_dict, test_dict,Tint, lint, nodes_in_order, meta_dict):
+	results_dict = dict()
+	predictions = []
+	rep_sample_dict = dict()
+	for phenotype in train_dict.keys():
+		print(phenotype)
+		vectors = train_dict[phenotype].values()
+		rep_sample = get_average_sample(vectors, Tint, lint, nodes_in_order)
+		rep_sample_dict[phenotype] = rep_sample
+		#print(rep_sample)
+	test_id = []
+	overall_predictions = []
+	for phenotype in test_dict.keys():
+		test_id += test_dict[phenotype]
+		for test_vector in test_dict[phenotype]: #list of samples in a particular phenotype
+			prediction = get_label(test_vector, rep_sample_dict, Tint, lint, nodes_in_order)
+			true_labels = test_dict[phenotype]
+			predictions.append(prediction)
+		overall_predictions += predictions
+		results_dict[phenotype]['accuracy_score'] = accuracy_score(true_labels, predictions)
+		results_dict[phenotype]['rand_score'] = rand_score(true_labels, predictions)
+		results_dict[phenotype]['adjusted_rand_score'] = adjusted_rand_score(true_labels, predictions)
+		results_dict[phenotype]['adjusted_mutual_info_score'] = adjusted_mutual_info_score(true_labels, predictions)
+		results_dict[phenotype]['normalized_mutual_info_score'] = normalized_mutual_info_score(true_labels, predictions)
+		results_dict[phenotype]['fowlkes_mallows_score'] = fowlkes_mallows_score(true_labels, predictions)
+	all_true_labels = [meta_dict[i]['body_site'] for i in test_id]
+	results_dict['overall']['accuracy_score'] = accuracy_score(all_true_labels, overall_predictions)
+	results_dict['overall']['rand_score'] = rand_score(all_true_labels, overall_predictions)
+	results_dict['overall']['adjusted_rand_score'] = adjusted_rand_score(all_true_labels, overall_predictions)
+	results_dict['overall']['adjusted_mutual_info_score'] = adjusted_mutual_info_score(all_true_labels, overall_predictions)
+	results_dict['overall']['normalized_mutual_info_score'] = normalized_mutual_info_score(all_true_labels, overall_predictions)
+	results_dict['overall']['fowlkes_mallows_score'] = fowlkes_mallows_score(all_true_labels, overall_predictions)
+	return results_dict
+
+def compile_dataframe(n_repeat, train_percentage, biom_file, tree_file, metadata_file, metadata_key, sample_dict):
+
+	col_names = ["Method", "Site", "Score_type", "Score"]
+	df = pd.DataFrame(col_names=col_names)
+	score_type_col = []
+	score_col = []
+	site_col = []
+	method_col = []
 	for i in range(n_repeat):
 		train_dict, test_dict = partition_samples(train_percentage, biom_file, tree_file, metadata_file, metadata_key)
-
-
-
+		#agglomerative clustering
+		results = get_score_by_clustering_method("agglomerative", train_dict, test_dict, meta_dict, sample_dict)
+		for site in results.keys(): #skin, gut, overall ...
+			for score_type in results[site].keys():
+				method_col.append("Agglomerative")
+				site_col.append(site)
+				score_type_col.append(score_type)
+				score_col.append(results[site[score_type]])
+		#kmedoids clustering
+		results = get_score_by_clustering_method("kmedoids", train_dict, test_dict, meta_dict, sample_dict)
+		for site in results.keys():  # skin, gut, overall ...
+			for score_type in results[site].keys():
+				method_col.append("KMedoids")
+				site_col.append(site)
+				score_type_col.append(score_type)
+				score_col.append(results[site[score_type]])
+		#L2UniFrac
+		results = get_L2UniFrac_accuracy_results(train_dict,test_dict, Tint, lint, nodes_in_order, meta_dict)
+		for site in results.keys(): #skin, gut, overall ...
+			for score_type in results[site].keys():
+				method_col.append("L2UniFrac")
+				site_col.append(site)
+				score_type_col.append(score_type)
+				score_col.append(results[site[score_type]])
+	df["Method"] = method_col
+	df["Site"] = site_col
+	df["Score_type"] = score_type_col
+	df["Score"] = score_col
+	return df
 
 def decipher_label_by_vote(predictions, training, group_name, meta_dict, sample_dict):
 	'''
@@ -253,16 +318,7 @@ def get_index_dict(lst):
 	index_dict = dict(zip(lst, range(len(lst))))
 	return index_dict
 
-biom_file = 'data/biom/47422_otu_table.biom'
-metadata_file = 'data/metadata/P_1928_65684500_raw_meta.txt'
-tree_file = 'data/trees/gg_13_5_otus_99_annotated.tree'
-metadata_key = 'body_site'
-train_percentage = 80
-distance_matrix = 'data/L2-UniFrac-Out.csv'
-n_clusters = 5 # 5 body sites
-sample_id = extract_samples(biom_file)
-sample_dict = get_index_dict(sample_id)
-meta_dict = extract_metadata(metadata_file)
+
 #extract_samples_by_group(biom_file, metadata_file, metadata_key)
 #extract_sample_names_by_group(biom_file, metadata_file, metadata_key)
 #extract_samples_direct(biom_file, tree_file)
@@ -271,57 +327,29 @@ meta_dict = extract_metadata(metadata_file)
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Get testing statistics of classification test.')
-	parser.add_argument('-m', '--meta_file', type=str, help='A metadata file.')
-	parser.add_argument('-d', '--dir', type=str, help='A directory containing profiles. Only required if data type is wgs.')
-	parser.add_argument('-msg', '--message', type=str, help='Message printed in the output file before test statistics.')
-	parser.add_argument('-p', '--phenotype', type=str, help='A selected phenotype corresponding to a column name in the metadata file.')
-	parser.add_argument('-dt', '--data_type', type=str, help='wgs or 16s.')
-	parser.add_argument('-ot', '--otu_table', type=str, help='Path to the otu table.')
+	parser.add_argument('-m', '--meta_file', type=str, help='A metadata file.', default='data/metadata/P_1928_65684500_raw_meta.txt')
+	parser.add_argument('-p', '--phenotype', type=str, help='A selected phenotype corresponding to a column name in the metadata file.', default="body_site")
+	parser.add_argument('-bf', '--biom_file', type=str, help='Path to the biom file.', default='data/biom/47422_otu_table.biom')
 	parser.add_argument('-t', '--tree', type=str, help='Path to tree file. Only needed if data type is 16s')
 	parser.add_argument('-o', '--out_file', type=str, help='Path to the output file. Results will be printed in this file.')
-	parser.add_argument('-tp', '--train_percentage', type=int, help='What percentage of data used in training.')
+	parser.add_argument('-tp', '--train_percentage', type=int, help='What percentage of data used in training.', default=80)
+	parser.add_argument('-dm', '--distance_matrix', type=str, help="Pairwise unifrac distance matrix.", default='data/L2-UniFrac-Out.csv')
+	parser.add_argument('-n', '--num_repeats', type=int, help="Number of repeats for each experiment.", default=10)
+	parser.add_argument('-s', '--save', type=str, help="Save the dataframe file as.")
 
 	args = parser.parse_args()
-	#if args.data_type == '16s':
 	Tint, lint, nodes_in_order = parse_tree_file(args.tree)
-	rep_sample_dict = dict()
-	print('preprocessing completed')
-	test_results = dict()
-	if args.data_type == '16s':
-		train_dict, test_dict = partition_samples(train_percentage, biom_file, tree_file, metadata_file, metadata_key)
-		#get representative sample dict
-		for phenotype in train_dict.keys():
-			print(phenotype)
-			vectors = train_dict[phenotype].values()
-			rep_sample = get_average_sample(vectors, Tint, lint, nodes_in_order)
-			rep_sample_dict[phenotype] = rep_sample
-			print(rep_sample)
-		#test
-		total_test = 0
-		total_correct = 0
-		for phenotype in test_dict.keys():
-			total_this_pheno = 0
-			total_correct_this_pheno = 0
-			for test_vector in test_dict[phenotype].values():
-				prediction = get_label(test_vector, rep_sample_dict, Tint, lint, nodes_in_order)
-				total_this_pheno+=1
-				total_test+=1
-				if prediction == phenotype:
-					total_correct_this_pheno+=1
-					total_correct+=1
-			accuracy_this_pheno = total_correct_this_pheno/total_this_pheno
-			test_results[phenotype] = accuracy_this_pheno
-		total_acc = total_correct/total_test
-		#print results
-		print(total_acc)
-		print(test_results)
-		with open(args.out_file, 'a+') as f:
-			f.write('#{}\n'.format(args.message))
-			for phenotype in test_results.keys():
-				f.write('{} : {}\n'.format(phenotype, test_results[phenotype]))
-			f.write('Total accuracy : {}\n'.format(total_acc))
+	biom_file = args.biom_file
+	metadata_file = args.meta_file
+	tree_file = 'data/trees/gg_13_5_otus_99_annotated.tree'
+	metadata_key = args.phenotype
+	train_percentage = args.train_percentage
+	distance_matrix = args.distance_matrix
+	sample_id = extract_samples(biom_file)
+	sample_dict = get_index_dict(sample_id)
+	meta_dict = extract_metadata(metadata_file)
+	n_repeat = args.num_repeats
 
-
-	#print(len(train_dict.keys()))
-	#print(len(test_dict.keys()))
-
+	df = compile_dataframe(n_repeat, train_percentage, biom_file, tree_file, metadata_file, metadata_key, sample_dict)
+	print(df)
+	df.to_csv(args.save, sep="\t")
