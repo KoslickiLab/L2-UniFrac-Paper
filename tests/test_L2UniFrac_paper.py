@@ -26,6 +26,7 @@ def test_partition_sample():
     metadata_key = 'body_site'
     train_dict, test_dict = pp.partition_samples(train_percentage, biom_file, tree_file, metadata_file, metadata_key)
     print(train_dict.keys())
+    print(train_dict['skin'])
 
 
 if __name__ == '__main__':
