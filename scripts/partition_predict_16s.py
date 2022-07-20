@@ -327,14 +327,12 @@ def get_index_dict(lst):
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Get testing statistics of classification test.')
-	parser.add_argument('-m', '--meta_file', type=str, help='A metadata file.', default='data/metadata/P_1928_65684500_raw_meta.txt')
-	parser.add_argument('-p', '--phenotype', type=str, help='A selected phenotype corresponding to a column name in the metadata file.', default="body_site")
-	parser.add_argument('-bf', '--biom_file', type=str, help='Path to the biom file.', default='data/biom/47422_otu_table.biom')
-	parser.add_argument('-t', '--tree', type=str, help='Path to tree file. Only needed if data type is 16s')
-	parser.add_argument('-o', '--out_file', type=str, help='Path to the output file. Results will be printed in this file.')
-	parser.add_argument('-tp', '--train_percentage', type=int, help='What percentage of data used in training.', default=80)
-	parser.add_argument('-dm', '--distance_matrix', type=str, help="Pairwise unifrac distance matrix.", default='data/L2-UniFrac-Out.csv')
-	parser.add_argument('-n', '--num_repeats', type=int, help="Number of repeats for each experiment.", default=10)
+	parser.add_argument('-m', '--meta_file', type=str, help='A metadata file.', nargs='?', default='data/metadata/P_1928_65684500_raw_meta.txt')
+	parser.add_argument('-p', '--phenotype', type=str, help='A selected phenotype corresponding to a column name in the metadata file.', nargs='?', default="body_site")
+	parser.add_argument('-bf', '--biom_file', type=str, help='Path to the biom file.', nargs='?', default='data/biom/47422_otu_table.biom')
+	parser.add_argument('-tp', '--train_percentage', type=int, help='What percentage of data used in training.', nargs='?', default=80)
+	parser.add_argument('-dm', '--distance_matrix', type=str, help="Pairwise unifrac distance matrix.", nargs='?', default='data/L2-UniFrac-Out.csv')
+	parser.add_argument('-n', '--num_repeats', type=int, help="Number of repeats for each experiment.", nargs='?', default=10)
 	parser.add_argument('-s', '--save', type=str, help="Save the dataframe file as.")
 
 	args = parser.parse_args()
