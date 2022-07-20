@@ -256,7 +256,7 @@ def get_L2UniFrac_accuracy_results(train_dict, test_dict,Tint, lint, nodes_in_or
 def compile_dataframe(n_repeat, train_percentage, biom_file, tree_file, metadata_file, metadata_key, sample_dict):
 
 	col_names = ["Method", "Site", "Score_type", "Score"]
-	df = pd.DataFrame(col_names=col_names)
+	df = pd.DataFrame(columns=col_names)
 	score_type_col = []
 	score_col = []
 	site_col = []
