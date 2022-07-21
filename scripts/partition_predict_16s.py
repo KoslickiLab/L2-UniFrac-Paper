@@ -199,14 +199,12 @@ def get_clustering_scores(predictions, train_dict, test_dict, meta_dict, sample_
 		group_label_dict[group] = label
 	print(group_label_dict)
 	for body_site in test_dict.keys():
-		print(body_site)
 		test_ids_this_bs = test_dict[body_site]
 		test_indices_this_bs = [sample_dict[sample_id] for sample_id in test_ids_this_bs]
 		predicted_group_test_this_bs = [predictions[i] for i in test_indices_this_bs]
 		predicted_labels_this_bs = [group_label_dict[group] for group in predicted_group_test_this_bs]
-		print(predicted_labels_this_bs)
 		true_labels_this_bs = [meta_dict[i]['body_site'] for i in test_indices_this_bs]
-		print(true_labels_this_bs)
+		print("true label for this:", true_labels_this_bs)
 		results_dict[body_site]['accuracy_score'] = accuracy_score(true_labels_this_bs, predicted_labels_this_bs)
 		results_dict[body_site]['rand_score'] = rand_score(true_labels_this_bs, predicted_labels_this_bs)
 		results_dict[body_site]['adjusted_rand_score'] = adjusted_rand_score(true_labels_this_bs, predicted_labels_this_bs)
@@ -282,7 +280,6 @@ def compile_dataframe(n_repeat, train_percentage, biom_file, tree_file, metadata
 		train_dict, test_dict = partition_samples(train_percentage, biom_file, tree_file, metadata_file, metadata_key)
 		#agglomerative clustering
 		results = get_score_by_clustering_method("agglomerative", train_dict, test_dict, meta_dict, sample_dict, dm_file)
-		print(results.items()[0]) #debug
 		for site in results.keys(): #skin, gut, overall ...
 			for score_type in results[site].keys():
 				method_col.append("Agglomerative")
@@ -320,7 +317,6 @@ def decipher_label_by_vote(predictions, training, group_name, meta_dict, sample_
 	:return: predicted label by vote
 	'''
 	train_id_this_group = [train_id for train_id in training if predictions[sample_dict[train_id]] == group_name]
-	print(train_id_this_group)
 	predicted_labels = [meta_dict[i]['body_site'] for i in train_id_this_group]
 	print(predicted_labels)
 	c = Counter(predicted_labels)
