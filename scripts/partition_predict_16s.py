@@ -190,7 +190,7 @@ def get_clustering_scores(predictions, train_dict, test_dict, meta_dict, sample_
 	test_ids = test_dict.values()
 	group_label_dict = dict()
 	results_dict = dict()
-        print(train_ids[0:3])
+	print(train_ids[0:3])
 	#decipher label
 	for group in set(predictions):
 		label = decipher_label_by_vote(predictions, train_ids, group, meta_dict, sample_dict)
