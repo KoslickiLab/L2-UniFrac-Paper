@@ -4,7 +4,7 @@ sys.path.append('L2-UniFrac/src')
 sys.path.append('src')
 sys.path.append('scripts')
 import L2UniFrac as L2U
-import partition_predict as pp
+import partition_predict_16s as pp
 from extract_data import extract_biom, extract_samples, extract_metadata, parse_tree_file, parse_envs
 import os
 
@@ -49,6 +49,12 @@ def test_decipher_label():
     label = pp.decipher_label_by_vote(prediction, training, group_name, meta_dict, sample_dict)
     print(label)
 
+def test_get_sample_id_from_dict():
+    t_dict = {'skin': {'sample1':[1,2,3], 'sample2':[3,4,5]}, 'gut':{'sample4':[4,5,6], 'sample5':[6,8,9]}}
+    sample_lst = pp.get_sample_id_from_dict(t_dict)
+    print(sample_lst)
+
 if __name__ == '__main__':
 	#test_partition_sample()
-    test_decipher_label()
+    #test_decipher_label()
+    test_get_sample_id_from_dict()

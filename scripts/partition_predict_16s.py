@@ -180,17 +180,18 @@ def get_clustering_scores(predictions, train_dict, test_dict, meta_dict, sample_
 	'''
 	Returns a dict of scores for a particular set of predictions
 	:param predictions:
-	:param train_dict:
+	:param train_dict: {body_site:{sample_id: vector}}
 	:param test_dict:
 	:param meta_dict:
 	:param sample_dict:
 	:return:
 	'''
-	train_ids = train_dict.values()
-	test_ids = test_dict.values()
+
+	train_ids = get_sample_id_from_dict(train_dict)
+	test_ids = get_sample_id_from_dict(test_dict)
 	group_label_dict = dict()
 	results_dict = dict()
-	print(train_ids[0:3])
+
 	#decipher label
 	for group in set(predictions):
 		label = decipher_label_by_vote(predictions, train_ids, group, meta_dict, sample_dict)
@@ -219,6 +220,17 @@ def get_clustering_scores(predictions, train_dict, test_dict, meta_dict, sample_
 	results_dict['overall']['normalized_mutual_info_score'] = normalized_mutual_info_score(true_labels, predicted_labels)
 	results_dict['overall']['fowlkes_mallows_score'] = fowlkes_mallows_score(true_labels, predicted_labels)
 	return results_dict
+
+def get_sample_id_from_dict(t_dict):
+	'''
+
+	:param t_dict: {body_site:{sample_id:sample_vector}
+	:return: a list of sample_id
+	'''
+	sample_lst = []
+	for body_site in t_dict.keys():
+		sample_lst+=list(t_dict[body_site].keys())
+	return sample_lst
 
 def get_L2UniFrac_accuracy_results(train_dict, test_dict,Tint, lint, nodes_in_order, meta_dict):
 	results_dict = dict()
