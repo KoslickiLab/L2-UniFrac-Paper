@@ -198,10 +198,13 @@ def get_clustering_scores(predictions, train_dict, test_dict, meta_dict, sample_
 		# may need a tie breaker to ensure values are unique. For now just hope for the best
 		group_label_dict[group] = label
 	for body_site in test_dict.keys():
+		print(body_site)
 		test_ids_this_bs = test_dict[body_site]
 		test_indices_this_bs = [sample_dict[sample_id] for sample_id in test_ids_this_bs]
 		predicted_group_test_this_bs = [predictions[i] for i in test_indices_this_bs]
 		predicted_labels_this_bs = [group_label_dict[group] for group in predicted_group_test_this_bs]
+		print(predicted_labels_this_bs)
+		print(test_ids_this_bs)
 		true_labels_this_bs = [meta_dict[i]['body_site'] for i in test_indices_this_bs]
 		results_dict[body_site]['accuracy_score'] = accuracy_score(true_labels_this_bs, predicted_labels_this_bs)
 		results_dict[body_site]['rand_score'] = rand_score(true_labels_this_bs, predicted_labels_this_bs)
