@@ -203,8 +203,7 @@ def get_clustering_scores(predictions, train_dict, test_dict, meta_dict, sample_
 		test_indices_this_bs = [sample_dict[sample_id] for sample_id in test_ids_this_bs]
 		predicted_group_test_this_bs = [predictions[i] for i in test_indices_this_bs]
 		predicted_labels_this_bs = [group_label_dict[group] for group in predicted_group_test_this_bs]
-		true_labels_this_bs = [meta_dict[i]['body_site'] for i in test_indices_this_bs]
-		print("true label for this:", true_labels_this_bs)
+		true_labels_this_bs = [meta_dict[i]['body_site'] for i in test_ids_this_bs]
 		results_dict[body_site]['accuracy_score'] = accuracy_score(true_labels_this_bs, predicted_labels_this_bs)
 		results_dict[body_site]['rand_score'] = rand_score(true_labels_this_bs, predicted_labels_this_bs)
 		results_dict[body_site]['adjusted_rand_score'] = adjusted_rand_score(true_labels_this_bs, predicted_labels_this_bs)
