@@ -283,19 +283,20 @@ def compile_dataframe(n_repeat, train_percentage, biom_file, tree_file, metadata
 	method_col = []
 	for i in range(n_repeat):
 		train_dict, test_dict = partition_samples(train_percentage, biom_file, tree_file, metadata_file, metadata_key)
+		# kmedoids clustering
+		results = get_score_by_clustering_method("kmedoids", train_dict, test_dict, meta_dict, sample_dict, dm_file,
+												 n_clusters)
+		for site in results.keys():  # skin, gut, overall ...
+			for score_type in results[site].keys():
+				method_col.append("KMedoids")
+				site_col.append(site)
+				score_type_col.append(score_type)
+				score_col.append(results[site[score_type]])
 		#agglomerative clustering
 		results = get_score_by_clustering_method("agglomerative", train_dict, test_dict, meta_dict, sample_dict, dm_file, n_clusters)
 		for site in results.keys(): #skin, gut, overall ...
 			for score_type in results[site].keys():
 				method_col.append("Agglomerative")
-				site_col.append(site)
-				score_type_col.append(score_type)
-				score_col.append(results[site[score_type]])
-		#kmedoids clustering
-		results = get_score_by_clustering_method("kmedoids", train_dict, test_dict, meta_dict, sample_dict, dm_file, n_clusters)
-		for site in results.keys():  # skin, gut, overall ...
-			for score_type in results[site].keys():
-				method_col.append("KMedoids")
 				site_col.append(site)
 				score_type_col.append(score_type)
 				score_col.append(results[site[score_type]])
