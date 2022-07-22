@@ -222,9 +222,7 @@ def get_clustering_scores(predictions, train_dict, test_dict, meta_dict, sample_
 	#results_dict['overall']['adjusted_mutual_info_score'] = adjusted_mutual_info_score(true_labels,predicted_labels)
 	#results_dict['overall']['normalized_mutual_info_score'] = normalized_mutual_info_score(true_labels, predicted_labels)
 	#results_dict['overall']['fowlkes_mallows_score'] = fowlkes_mallows_score(true_labels, predicted_labels)
-	print("length of true labels:", len(true_labels))
-	print("length of predictions", len(predictions))
-	results_dict['overall']['accuracy_score'] = accuracy_score(true_labels, predicted_group_test)
+	results_dict['overall']['accuracy_score'] = accuracy_score(true_labels, predicted_labels)
 	results_dict['overall']['rand_score'] = rand_score(true_labels, predicted_group_test)
 	results_dict['overall']['adjusted_rand_score'] = adjusted_rand_score(true_labels, predicted_group_test)
 	results_dict['overall']['adjusted_mutual_info_score'] = adjusted_mutual_info_score(true_labels, predicted_group_test)
@@ -259,7 +257,7 @@ def get_L2UniFrac_accuracy_results(train_dict, test_dict,Tint, lint, nodes_in_or
 	overall_predictions = []
 	for phenotype in test_dict.keys():
 		test_id += test_dict[phenotype]
-		for test_vector in test_dict[phenotype]: #list of samples in a particular phenotype
+		for test_vector in test_dict[phenotype].values(): #list of samples in a particular phenotype
 			prediction = get_label(test_vector, rep_sample_dict, Tint, lint, nodes_in_order)
 			true_labels = test_dict[phenotype]
 			predictions.append(prediction)
