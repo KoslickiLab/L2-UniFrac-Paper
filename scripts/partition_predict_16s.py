@@ -199,6 +199,7 @@ def get_clustering_scores(predictions, train_dict, test_dict, meta_dict, sample_
 		group_label_dict[group] = label
 	print(group_label_dict)
 	for body_site in test_dict.keys():
+		results_dict[body_site] = dict()
 		test_ids_this_bs = test_dict[body_site]
 		test_indices_this_bs = [sample_dict[sample_id] for sample_id in test_ids_this_bs]
 		predicted_group_test_this_bs = [predictions[i] for i in test_indices_this_bs]
