@@ -163,9 +163,9 @@ def get_label(test_sample, rep_sample_dict, Tint, lint, nodes_in_order):
 			label = phenotype
 	return label
 
-def get_score_by_clustering_method(clustering_method, train_dict, test_dict, meta_dict, sample_dict, distance_matrix_file):
+def get_score_by_clustering_method(clustering_method, train_dict, test_dict, meta_dict, sample_dict, distance_matrix_file, n_clusters):
 	distance_matrix = pd.read_csv(distance_matrix_file, header=None)
-	n_clusters = len(train_dict.keys()) #number of classes
+	#n_clusters = len(train_dict.keys()) #number of classes
 	if clustering_method.lower() == "agglomerative": #case insensitive
 		agglomerative_prediction = AgglomerativeClustering(n_clusters=n_clusters, affinity='precomputed', linkage='complete').fit_predict(distance_matrix)
 		#accuracy score by body site
@@ -220,6 +220,8 @@ def get_clustering_scores(predictions, train_dict, test_dict, meta_dict, sample_
 	results_dict['overall']['adjusted_mutual_info_score'] = adjusted_mutual_info_score(true_labels,predicted_labels)
 	results_dict['overall']['normalized_mutual_info_score'] = normalized_mutual_info_score(true_labels, predicted_labels)
 	results_dict['overall']['fowlkes_mallows_score'] = fowlkes_mallows_score(true_labels, predicted_labels)
+	print("clustering results:")
+	print(results_dict)
 	return results_dict
 
 def get_sample_id_from_dict(t_dict):
@@ -267,7 +269,7 @@ def get_L2UniFrac_accuracy_results(train_dict, test_dict,Tint, lint, nodes_in_or
 	results_dict['overall']['fowlkes_mallows_score'] = fowlkes_mallows_score(all_true_labels, overall_predictions)
 	return results_dict
 
-def compile_dataframe(n_repeat, train_percentage, biom_file, tree_file, metadata_file, metadata_key, sample_dict, dm_file):
+def compile_dataframe(n_repeat, train_percentage, biom_file, tree_file, metadata_file, metadata_key, sample_dict, dm_file, n_clusters):
 
 	col_names = ["Method", "Site", "Score_type", "Score"]
 	df = pd.DataFrame(columns=col_names)
@@ -278,7 +280,7 @@ def compile_dataframe(n_repeat, train_percentage, biom_file, tree_file, metadata
 	for i in range(n_repeat):
 		train_dict, test_dict = partition_samples(train_percentage, biom_file, tree_file, metadata_file, metadata_key)
 		#agglomerative clustering
-		results = get_score_by_clustering_method("agglomerative", train_dict, test_dict, meta_dict, sample_dict, dm_file)
+		results = get_score_by_clustering_method("agglomerative", train_dict, test_dict, meta_dict, sample_dict, dm_file, n_clusters)
 		for site in results.keys(): #skin, gut, overall ...
 			for score_type in results[site].keys():
 				method_col.append("Agglomerative")
@@ -286,7 +288,7 @@ def compile_dataframe(n_repeat, train_percentage, biom_file, tree_file, metadata
 				score_type_col.append(score_type)
 				score_col.append(results[site[score_type]])
 		#kmedoids clustering
-		results = get_score_by_clustering_method("kmedoids", train_dict, test_dict, meta_dict, sample_dict, dm_file)
+		results = get_score_by_clustering_method("kmedoids", train_dict, test_dict, meta_dict, sample_dict, dm_file, n_clusters)
 		for site in results.keys():  # skin, gut, overall ...
 			for score_type in results[site].keys():
 				method_col.append("KMedoids")
@@ -315,6 +317,7 @@ def decipher_label_by_vote(predictions, training, group_name, meta_dict, sample_
 	:param group_name: cluster name. e.g. 0,1,2 ...
 	:return: predicted label by vote
 	'''
+	print("group {} has {} number of predictions".format(group_name, len(predictions)))
 	train_id_this_group = [train_id for train_id in training if predictions[sample_dict[train_id]] == group_name]
 	predicted_labels = [meta_dict[i]['body_site'] for i in train_id_this_group]
 	print(predicted_labels)
@@ -347,6 +350,8 @@ if __name__ == '__main__':
 	parser.add_argument('-dm', '--distance_matrix', type=str, help="Pairwise unifrac distance matrix.", nargs='?', default='data/L2-UniFrac-Out.csv')
 	parser.add_argument('-n', '--num_repeats', type=int, help="Number of repeats for each experiment.", nargs='?', default=10)
 	parser.add_argument('-s', '--save', type=str, help="Save the dataframe file as.")
+	parser.add_argument('-c', '--num_clusters', type=int, help="Number of clusters.", nargs='?', default=5)
+
 
 	args = parser.parse_args()
 	tree_file = 'data/trees/gg_13_5_otus_99_annotated.tree'
@@ -360,6 +365,7 @@ if __name__ == '__main__':
 	sample_dict = get_index_dict(sample_id)
 	meta_dict = extract_metadata(metadata_file)
 	n_repeat = args.num_repeats
-	df = compile_dataframe(n_repeat, train_percentage, biom_file, tree_file, metadata_file, metadata_key, sample_dict, distance_matrix)
+	n_clusters = args.num_clusters
+	df = compile_dataframe(n_repeat, train_percentage, biom_file, tree_file, metadata_file, metadata_key, sample_dict, distance_matrix, n_clusters)
 	print(df)
 	df.to_csv(args.save, sep="\t")
