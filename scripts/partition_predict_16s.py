@@ -216,12 +216,19 @@ def get_clustering_scores(predictions, train_dict, test_dict, meta_dict, sample_
 	predicted_labels = [group_label_dict[group] for group in predicted_group_test]
 	true_labels = [meta_dict[i]['body_site'] for i in test_ids]
 	results_dict['overall'] = dict()
-	results_dict['overall']['accuracy_score'] = accuracy_score(true_labels, predicted_labels)
-	results_dict['overall']['rand_score'] = rand_score(true_labels, predicted_labels)
-	results_dict['overall']['adjusted_rand_score'] = adjusted_rand_score(true_labels, predicted_labels)
-	results_dict['overall']['adjusted_mutual_info_score'] = adjusted_mutual_info_score(true_labels,predicted_labels)
-	results_dict['overall']['normalized_mutual_info_score'] = normalized_mutual_info_score(true_labels, predicted_labels)
-	results_dict['overall']['fowlkes_mallows_score'] = fowlkes_mallows_score(true_labels, predicted_labels)
+	#results_dict['overall']['accuracy_score'] = accuracy_score(true_labels, predicted_labels)
+	#results_dict['overall']['rand_score'] = rand_score(true_labels, predicted_labels)
+	#results_dict['overall']['adjusted_rand_score'] = adjusted_rand_score(true_labels, predicted_labels)
+	#results_dict['overall']['adjusted_mutual_info_score'] = adjusted_mutual_info_score(true_labels,predicted_labels)
+	#results_dict['overall']['normalized_mutual_info_score'] = normalized_mutual_info_score(true_labels, predicted_labels)
+	#results_dict['overall']['fowlkes_mallows_score'] = fowlkes_mallows_score(true_labels, predicted_labels)
+
+	results_dict['overall']['accuracy_score'] = accuracy_score(true_labels, predictions)
+	results_dict['overall']['rand_score'] = rand_score(true_labels, predictions)
+	results_dict['overall']['adjusted_rand_score'] = adjusted_rand_score(true_labels, predictions)
+	results_dict['overall']['adjusted_mutual_info_score'] = adjusted_mutual_info_score(true_labels,predictions)
+	results_dict['overall']['normalized_mutual_info_score'] = normalized_mutual_info_score(true_labels, predictions)
+	results_dict['overall']['fowlkes_mallows_score'] = fowlkes_mallows_score(true_labels, predictions)
 	print("clustering results:")
 	print(results_dict)
 	return results_dict
@@ -271,6 +278,7 @@ def get_L2UniFrac_accuracy_results(train_dict, test_dict,Tint, lint, nodes_in_or
 	results_dict['overall']['adjusted_mutual_info_score'] = adjusted_mutual_info_score(all_true_labels, overall_predictions)
 	results_dict['overall']['normalized_mutual_info_score'] = normalized_mutual_info_score(all_true_labels, overall_predictions)
 	results_dict['overall']['fowlkes_mallows_score'] = fowlkes_mallows_score(all_true_labels, overall_predictions)
+
 	return results_dict
 
 def compile_dataframe(n_repeat, train_percentage, biom_file, tree_file, metadata_file, metadata_key, sample_dict, dm_file, n_clusters):
@@ -293,13 +301,13 @@ def compile_dataframe(n_repeat, train_percentage, biom_file, tree_file, metadata
 				score_type_col.append(score_type)
 				score_col.append(results[site[score_type]])
 		#agglomerative clustering
-		results = get_score_by_clustering_method("agglomerative", train_dict, test_dict, meta_dict, sample_dict, dm_file, n_clusters)
-		for site in results.keys(): #skin, gut, overall ...
-			for score_type in results[site].keys():
-				method_col.append("Agglomerative")
-				site_col.append(site)
-				score_type_col.append(score_type)
-				score_col.append(results[site[score_type]])
+		#results = get_score_by_clustering_method("agglomerative", train_dict, test_dict, meta_dict, sample_dict, dm_file, n_clusters)
+		#for site in results.keys(): #skin, gut, overall ...
+		#	for score_type in results[site].keys():
+		#		method_col.append("Agglomerative")
+		#		site_col.append(site)
+		#		score_type_col.append(score_type)
+		#		score_col.append(results[site][score_type])
 		#L2UniFrac
 		results = get_L2UniFrac_accuracy_results(train_dict,test_dict, Tint, lint, nodes_in_order, meta_dict)
 		for site in results.keys(): #skin, gut, overall ...
@@ -307,7 +315,7 @@ def compile_dataframe(n_repeat, train_percentage, biom_file, tree_file, metadata
 				method_col.append("L2UniFrac")
 				site_col.append(site)
 				score_type_col.append(score_type)
-				score_col.append(results[site[score_type]])
+				score_col.append(results[site][score_type])
 	df["Method"] = method_col
 	df["Site"] = site_col
 	df["Score_type"] = score_type_col
@@ -322,10 +330,9 @@ def decipher_label_by_vote(predictions, training, group_name, meta_dict, sample_
 	:param group_name: cluster name. e.g. 0,1,2 ...
 	:return: predicted label by vote
 	'''
-	print("group {} has {} number of predictions".format(group_name, len(predictions)))
 	train_id_this_group = [train_id for train_id in training if predictions[sample_dict[train_id]] == group_name]
 	predicted_labels = [meta_dict[i]['body_site'] for i in train_id_this_group]
-	print(predicted_labels)
+	#print(predicted_labels)
 	c = Counter(predicted_labels)
 	predicted_by_vote = c.most_common(1)[0][0]
 	return predicted_by_vote
