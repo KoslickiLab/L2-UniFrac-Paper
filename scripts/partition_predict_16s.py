@@ -215,6 +215,7 @@ def get_clustering_scores(predictions, train_dict, test_dict, meta_dict, sample_
 	predicted_group_test = [predictions[i] for i in test_indices]
 	predicted_labels = [group_label_dict[group] for group in predicted_group_test]
 	true_labels = [meta_dict[i]['body_site'] for i in test_ids]
+	results_dict['overall'] = dict()
 	results_dict['overall']['accuracy_score'] = accuracy_score(true_labels, predicted_labels)
 	results_dict['overall']['rand_score'] = rand_score(true_labels, predicted_labels)
 	results_dict['overall']['adjusted_rand_score'] = adjusted_rand_score(true_labels, predicted_labels)
@@ -255,6 +256,7 @@ def get_L2UniFrac_accuracy_results(train_dict, test_dict,Tint, lint, nodes_in_or
 			true_labels = test_dict[phenotype]
 			predictions.append(prediction)
 		overall_predictions += predictions
+		results_dict[phenotype] = dict()
 		results_dict[phenotype]['accuracy_score'] = accuracy_score(true_labels, predictions)
 		results_dict[phenotype]['rand_score'] = rand_score(true_labels, predictions)
 		results_dict[phenotype]['adjusted_rand_score'] = adjusted_rand_score(true_labels, predictions)
@@ -262,6 +264,7 @@ def get_L2UniFrac_accuracy_results(train_dict, test_dict,Tint, lint, nodes_in_or
 		results_dict[phenotype]['normalized_mutual_info_score'] = normalized_mutual_info_score(true_labels, predictions)
 		results_dict[phenotype]['fowlkes_mallows_score'] = fowlkes_mallows_score(true_labels, predictions)
 	all_true_labels = [meta_dict[i]['body_site'] for i in test_id]
+	results_dict['overall'] = dict()
 	results_dict['overall']['accuracy_score'] = accuracy_score(all_true_labels, overall_predictions)
 	results_dict['overall']['rand_score'] = rand_score(all_true_labels, overall_predictions)
 	results_dict['overall']['adjusted_rand_score'] = adjusted_rand_score(all_true_labels, overall_predictions)
