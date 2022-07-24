@@ -256,10 +256,10 @@ def get_L2UniFrac_accuracy_results(train_dict, test_dict,Tint, lint, nodes_in_or
 	test_id = []
 	overall_predictions = []
 	for phenotype in test_dict.keys():
-		test_id += test_dict[phenotype]
+		test_id += list(test_dict[phenotype].keys())
+		true_labels = [str(phenotype)] * len(test_dict[phenotype].keys())
 		for test_vector in test_dict[phenotype].values(): #list of samples in a particular phenotype
 			prediction = get_label(test_vector, rep_sample_dict, Tint, lint, nodes_in_order)
-			true_labels = test_dict[phenotype]
 			predictions.append(prediction)
 		overall_predictions += predictions
 		results_dict[phenotype] = dict()
