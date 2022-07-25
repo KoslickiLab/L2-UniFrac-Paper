@@ -375,7 +375,7 @@ if __name__ == '__main__':
 	train_percentage = args.train_percentage
 	distance_matrix = args.distance_matrix
 	sample_id = extract_samples(biom_file)
- 	sample_dict = get_index_dict(sample_id)
+	sample_dict = get_index_dict(sample_id)
 	meta_dict = extract_metadata(metadata_file)
 	n_repeat = args.num_repeats
 	n_clusters = args.num_clusters
