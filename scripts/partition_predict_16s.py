@@ -245,25 +245,24 @@ def get_sample_id_from_dict(t_dict):
 
 def get_L2UniFrac_accuracy_results(train_dict, test_dict,Tint, lint, nodes_in_order, meta_dict):
 	results_dict = dict()
-	predictions = []
 	rep_sample_dict = dict()
 	for phenotype in train_dict.keys():
 		print(phenotype)
 		vectors = train_dict[phenotype].values()
 		rep_sample = get_average_sample(vectors, Tint, lint, nodes_in_order)
 		rep_sample_dict[phenotype] = rep_sample
-		#print(rep_sample)
 	test_id = []
 	overall_predictions = []
+	all_true_labels = []
 	for phenotype in test_dict.keys():
 		test_id += list(test_dict[phenotype].keys())
 		true_labels = [str(phenotype)] * len(test_dict[phenotype].keys())
 		predictions = []
 		for test_vector in test_dict[phenotype].values(): #list of samples in a particular phenotype
-			true_labels.append(phenotype)
 			prediction = get_label(test_vector, rep_sample_dict, Tint, lint, nodes_in_order)
 			predictions.append(prediction)
 		overall_predictions += predictions
+		all_true_labels += true_labels
 		results_dict[phenotype] = dict()
 		results_dict[phenotype]['accuracy_score'] = accuracy_score(true_labels, predictions)
 		results_dict[phenotype]['rand_score'] = rand_score(true_labels, predictions)
@@ -271,7 +270,6 @@ def get_L2UniFrac_accuracy_results(train_dict, test_dict,Tint, lint, nodes_in_or
 		results_dict[phenotype]['adjusted_mutual_info_score'] = adjusted_mutual_info_score(true_labels, predictions)
 		results_dict[phenotype]['normalized_mutual_info_score'] = normalized_mutual_info_score(true_labels, predictions)
 		results_dict[phenotype]['fowlkes_mallows_score'] = fowlkes_mallows_score(true_labels, predictions)
-	all_true_labels = [meta_dict[i]['body_site'] for i in test_id]
 	results_dict['overall'] = dict()
 	results_dict['overall']['accuracy_score'] = accuracy_score(all_true_labels, overall_predictions)
 	results_dict['overall']['rand_score'] = rand_score(all_true_labels, overall_predictions)
