@@ -257,7 +257,8 @@ def get_L2UniFrac_accuracy_results(train_dict, test_dict,Tint, lint, nodes_in_or
 	overall_predictions = []
 	for phenotype in test_dict.keys():
 		test_id += list(test_dict[phenotype].keys())
-		true_labels = []
+		true_labels = [str(phenotype)] * len(test_dict[phenotype].keys())
+		predictions = []
 		for test_vector in test_dict[phenotype].values(): #list of samples in a particular phenotype
 			true_labels.append(phenotype)
 			prediction = get_label(test_vector, rep_sample_dict, Tint, lint, nodes_in_order)
@@ -374,7 +375,7 @@ if __name__ == '__main__':
 	train_percentage = args.train_percentage
 	distance_matrix = args.distance_matrix
 	sample_id = extract_samples(biom_file)
-	sample_dict = get_index_dict(sample_id)
+ 	sample_dict = get_index_dict(sample_id)
 	meta_dict = extract_metadata(metadata_file)
 	n_repeat = args.num_repeats
 	n_clusters = args.num_clusters
