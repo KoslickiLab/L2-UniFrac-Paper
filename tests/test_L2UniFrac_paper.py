@@ -54,6 +54,17 @@ def test_get_sample_id_from_dict():
     sample_lst = pp.get_sample_id_from_dict(t_dict)
     print(sample_lst)
 
+def test_get_L2UniFrac_results():
+    biom_file = 'data/biom/47422_otu_table.biom'
+    tree_file = 'data/trees/gg_13_5_otus_99_annotated.tree'
+    Tint, lint, nodes_in_order = parse_tree_file(tree_file)
+    metadata_file = 'data/metadata/P_1928_65684500_raw_meta.txt'
+    train_dict, test_dict = pp.partition_samples(80, biom_file, tree_file, metadata_file, "body_site")
+    meta_dict = extract_metadata(metadata_file)
+    results = pp.get_L2UniFrac_accuracy_results(train_dict, test_dict, Tint, lint, nodes_in_order, meta_dict)
+    print(results)
+
+
 if __name__ == '__main__':
 	#test_partition_sample()
     #test_decipher_label()
