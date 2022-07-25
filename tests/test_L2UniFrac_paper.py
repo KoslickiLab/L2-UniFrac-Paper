@@ -68,4 +68,5 @@ def test_get_L2UniFrac_results():
 if __name__ == '__main__':
 	#test_partition_sample()
     #test_decipher_label()
-    test_get_sample_id_from_dict()
+    #test_get_sample_id_from_dict()
+    test_get_L2UniFrac_results()
