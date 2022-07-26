@@ -9,4 +9,4 @@ pip install -U dendropy
 conda -y install numpy
 pip install matplotlib
 pip install scikit-learn-extra
-
+pip install seaborn

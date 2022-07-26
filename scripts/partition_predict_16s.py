@@ -171,10 +171,9 @@ def get_score_by_clustering_method(clustering_method, train_dict, test_dict, met
 		#accuracy score by body site
 		results = get_clustering_scores(agglomerative_prediction, train_dict,test_dict, meta_dict, sample_dict)
 	if clustering_method.lower() == "kmedoids":
-		kmedois_prediction = KMedoids(n_clusters=n_clusters, metric='precomputed', method='pam', init='heuristic').fit_predict(distance_matrix)
-		results = get_clustering_scores(kmedois_prediction, train_dict, test_dict, meta_dict, sample_dict)
+		kmedoids_prediction = KMedoids(n_clusters=n_clusters, metric='precomputed', method='pam', init='heuristic').fit_predict(distance_matrix)
+		results = get_clustering_scores(kmedoids_prediction, train_dict, test_dict, meta_dict, sample_dict)
 	return results
-
 
 def get_clustering_scores(predictions, train_dict, test_dict, meta_dict, sample_dict):
 	'''
@@ -335,6 +334,14 @@ def decipher_label_by_vote(predictions, training, group_name, meta_dict, sample_
 	c = Counter(predicted_labels)
 	predicted_by_vote = c.most_common(1)[0][0]
 	return predicted_by_vote
+
+def decipher_label_alternative():
+	'''
+	A slight variation from the above function. The above function uses the overlap between training samples and each cluster to vote.
+	Alternatively, use 80% data of each cluster to vote. Though we suspect the difference will not be significant.
+	:return:
+	'''
+	return
 
 def get_index_dict(lst):
 	'''
