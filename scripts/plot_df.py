@@ -12,6 +12,7 @@ def main():
     parser.add_argument('-p', '--phenotype', type=str, help="Condition/site of interest.")
     parser.add_argument('-c', '--column', type=str, help="Column name in which -p input falls.")
     parser.add_argument('-h', '--hue', type=str, help="Hue", nargs='?', default="Method")
+    parser.add_argument('-t', '--type', type=str, help="Plot type.", choices=['box', 'line'])
 
     args = parser.parse_args()
     dataframe_file = args.file
@@ -22,12 +23,11 @@ def main():
     except:
         print("Phenotype not found in column specified.")
 
-    if args.column:
-        filtered_df = df[df[args.column] == args.phenotype]
-    else:
-        filtered_df = df
+    if args.type == 'box':
+        sns.boxplot(x=args.x, y=args.y, hue=args.hue)
     # sns.set_theme(style="ticks", palette="pastel")
-    sns.lineplot(x=args.x, y=args.y, hue="Method", data=filtered_df)
+    elif args.type == 'line':
+        sns.lineplot(x=args.x, y=args.y, hue=args.hue, data=df)
     # sns.lineplot(x=x, y="Silhouette", hue="method", data=df, err_style="bars", ci="sd")
     plt.savefig(args.save)
 
