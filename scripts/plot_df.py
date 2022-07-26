@@ -18,10 +18,14 @@ def main():
     dataframe_file = args.file
     df = pd.read_table(dataframe_file, index_col=0)
     s = pd.Series(list(df[args.column]))
+
     try:
         args.phenotype in s.values
     except:
         print("Phenotype not found in column specified.")
+
+    if args.column:
+        df = df[df[args.column] == args.phenotype]
 
     if args.type == 'box':
         sns.boxplot(x=args.x, y=args.y, hue=args.hue)
