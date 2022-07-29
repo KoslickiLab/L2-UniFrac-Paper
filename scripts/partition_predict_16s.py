@@ -303,7 +303,8 @@ def compile_dataframe(n_repeat, train_percentage, biom_file, tree_file, metadata
 		train_vectors = []
 		for samples in train_dict.values():
 			train_vectors.append(samples.values())
-		print(train_vectors)
+		print(len(train_vectors))
+		print(train_vectors[0])
 		kmeans_predict = KMeans(n_clusters=n_clusters).fit(train_vectors)
 		results = get_clustering_scores(kmeans_predict, train_dict, test_dict, meta_dict, sample_dict)
 		for site in results.keys(): #skin, gut, overall ...
