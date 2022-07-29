@@ -343,9 +343,7 @@ def decipher_label_alternative(predictions, index_sample_dict, group_name, meta_
 	:return:
 	'''
 	indices_this_group = [i for i in range(len(predictions)) if predictions[i] == group_name]
-	print(indices_this_group)
-	predicted_labels = [meta_dict[index_sample_dict[i]] for i in indices_this_group]
-	print(predicted_labels)
+	predicted_labels = [meta_dict[index_sample_dict[i]]['body_site'] for i in indices_this_group]
 	c = Counter(predicted_labels)
 	predicted_by_vote = c.most_common(1)[0][0]
 	return predicted_by_vote
