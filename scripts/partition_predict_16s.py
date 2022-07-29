@@ -8,7 +8,7 @@ from math import floor
 import argparse
 import L2UniFrac as L2U
 import pandas as pd
-from sklearn.cluster import AgglomerativeClustering
+from sklearn.cluster import AgglomerativeClustering, KMeans
 from sklearn_extra.cluster import KMedoids
 from sklearn.metrics import accuracy_score, rand_score
 from sklearn.metrics.cluster import adjusted_rand_score, normalized_mutual_info_score, adjusted_mutual_info_score, fowlkes_mallows_score
@@ -277,10 +277,10 @@ def get_L2UniFrac_accuracy_results(train_dict, test_dict,Tint, lint, nodes_in_or
 	results_dict['overall']['adjusted_mutual_info_score'] = adjusted_mutual_info_score(all_true_labels, overall_predictions)
 	results_dict['overall']['normalized_mutual_info_score'] = normalized_mutual_info_score(all_true_labels, overall_predictions)
 	results_dict['overall']['fowlkes_mallows_score'] = fowlkes_mallows_score(all_true_labels, overall_predictions)
-
 	return results_dict
 
-def compile_dataframe(n_repeat, train_percentage, biom_file, tree_file, metadata_file, metadata_key, sample_dict, dm_file, n_clusters):
+def compile_dataframe(n_repeat, train_percentage, biom_file, tree_file, metadata_file,
+					  metadata_key, sample_dict, dm_file, n_clusters):
 
 	col_names = ["Method", "Site", "Score_type", "Score"]
 	df = pd.DataFrame(columns=col_names)
@@ -289,7 +289,28 @@ def compile_dataframe(n_repeat, train_percentage, biom_file, tree_file, metadata
 	site_col = []
 	method_col = []
 	for i in range(n_repeat):
+
+		#agglomerative clustering
+		#results = get_score_by_clustering_method("agglomerative", train_dict, test_dict, meta_dict, sample_dict, dm_file, n_clusters)
+		#for site in results.keys(): #skin, gut, overall ...
+		#	for score_type in results[site].keys():
+		#		method_col.append("Agglomerative")
+		#		site_col.append(site)
+		#		score_type_col.append(score_type)
+		#		score_col.append(results[site][score_type])
 		train_dict, test_dict = partition_samples(train_percentage, biom_file, tree_file, metadata_file, metadata_key)
+		#KMeans
+		train_vectors = []
+		for samples in train_dict.values():
+			train_vectors.append(samples.values())
+		kmeans_predict = KMeans(n_clusters=n_clusters).fit(train_vectors)
+		results = get_clustering_scores(kmeans_predict, train_dict, test_dict, meta_dict, sample_dict)
+		for site in results.keys(): #skin, gut, overall ...
+			for score_type in results[site].keys():
+				method_col.append("KMeans")
+				site_col.append(site)
+				score_type_col.append(score_type)
+				score_col.append(results[site][score_type])
 		# kmedoids clustering
 		results = get_score_by_clustering_method("kmedoids", train_dict, test_dict, meta_dict, sample_dict, dm_file,
 												 n_clusters)
@@ -299,16 +320,8 @@ def compile_dataframe(n_repeat, train_percentage, biom_file, tree_file, metadata
 				site_col.append(site)
 				score_type_col.append(score_type)
 				score_col.append(results[site][score_type])
-		#agglomerative clustering
-		#results = get_score_by_clustering_method("agglomerative", train_dict, test_dict, meta_dict, sample_dict, dm_file, n_clusters)
-		#for site in results.keys(): #skin, gut, overall ...
-		#	for score_type in results[site].keys():
-		#		method_col.append("Agglomerative")
-		#		site_col.append(site)
-		#		score_type_col.append(score_type)
-		#		score_col.append(results[site][score_type])
 		#L2UniFrac
-		results = get_L2UniFrac_accuracy_results(train_dict,test_dict, Tint, lint, nodes_in_order, meta_dict)
+		results = get_L2UniFrac_accuracy_results(train_dict,test_dict, Tint, lint, nodes_in_order)
 		for site in results.keys(): #skin, gut, overall ...
 			for score_type in results[site].keys():
 				method_col.append("L2UniFrac")
