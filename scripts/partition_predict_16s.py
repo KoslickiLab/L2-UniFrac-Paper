@@ -301,10 +301,9 @@ def compile_dataframe(n_repeat, train_percentage, biom_file, tree_file, metadata
 		train_dict, test_dict = partition_samples(train_percentage, biom_file, tree_file, metadata_file, metadata_key)
 		#KMeans
 		train_vectors = []
-		for samples in train_dict.values():
-			print(len(samples))
-			train_vectors.append(list(samples.values()))
-		print(len(train_vectors))
+		for body_site in train_dict.keys():
+			for sample in train_dict[body_site].keys():
+				train_vectors.append(train_dict[body_site][sample])
 		kmeans_predict = KMeans(n_clusters=n_clusters).fit(train_vectors)
 		results = get_clustering_scores(kmeans_predict, train_dict, test_dict, meta_dict, sample_dict)
 		for site in results.keys(): #skin, gut, overall ...
