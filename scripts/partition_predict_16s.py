@@ -192,9 +192,10 @@ def get_clustering_scores(predictions, train_dict, test_dict, meta_dict, sample_
 	results_dict = dict()
 
 	#decipher label
+	index_sample_dict = {v:k for k,v in sample_dict.items()}
 	for group in set(predictions):
-		label = decipher_label_by_vote(predictions, train_ids, group, meta_dict, sample_dict)
-		# may need a tie breaker to ensure values are unique. For now just hope for the best
+		#label = decipher_label_by_vote(predictions, train_ids, group, meta_dict, sample_dict)
+		label = decipher_label_alternative(predictions, index_sample_dict, group, meta_dict)
 		group_label_dict[group] = label
 	print(group_label_dict)
 	for body_site in test_dict.keys():
@@ -242,7 +243,7 @@ def get_sample_id_from_dict(t_dict):
 		sample_lst+=list(t_dict[body_site].keys())
 	return sample_lst
 
-def get_L2UniFrac_accuracy_results(train_dict, test_dict,Tint, lint, nodes_in_order, meta_dict):
+def get_L2UniFrac_accuracy_results(train_dict, test_dict,Tint, lint, nodes_in_order):
 	results_dict = dict()
 	rep_sample_dict = dict()
 	for phenotype in train_dict.keys():
@@ -335,13 +336,17 @@ def decipher_label_by_vote(predictions, training, group_name, meta_dict, sample_
 	predicted_by_vote = c.most_common(1)[0][0]
 	return predicted_by_vote
 
-def decipher_label_alternative():
+def decipher_label_alternative(predictions, index_sample_dict, group_name, meta_dict):
 	'''
 	A slight variation from the above function. The above function uses the overlap between training samples and each cluster to vote.
 	Alternatively, use 80% data of each cluster to vote. Though we suspect the difference will not be significant.
 	:return:
 	'''
-	return
+	indices_this_group = [i for i in range(len(predictions)) if predictions[i] == group_name]
+	predicted_labels = [meta_dict[index_sample_dict[i]] for i in indices_this_group]
+	c = Counter(predicted_labels)
+	predicted_by_vote = c.most_common(1)[0][0]
+	return predicted_by_vote
 
 def get_index_dict(lst):
 	'''
