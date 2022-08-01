@@ -37,8 +37,8 @@ def main():
     elif args.type == 'line':
         sns.lineplot(x=args.x, y=args.y, hue=args.hue, data=df)
     # sns.lineplot(x=x, y="Silhouette", hue="method", data=df, err_style="bars", ci="sd")
-    #plt.savefig(args.save)
-    plt.show()
+    plt.savefig(args.save)
+    #plt.show()
 
 
 if __name__ == "__main__":
