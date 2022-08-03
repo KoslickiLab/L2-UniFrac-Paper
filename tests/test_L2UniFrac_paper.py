@@ -6,7 +6,7 @@ sys.path.append('scripts')
 import L2UniFrac as L2U
 import partition_predict_16s as pp
 from extract_data import extract_biom, extract_samples, extract_metadata, parse_tree_file, parse_envs
-import partition_predict_wgs as pp2
+#import partition_predict_wgs as pp2
 from copy import deepcopy
 
 
