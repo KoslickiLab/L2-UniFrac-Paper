@@ -64,7 +64,7 @@ def test_get_L2UniFrac_results():
     metadata_file = 'data/metadata/P_1928_65684500_raw_meta.txt'
     train_dict, test_dict = pp.partition_samples(80, biom_file, tree_file, metadata_file, "body_site")
     meta_dict = extract_metadata(metadata_file)
-    results = pp.get_L2UniFrac_accuracy_results(train_dict, test_dict, Tint, lint, nodes_in_order, meta_dict)
+    results = pp.get_L2UniFrac_accuracy_results(train_dict, test_dict, Tint, lint, nodes_in_order)
     print(results)
 
 def test_get_wgs_metadict():
