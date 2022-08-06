@@ -24,7 +24,7 @@ class ResNet(nn.Module):
 		super().__init__()
 		self.l1 = nn.Linear(9160, 2048)
 		self.l2 = nn.Linear(2048, 2048)
-		self.l3 = nn.Linear(2048, 10)
+		self.l3 = nn.Linear(2048, 5)
 		self.do = nn.Dropout(0.1)
 
 	def forward(self, x):
