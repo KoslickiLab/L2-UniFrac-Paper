@@ -8,7 +8,7 @@ from math import floor
 import argparse
 import L2UniFrac as L2U
 import pandas as pd
-from sklearn.cluster import AgglomerativeClustering
+from sklearn.cluster import AgglomerativeClustering, KMeans
 from sklearn_extra.cluster import KMedoids
 from sklearn.metrics import accuracy_score, rand_score
 from sklearn.metrics.cluster import adjusted_rand_score, normalized_mutual_info_score, adjusted_mutual_info_score, fowlkes_mallows_score
@@ -139,9 +139,11 @@ def get_average_sample(sample_list, Tint, lint, nodes_in_order):
 	all_vectors = []
 	for vector in sample_list:
 		pushed_vector = L2U.push_up(vector, Tint, lint, nodes_in_order)
+		print("len of pushed vector:", len(pushed_vector))
 		all_vectors.append(pushed_vector)
 	mean_vector = L2U.mean_of_vectors(all_vectors)
 	average_sample_vector = L2U.inverse_push_up(mean_vector, Tint, lint, nodes_in_order)
+	print(len(average_sample_vector))
 	return average_sample_vector
 
 def get_label(test_sample, rep_sample_dict, Tint, lint, nodes_in_order):
@@ -192,9 +194,10 @@ def get_clustering_scores(predictions, train_dict, test_dict, meta_dict, sample_
 	results_dict = dict()
 
 	#decipher label
+	index_sample_dict = {v:k for k,v in sample_dict.items()}
 	for group in set(predictions):
-		label = decipher_label_by_vote(predictions, train_ids, group, meta_dict, sample_dict)
-		# may need a tie breaker to ensure values are unique. For now just hope for the best
+		#label = decipher_label_by_vote(predictions, train_ids, group, meta_dict, sample_dict)
+		label = decipher_label_alternative(predictions, index_sample_dict, group, meta_dict)
 		group_label_dict[group] = label
 	print(group_label_dict)
 	for body_site in test_dict.keys():
@@ -242,7 +245,7 @@ def get_sample_id_from_dict(t_dict):
 		sample_lst+=list(t_dict[body_site].keys())
 	return sample_lst
 
-def get_L2UniFrac_accuracy_results(train_dict, test_dict,Tint, lint, nodes_in_order, meta_dict):
+def get_L2UniFrac_accuracy_results(train_dict, test_dict,Tint, lint, nodes_in_order):
 	results_dict = dict()
 	rep_sample_dict = dict()
 	for phenotype in train_dict.keys():
@@ -276,10 +279,10 @@ def get_L2UniFrac_accuracy_results(train_dict, test_dict,Tint, lint, nodes_in_or
 	results_dict['overall']['adjusted_mutual_info_score'] = adjusted_mutual_info_score(all_true_labels, overall_predictions)
 	results_dict['overall']['normalized_mutual_info_score'] = normalized_mutual_info_score(all_true_labels, overall_predictions)
 	results_dict['overall']['fowlkes_mallows_score'] = fowlkes_mallows_score(all_true_labels, overall_predictions)
-
 	return results_dict
 
-def compile_dataframe(n_repeat, train_percentage, biom_file, tree_file, metadata_file, metadata_key, sample_dict, dm_file, n_clusters):
+def compile_dataframe(n_repeat, train_percentage, biom_file, tree_file, metadata_file,
+					  metadata_key, sample_dict, dm_file, n_clusters):
 
 	col_names = ["Method", "Site", "Score_type", "Score"]
 	df = pd.DataFrame(columns=col_names)
@@ -288,7 +291,32 @@ def compile_dataframe(n_repeat, train_percentage, biom_file, tree_file, metadata
 	site_col = []
 	method_col = []
 	for i in range(n_repeat):
+
+		#agglomerative clustering
+		#results = get_score_by_clustering_method("agglomerative", train_dict, test_dict, meta_dict, sample_dict, dm_file, n_clusters)
+		#for site in results.keys(): #skin, gut, overall ...
+		#	for score_type in results[site].keys():
+		#		method_col.append("Agglomerative")
+		#		site_col.append(site)
+		#		score_type_col.append(score_type)
+		#		score_col.append(results[site][score_type])
 		train_dict, test_dict = partition_samples(train_percentage, biom_file, tree_file, metadata_file, metadata_key)
+		#KMeans
+		all_vectors = []
+		for body_site in train_dict.keys():
+			for sample in train_dict[body_site].keys():
+				all_vectors.append(train_dict[body_site][sample])
+		for body_site in test_dict.keys():
+			for sample in test_dict[body_site].keys():
+				all_vectors.append(test_dict[body_site][sample])
+		kmeans_predict = KMeans(n_clusters=n_clusters).fit_predict(all_vectors)
+		results = get_clustering_scores(kmeans_predict, train_dict, test_dict, meta_dict, sample_dict)
+		for site in results.keys(): #skin, gut, overall ...
+			for score_type in results[site].keys():
+				method_col.append("KMeans")
+				site_col.append(site)
+				score_type_col.append(score_type)
+				score_col.append(results[site][score_type])
 		# kmedoids clustering
 		results = get_score_by_clustering_method("kmedoids", train_dict, test_dict, meta_dict, sample_dict, dm_file,
 												 n_clusters)
@@ -298,16 +326,8 @@ def compile_dataframe(n_repeat, train_percentage, biom_file, tree_file, metadata
 				site_col.append(site)
 				score_type_col.append(score_type)
 				score_col.append(results[site][score_type])
-		#agglomerative clustering
-		#results = get_score_by_clustering_method("agglomerative", train_dict, test_dict, meta_dict, sample_dict, dm_file, n_clusters)
-		#for site in results.keys(): #skin, gut, overall ...
-		#	for score_type in results[site].keys():
-		#		method_col.append("Agglomerative")
-		#		site_col.append(site)
-		#		score_type_col.append(score_type)
-		#		score_col.append(results[site][score_type])
 		#L2UniFrac
-		results = get_L2UniFrac_accuracy_results(train_dict,test_dict, Tint, lint, nodes_in_order, meta_dict)
+		results = get_L2UniFrac_accuracy_results(train_dict,test_dict, Tint, lint, nodes_in_order)
 		for site in results.keys(): #skin, gut, overall ...
 			for score_type in results[site].keys():
 				method_col.append("L2UniFrac")
@@ -335,13 +355,17 @@ def decipher_label_by_vote(predictions, training, group_name, meta_dict, sample_
 	predicted_by_vote = c.most_common(1)[0][0]
 	return predicted_by_vote
 
-def decipher_label_alternative():
+def decipher_label_alternative(predictions, index_sample_dict, group_name, meta_dict):
 	'''
 	A slight variation from the above function. The above function uses the overlap between training samples and each cluster to vote.
 	Alternatively, use 80% data of each cluster to vote. Though we suspect the difference will not be significant.
 	:return:
 	'''
-	return
+	indices_this_group = [i for i in range(len(predictions)) if predictions[i] == group_name]
+	predicted_labels = [meta_dict[index_sample_dict[i]]['body_site'] for i in indices_this_group]
+	c = Counter(predicted_labels)
+	predicted_by_vote = c.most_common(1)[0][0]
+	return predicted_by_vote
 
 def get_index_dict(lst):
 	'''
