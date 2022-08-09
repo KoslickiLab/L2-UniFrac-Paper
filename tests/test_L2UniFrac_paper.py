@@ -6,7 +6,7 @@ sys.path.append('scripts')
 import L2UniFrac as L2U
 import partition_predict_16s as pp
 from extract_data import extract_biom, extract_samples, extract_metadata, parse_tree_file, parse_envs
-#import partition_predict_wgs as pp2
+import partition_predict_wgs as pp2
 from copy import deepcopy
 
 
@@ -108,16 +108,48 @@ def test_get_rep_sample_from_profiles():
     profile_path2 = 'tests/profile_test/wgs-env1-sample10-reads.profile'
     profile_path3 = 'tests/profile_test/wgs-env1-sample4-reads.profile'
     profile_path4 = 'tests/profile_test/wgs-env0-sample21-reads.profile'
-    profile_lst = [profile_path1, profile_path2, profile_path3, profile_path4]
-    #profile_lst = [profile_path1, profile_path2, profile_path3]
+    #profile_lst = [profile_path1, profile_path2, profile_path3, profile_path4]
+    profile_lst = [profile_path1, profile_path2, profile_path3]
     rep_vector, Tint, lint, nodes_in_order = L2U.get_representative_sample_wgs(profile_lst)
     print(rep_vector)
+
+def test_wgs_L2UniFrac():
+    profile_path1 = 'tests/profile_test/test_profile1.profile'
+    profile_path2 = 'tests/profile_test/test_profile2.profile'
+    profile_list = [profile_path1, profile_path2]
+    profile_list1 = L2U.open_profile_from_tsv(profile_path1, False)
+    name1, metadata1, profile1 = profile_list1[0]
+    real_profile1 = L2U.Profile(sample_metadata=metadata1, profile=profile1)
+    (Tint1, lint1, nodes_in_order1, nodes_to_index1, P1) = real_profile1.make_unifrac_input_and_normalize()
+    pushed_1 = L2U.push_up(P1, Tint1, lint1, nodes_in_order1)
+    #print(pushed_1)
+    profile_list2 = L2U.open_profile_from_tsv(profile_path2, False)
+    name2, metadata2, profile2 = profile_list2[0]
+    real_profile2 = L2U.Profile(sample_metadata=metadata2, profile=profile2)
+    (Tint2, lint2, nodes_in_order2, nodes_to_index2, P2) = real_profile2.make_unifrac_input_and_normalize()
+    pushed_2 = L2U.push_up(P2, Tint2, lint2, nodes_in_order2)
+    #print(pushed_2)
+    real_profile1.merge(real_profile2)
+    (Tint, lint, nodes_in_order, nodes_to_index, P) = real_profile1.make_unifrac_input_and_normalize()
+    print(nodes_to_index)
+    #print(Tint)
+    #print(lint)
+    #print(nodes_in_order)
+    #print(nodes_to_index)
+    #print(P)
+    rep_vector, Tint, lint, nodes_in_order, nodes_to_index = L2U.get_representative_sample_wgs(profile_list)
+    print(rep_vector)
+    print(nodes_to_index)
+    #print(all_taxids_list)
+    #print(nodes_to_index)
+
 
 if __name__ == '__main__':
 	#test_partition_sample()
     #test_decipher_label()
-    test_get_L2UniFrac_results()
+    #test_get_L2UniFrac_results()
     #test_get_wgs_metadict()
     #test_train_test_split()
     #test_merge_profile()
     #test_get_rep_sample_from_profiles()
+    test_wgs_L2UniFrac()
