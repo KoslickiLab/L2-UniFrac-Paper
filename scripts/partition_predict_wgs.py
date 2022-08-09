@@ -305,10 +305,9 @@ if __name__ == '__main__':
 	n_clusters = args.num_clusters
 	profile_dir = args.pdir
 
-	profile_path_lst = os.listdir(profile_dir)
+	profile_path_lst = [os.path.join(profile_dir, file) for file in os.listdir(profile_dir)]
 	Tint, lint, nodes_in_order, nodes_to_index = L2U.get_wgs_tree(profile_path_lst)
 	meta_dict = get_metadata_dict(metadata_file, val_col=metadata_key)
-
 
 	for i in range(10):
 		samples_train, samples_test, targets_train, targets_test = partition_sample(meta_dict, random_state=i, test_size=test_size)
