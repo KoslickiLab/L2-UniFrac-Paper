@@ -290,24 +290,17 @@ def get_index_dict(lst):
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Get testing statistics of classification test.')
 	parser.add_argument('-m', '--meta_file', type=str, help='A metadata file.', nargs='?', default='data/metadata/P_1928_65684500_raw_meta.txt')
-	parser.add_argument('-p', '--phenotype', type=str, help='A selected phenotype corresponding to a column name in the metadata file.', nargs='?', default="body_site")
-	parser.add_argument('-bf', '--biom_file', type=str, help='Path to the biom file.', nargs='?', default='data/biom/47422_otu_table.biom')
+	parser.add_argument('-p', '--phenotype', type=str, help='A selected phenotype corresponding to a column name in the metadata file.', nargs='?', default="HMgDB_diagnosis")
 	parser.add_argument('-t', '--test_size', type=int, help='What percentage of data used in testing.', nargs='?', default=0.2)
-	parser.add_argument('-dm', '--distance_matrix', type=str, help="Pairwise unifrac distance matrix.", nargs='?', default='data/L2-UniFrac-Out.csv')
 	parser.add_argument('-n', '--num_repeats', type=int, help="Number of repeats for each experiment.", nargs='?', default=10)
 	parser.add_argument('-s', '--save', type=str, help="Save the dataframe file as.")
 	parser.add_argument('-c', '--num_clusters', type=int, help="Number of clusters.", nargs='?', default=5)
 	parser.add_argument('-d', '--pdir', type=str, help="Directory of profiles")
 
 	args = parser.parse_args()
-	biom_file = args.biom_file
 	metadata_file = args.meta_file
 	metadata_key = args.phenotype
 	test_size = args.test_size
-	distance_matrix = args.distance_matrix
-	sample_id = extract_samples(biom_file)
-	sample_dict = get_index_dict(sample_id)
-	meta_dict = extract_metadata(metadata_file)
 	n_repeat = args.num_repeats
 	n_clusters = args.num_clusters
 	profile_dir = args.pdir
