@@ -17,12 +17,12 @@ def main():
     args = parser.parse_args()
     dataframe_file = args.file
     df = pd.read_table(dataframe_file)
-    s = pd.Series(list(df[args.column]))
-
-    try:
-        args.phenotype in s.values
-    except:
-        print("Phenotype not found in column specified.")
+    if args.column:
+        s = pd.Series(list(df[args.column]))
+        try:
+            args.phenotype in s.values
+        except:
+            print("Phenotype not found in column specified.")
 
     x = args.x
     y = args.y
