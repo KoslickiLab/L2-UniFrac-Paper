@@ -291,7 +291,7 @@ if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Get testing statistics of classification test.')
 	parser.add_argument('-m', '--meta_file', type=str, help='A metadata file.', nargs='?', default='data/metadata/P_1928_65684500_raw_meta.txt')
 	parser.add_argument('-p', '--phenotype', type=str, help='A selected phenotype corresponding to a column name in the metadata file.', nargs='?', default="HMgDB_diagnosis")
-	parser.add_argument('-t', '--test_size', type=int, help='What percentage of data used in testing.', nargs='?', default=0.2)
+	#parser.add_argument('-t', '--test_size', type=int, help='What percentage of data used in testing.', nargs='?', default=0.2)
 	parser.add_argument('-n', '--num_repeats', type=int, help="Number of repeats for each experiment.", nargs='?', default=10)
 	parser.add_argument('-s', '--save', type=str, help="Save the dataframe file as.")
 	parser.add_argument('-c', '--num_clusters', type=int, help="Number of clusters.", nargs='?', default=5)
@@ -300,7 +300,7 @@ if __name__ == '__main__':
 	args = parser.parse_args()
 	metadata_file = args.meta_file
 	metadata_key = args.phenotype
-	test_size = args.test_size
+	#test_size = args.test_size
 	n_repeat = args.num_repeats
 	n_clusters = args.num_clusters
 	profile_dir = args.pdir
@@ -309,22 +309,39 @@ if __name__ == '__main__':
 	Tint, lint, nodes_in_order, nodes_to_index = L2U.get_wgs_tree(profile_path_lst)
 	meta_dict = get_metadata_dict(metadata_file, val_col=metadata_key)
 
-	test_sizes = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6]
+	test_sizes = [0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
 
-	for i in range(10):
-		samples_train, samples_test, targets_train, targets_test = partition_sample(meta_dict, random_state=i, test_size=test_size)
-		samples_train_paths = [profile_dir + '/' + sample + '.profile' for sample in samples_train]
-		pheno_sample_dict = get_pheno_sample_dict(samples_train_paths, targets_train)
-		rep_sample_dict = get_rep_sample_dict(pheno_sample_dict, Tint, lint, nodes_in_order, nodes_to_index) #get rep sample by phenotype
-		print(rep_sample_dict)
-		samples_test_paths = [profile_dir + '/' + sample + '.profile' for sample in samples_test]
-		test_sample_dict = L2U.merge_profiles_by_dir(samples_test_paths, nodes_to_index)
-		prediction = [""] * len(targets_test)
-		for i, sample in enumerate(samples_test):
-			prediction[i] = get_label(test_sample_dict[sample], rep_sample_dict, Tint, lint, nodes_in_order)
-		print(prediction)
-		accuracy = accuracy_score(prediction, targets_test)
-		print(accuracy)
+	col_names = ["Method", "Test_size", "Score_type", "Score"]
+	df = pd.DataFrame(columns=col_names)
+	scores_col = []
+	test_size_col = []
+
+	for test_size in test_sizes:
+		print('test size:', test_size)
+		for i in range(10):
+			test_size_col.append(test_size)
+			samples_train, samples_test, targets_train, targets_test = partition_sample(meta_dict, random_state=i, test_size=test_size)
+			samples_train_paths = [profile_dir + '/' + sample + '.profile' for sample in samples_train]
+			pheno_sample_dict = get_pheno_sample_dict(samples_train_paths, targets_train)
+			rep_sample_dict = get_rep_sample_dict(pheno_sample_dict, Tint, lint, nodes_in_order, nodes_to_index) #get rep sample by phenotype
+			#print(rep_sample_dict)
+			samples_test_paths = [profile_dir + '/' + sample + '.profile' for sample in samples_test]
+			test_sample_dict = L2U.merge_profiles_by_dir(samples_test_paths, nodes_to_index)
+			prediction = [""] * len(targets_test)
+			for i, sample in enumerate(samples_test):
+				prediction[i] = get_label(test_sample_dict[sample], rep_sample_dict, Tint, lint, nodes_in_order)
+			#print(prediction)
+			accuracy = accuracy_score(prediction, targets_test)
+			print(accuracy)
+			scores_col.append(accuracy)
+	df['Method'] = ['L2UniFrac'] * len(scores_col)
+	df['Test_size'] = test_size_col
+	df['Score_type'] = ['Accuracy'] * len(scores_col)
+	df['Score'] = scores_col
+
+	df.to_csv(args.save, sep="\t")
+
+
 
 
 
