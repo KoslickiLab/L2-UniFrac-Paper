@@ -309,6 +309,8 @@ if __name__ == '__main__':
 	Tint, lint, nodes_in_order, nodes_to_index = L2U.get_wgs_tree(profile_path_lst)
 	meta_dict = get_metadata_dict(metadata_file, val_col=metadata_key)
 
+	test_sizes = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6]
+
 	for i in range(10):
 		samples_train, samples_test, targets_train, targets_test = partition_sample(meta_dict, random_state=i, test_size=test_size)
 		samples_train_paths = [profile_dir + '/' + sample + '.profile' for sample in samples_train]
@@ -321,6 +323,8 @@ if __name__ == '__main__':
 		for i, sample in enumerate(samples_test):
 			prediction[i] = get_label(test_sample_dict[sample], rep_sample_dict, Tint, lint, nodes_in_order)
 		print(prediction)
+		accuracy = accuracy_score(prediction, targets_test)
+		print(accuracy)
 
 
 
