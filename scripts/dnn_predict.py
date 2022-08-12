@@ -35,6 +35,14 @@ class ResNet(nn.Module):
 		return logits
 
 
+def prepare_data_16s(biom_file, metadata_file):
+	nodes_samples = extract_biom_samples(biom_file)
+	sample_ids = extract_samples(biom_file)
+	metadata = extract_metadata_direct(metadata_file)
+	sample_metadata = extract_sample_metadata(biom_file, metadata_file)
+
+	return nodes_samples, sample_ids, metadata, sample_metadata
+
 if __name__ == '__main__':
 	if torch.cuda.is_available():
 		model = ResNet().cuda()
@@ -49,10 +57,7 @@ if __name__ == '__main__':
 	metadata_file = '../data/metadata/P_1928_65684500_raw_meta.txt'
 	batch_size = 32
 
-	nodes_samples = extract_biom_samples(biom_file)
-	sample_ids = extract_samples(biom_file)
-	metadata = extract_metadata_direct(metadata_file)
-	sample_metadata = extract_sample_metadata(biom_file, metadata_file)
+	nodes_samples, sample_ids, metadata, sample_metadata = prepare_data_16s(biom_file, metadata_file)
 
 	l = len(sample_ids)
 	train_num = floor(l*(80/100))
