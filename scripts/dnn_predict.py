@@ -18,6 +18,7 @@ from sklearn.metrics.cluster import adjusted_mutual_info_score
 from sklearn.metrics.cluster import fowlkes_mallows_score
 from sklearn.metrics import rand_score, accuracy_score
 from extract_data import extract_biom_samples, extract_samples, extract_metadata_direct, extract_sample_metadata
+from sklearn.model_selection import train_test_split
 
 class ResNet(nn.Module):
 	def __init__(self):
@@ -34,6 +35,26 @@ class ResNet(nn.Module):
 		logits = self.l3(do)
 		return logits
 
+def get_metadata_dict(meta_file, val_col = "HMgDB_diagnosis", key_col = "library_id"):
+	meta_dict = dict()
+	df = pd.read_csv(meta_file)
+	for i, id in enumerate(df[key_col]):
+		meta_dict[id] = df[val_col][i]
+	return meta_dict
+
+def partition_sample(meta_dict, random_state, test_size=0.2):
+	'''
+	Partitions samples in the meta_dict into training and testing sets
+	:param meta_dict:
+	:param percentage: percentage of training data.
+	:return: train_dict, test_dict, {phenotype: [profile IDs]}
+	'''
+	sample_id = list(meta_dict.keys())
+	targets = list(meta_dict.values()) #true phenotypes
+	samples_train, samples_test, targets_train, targets_test = train_test_split(sample_id, targets, test_size=test_size, random_state=random_state)
+	return samples_train, samples_test, targets_train, targets_test
+
+
 
 def prepare_data_16s(biom_file, metadata_file):
 	nodes_samples = extract_biom_samples(biom_file)
@@ -43,20 +64,7 @@ def prepare_data_16s(biom_file, metadata_file):
 
 	return nodes_samples, sample_ids, metadata, sample_metadata
 
-if __name__ == '__main__':
-	if torch.cuda.is_available():
-		model = ResNet().cuda()
-	else:
-		model = ResNet()
-
-	optimizer = optim.SGD(model.parameters(), lr=1e-2)
-
-	loss = nn.CrossEntropyLoss()
-
-	biom_file = '../data/biom/47422_otu_table.biom'
-	metadata_file = '../data/metadata/P_1928_65684500_raw_meta.txt'
-	batch_size = 32
-
+def prepare_inputs_16s(biom_file, metadata_file):
 	nodes_samples, sample_ids, metadata, sample_metadata = prepare_data_16s(biom_file, metadata_file)
 
 	l = len(sample_ids)
@@ -109,6 +117,24 @@ if __name__ == '__main__':
 			tmp_y = []
 
 	val_loader.append([torch.FloatTensor([tmp_x]), torch.LongTensor(tmp_y)])
+
+	return train_loader, val_loader
+
+if __name__ == '__main__':
+	if torch.cuda.is_available():
+		model = ResNet().cuda()
+	else:
+		model = ResNet()
+
+	optimizer = optim.SGD(model.parameters(), lr=1e-2)
+
+	loss = nn.CrossEntropyLoss()
+
+	biom_file = '../data/biom/47422_otu_table.biom'
+	metadata_file = '../data/metadata/P_1928_65684500_raw_meta.txt'
+	batch_size = 32
+
+	train_loader, val_loader = prepare_inputs_16s(biom_file, metadata_file)
 
 	# Begin Training
 	nb_epochs = 50
