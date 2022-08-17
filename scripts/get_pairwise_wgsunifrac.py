@@ -12,10 +12,10 @@ import pandas as pd
 def get_wgs_L1_pairwise_unifrac(profile_dir, save_as, alpha=-1):
     if save_as is None:
         save_as = "pairwise_WGSUniFrac_matrix.csv"
-    #cur_dir = os.getcwd()
+    cur_dir = os.getcwd()
     file_lst = os.listdir(profile_dir)  # list files in the directory
     # print(file_lst)
-    #os.chdir(profile_dir)
+    os.chdir(profile_dir)
     if '.DS_Store' in file_lst:
         file_lst.remove('.DS_Store')
     sample_lst = [os.path.splitext(profile)[0].split('.')[0] for profile in file_lst] #e.g.env1sam10. i.e.filenames without extension
@@ -45,7 +45,7 @@ def get_wgs_L1_pairwise_unifrac(profile_dir, save_as, alpha=-1):
         (Tint, lint, nodes_in_order, nodes_to_index, P, Q) = profile1.make_unifrac_input_and_normalize(profile2)
         (weighted, _) = L2U.EMDUnifrac_weighted(Tint, lint, nodes_in_order, P, Q)
         dist_matrix[i][j] = dist_matrix[j][i] = weighted
-    #os.chdir(cur_dir)
+    os.chdir(cur_dir)
     pd.DataFrame(data=dist_matrix, index=sample_lst, columns=sample_lst).to_csv(save_as, sep="\t")
     return
 
