@@ -108,7 +108,8 @@ def prepare_inputs_16s(biom_file, metadata_file, batch_size):
 			tmp_x = []
 			tmp_y = []
 
-	train_loader.append([torch.FloatTensor([tmp_x]), torch.LongTensor(tmp_y)])
+	if len(tmp_x) > 0:
+		train_loader.append([torch.FloatTensor([tmp_x]), torch.LongTensor(tmp_y)])
 
 	tmp_x = []
 	tmp_y = []
@@ -125,7 +126,8 @@ def prepare_inputs_16s(biom_file, metadata_file, batch_size):
 			tmp_x = []
 			tmp_y = []
 
-	test_loader.append([torch.FloatTensor([tmp_x]), torch.LongTensor(tmp_y)])
+	if len(tmp_x) > 0:
+		test_loader.append([torch.FloatTensor([tmp_x]), torch.LongTensor(tmp_y)])
 
 	return train_loader, test_loader
 
@@ -169,7 +171,8 @@ def prepare_inputs_wgs(profile_dir, metadata_file, phenotype, batch_size, includ
 				tmp_x = []
 				tmp_y = []
 
-	train_loader.append([torch.FloatTensor([tmp_x]), torch.LongTensor(tmp_y)])
+	if len(tmp_x) > 0:
+		train_loader.append([torch.FloatTensor([tmp_x]), torch.LongTensor(tmp_y)])
 
 	tmp_x = []
 	tmp_y = []
@@ -187,7 +190,8 @@ def prepare_inputs_wgs(profile_dir, metadata_file, phenotype, batch_size, includ
 				tmp_x = []
 				tmp_y = []
 
-	test_loader.append([torch.FloatTensor([tmp_x]), torch.LongTensor(tmp_y)])
+	if len(tmp_x) > 0:
+		test_loader.append([torch.FloatTensor([tmp_x]), torch.LongTensor(tmp_y)])
 
 	return train_loader, test_loader
 
@@ -202,7 +206,7 @@ if __name__ == '__main__':
 	model_out_16s = 5
 	model_in_wgs = 1749
 	model_out_wgs = 3
-	batch_size = 32
+	batch_size = 16
 	include_adenoma_wgs = True
 
 	model_intermediate_16s = 2**math.floor(math.log(model_in_16s, 2)-2)
