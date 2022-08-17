@@ -528,7 +528,7 @@ def get_wgs_L1_pairwise_unifrac(profile_dir, save_as, alpha=-1):
         profile2 = Profile(sample_metadata=metadata2, profile=profile2, branch_length_fun=lambda x: x ** alpha)
         # (Tint, lint, nodes_in_order, nodes_to_index, P, Q) = profile1.make_unifrac_input_no_normalize(profile2)
         (Tint, lint, nodes_in_order, nodes_to_index, P, Q) = profile1.make_unifrac_input_and_normalize(profile2)
-        (weighted, _) = L2U.EMDUnifrac_weighted(Tint, lint, nodes_in_order, P, Q)
+        (weighted, _) = EMDUnifrac_weighted(Tint, lint, nodes_in_order, P, Q)
         dist_matrix[i][j] = dist_matrix[j][i] = weighted
     os.chdir(cur_dir)
     pd.DataFrame(data=dist_matrix, index=sample_lst, columns=sample_lst).to_csv(save_as, sep="\t")
