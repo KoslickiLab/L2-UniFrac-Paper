@@ -25,9 +25,9 @@ from sklearn.model_selection import train_test_split
 class ResNet(nn.Module):
 	def __init__(self, l1_in, l2_size, l3_out):
 		super().__init__()
-		self.l1 = nn.Linear(9160, 2048)
-		self.l2 = nn.Linear(2048, 2048)
-		self.l3 = nn.Linear(2048, 5)
+		self.l1 = nn.Linear(l1_in, l2_size)
+		self.l2 = nn.Linear(l2_size, l2_size)
+		self.l3 = nn.Linear(l2_size, l3_out)
 		self.do = nn.Dropout(0.1)
 
 	def forward(self, x):
@@ -73,7 +73,7 @@ def prepare_data_16s(biom_file, metadata_file):
 
 	return nodes_samples, sample_ids, metadata, sample_metadata
 
-def prepare_inputs_16s(biom_file, metadata_file):
+def prepare_inputs_16s(biom_file, metadata_file, batch_size):
 	nodes_samples, sample_ids, metadata, sample_metadata = prepare_data_16s(biom_file, metadata_file)
 
 	l = len(sample_ids)
@@ -92,7 +92,7 @@ def prepare_inputs_16s(biom_file, metadata_file):
 			test_samples.append(sample)
 
 	train_loader = []
-	val_loader = []
+	test_loader = []
 	tmp_x = []
 	tmp_y = []
 	curr_len = 0
@@ -120,14 +120,76 @@ def prepare_inputs_16s(biom_file, metadata_file):
 		tmp_y.append(meta_p)
 		curr_len += 1
 		if curr_len == batch_size:
-			val_loader.append([torch.FloatTensor([tmp_x]), torch.LongTensor(tmp_y)])
+			test_loader.append([torch.FloatTensor([tmp_x]), torch.LongTensor(tmp_y)])
 			curr_len = 0
 			tmp_x = []
 			tmp_y = []
 
-	val_loader.append([torch.FloatTensor([tmp_x]), torch.LongTensor(tmp_y)])
+	test_loader.append([torch.FloatTensor([tmp_x]), torch.LongTensor(tmp_y)])
 
-	return train_loader, val_loader
+	return train_loader, test_loader
+
+def prepare_data_wgs(profile_dir, metadata_file, phenotype):
+	profile_path_lst = [os.path.join(profile_dir, file) for file in os.listdir(profile_dir)]
+	Tint, lint, nodes_in_order, nodes_to_index = L2U.get_wgs_tree(profile_path_lst)
+	meta_dict = get_metadata_dict(metadata_file, val_col=phenotype)
+	train_samples, test_samples, targets_train, targets_test = partition_sample(meta_dict, random_state=0, test_size=0.2)
+	samples_train_paths = [profile_dir + '/' + sample + '.profile' for sample in train_samples]
+	#pheno_sample_dict = get_pheno_sample_dict(samples_train_paths, targets_train)
+	train_sample_dict = L2U.merge_profiles_by_dir(samples_train_paths, nodes_to_index)
+	samples_test_paths = [profile_dir + '/' + sample + '.profile' for sample in test_samples]
+	test_sample_dict = L2U.merge_profiles_by_dir(samples_test_paths, nodes_to_index)
+
+	return meta_dict, train_samples, test_samples, train_sample_dict, test_sample_dict
+
+def prepare_inputs_wgs(profile_dir, metadata_file, phenotype, batch_size, include_adenoma):
+	meta_dict, train_samples, test_samples, train_sample_dict, test_sample_dict = prepare_data_wgs(profile_dir, metadata_file, phenotype)
+
+	classifications = list(set(list(meta_dict.values())))
+	class_dict = {classifications[i]:i for i in range(len(classifications))}
+
+	for k, v in meta_dict.items():
+		meta_dict[k] = class_dict[v]
+
+	train_loader = []
+	test_loader = []
+	tmp_x = []
+	tmp_y = []
+	curr_len = 0
+	for sample in train_samples:
+		sample_p = train_sample_dict[sample]
+		meta_p = meta_dict[sample]
+		if not include_adenoma and meta_p != class_dict['adenoma']:
+			tmp_x.append(sample_p)
+			tmp_y.append(meta_p)
+			curr_len += 1
+			if curr_len == batch_size:
+				train_loader.append([torch.FloatTensor([tmp_x]), torch.LongTensor(tmp_y)])
+				curr_len = 0
+				tmp_x = []
+				tmp_y = []
+
+	train_loader.append([torch.FloatTensor([tmp_x]), torch.LongTensor(tmp_y)])
+
+	tmp_x = []
+	tmp_y = []
+	curr_len = 0
+	for sample in test_samples:
+		sample_p = test_sample_dict[sample]
+		meta_p = meta_dict[sample]
+		if not include_adenoma and meta_p != class_dict['adenoma']:
+			tmp_x.append(sample_p)
+			tmp_y.append(meta_p)
+			curr_len += 1
+			if curr_len == batch_size:
+				test_loader.append([torch.FloatTensor([tmp_x]), torch.LongTensor(tmp_y)])
+				curr_len = 0
+				tmp_x = []
+				tmp_y = []
+
+	test_loader.append([torch.FloatTensor([tmp_x]), torch.LongTensor(tmp_y)])
+
+	return train_loader, test_loader
 
 if __name__ == '__main__':
 	useData = 'wgs'
@@ -141,6 +203,7 @@ if __name__ == '__main__':
 	model_in_wgs = 1749
 	model_out_wgs = 3
 	batch_size = 32
+	include_adenoma_wgs = True
 
 	model_intermediate_16s = 2**math.floor(math.log(model_in_16s, 2)-2)
 	model_intermediate_wgs = 2**math.floor(math.log(model_in_wgs, 2)-2)
@@ -151,25 +214,14 @@ if __name__ == '__main__':
 		else:
 			model = ResNet(model_in_16s, model_intermediate_16s, model_out_16s)
 
-		train_loader, val_loader = prepare_inputs_16s(biom_file_16s, metadata_file_16s)
+		train_loader, test_loader = prepare_inputs_16s(biom_file_16s, metadata_file_16s, batch_size)
 	elif useData == 'wgs':
 		if torch.cuda.is_available():
 			model = ResNet(model_in_wgs, model_intermediate_wgs, model_out_wgs).cuda()
 		else:
 			model = ResNet(model_in_wgs, model_intermediate_wgs, model_out_wgs)
 
-		profile_path_lst = [os.path.join(profile_dir_wgs, file) for file in os.listdir(profile_dir_wgs)]
-		Tint, lint, nodes_in_order, nodes_to_index = L2U.get_wgs_tree(profile_path_lst)
-		meta_dict = get_metadata_dict(metadata_file_wgs, val_col=phenotype_wgs)
-		samples_train, samples_test, targets_train, targets_test = partition_sample(meta_dict, random_state=0, test_size=0.2)
-		print(len(set(targets_train)))
-		samples_train_paths = [profile_dir_wgs + '/' + sample + '.profile' for sample in samples_train]
-		#pheno_sample_dict = get_pheno_sample_dict(samples_train_paths, targets_train)
-		train_sample_dict = L2U.merge_profiles_by_dir(samples_train_paths, nodes_to_index)
-		samples_test_paths = [profile_dir_wgs + '/' + sample + '.profile' for sample in samples_test]
-		test_sample_dict = L2U.merge_profiles_by_dir(samples_test_paths, nodes_to_index)
-		print(train_sample_dict)
-		#print(train_sample_dict)
+		train_loader, test_loader = prepare_inputs_wgs(profile_dir_wgs, metadata_file_wgs, phenotype_wgs, batch_size, include_adenoma_wgs)
 
 	optimizer = optim.SGD(model.parameters(), lr=1e-2)
 
@@ -219,7 +271,7 @@ if __name__ == '__main__':
 		losses = list()
 		accuracies = list()
 		model.eval()
-		for batch in val_loader:
+		for batch in test_loader:
 			x, y = batch
 
 			b = x.size(0)
@@ -248,7 +300,7 @@ if __name__ == '__main__':
 		print(f'Epoch {epoch + 1}, validation loss: {torch.tensor(losses).mean():.2f}, validation accuracy: {torch.tensor(accuracies).mean():.2f}')
 
 	# Classify using model:
-	for batch in val_loader:
+	for batch in test_loader:
 		x, y = batch
 
 		b = x.size(0)
@@ -277,7 +329,7 @@ if __name__ == '__main__':
 		classes_test = classes_test + l.detach().argmax(dim=1).tolist()
 
 	classes_real = []
-	for x, y in val_loader:
+	for x, y in test_loader:
 		classes_real = classes_real + y.tolist()
 
 	RI = rand_score(classes_real, classes_test)
