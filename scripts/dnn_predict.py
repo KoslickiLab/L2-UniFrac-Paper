@@ -159,7 +159,7 @@ def prepare_inputs_wgs(profile_dir, metadata_file, phenotype, batch_size, includ
 	for sample in train_samples:
 		sample_p = train_sample_dict[sample]
 		meta_p = meta_dict[sample]
-		if not include_adenoma and meta_p != class_dict['adenoma']:
+		if (not include_adenoma and meta_p != class_dict['adenoma']) or include_adenoma:
 			tmp_x.append(sample_p)
 			tmp_y.append(meta_p)
 			curr_len += 1
@@ -177,7 +177,7 @@ def prepare_inputs_wgs(profile_dir, metadata_file, phenotype, batch_size, includ
 	for sample in test_samples:
 		sample_p = test_sample_dict[sample]
 		meta_p = meta_dict[sample]
-		if not include_adenoma and meta_p != class_dict['adenoma']:
+		if (not include_adenoma and meta_p != class_dict['adenoma']) or include_adenoma:
 			tmp_x.append(sample_p)
 			tmp_y.append(meta_p)
 			curr_len += 1
