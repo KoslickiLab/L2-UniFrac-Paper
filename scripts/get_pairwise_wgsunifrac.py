@@ -6,16 +6,16 @@ import os
 import argparse
 import L2UniFrac as L2U
 import numpy as np
-import import itertools as it
+import itertools as it
 import pandas as pd
 
-def get_wgs_L1_pairwise_unifrac(profile_dir, save_as):
+def get_wgs_L1_pairwise_unifrac(profile_dir, save_as, alpha=-1):
     if save_as is None:
         save_as = "pairwise_WGSUniFrac_matrix.csv"
     cur_dir = os.getcwd()
-    file_lst = os.listdir(dir)  # list files in the directory
+    file_lst = os.listdir(profile_dir)  # list files in the directory
     # print(file_lst)
-    os.chdir(dir)
+    os.chdir(profile_dir)
     if '.DS_Store' in file_lst:
         file_lst.remove('.DS_Store')
     sample_lst = [os.path.splitext(profile)[0].split('.')[0] for profile in file_lst] #e.g.env1sam10. i.e.filenames without extension
