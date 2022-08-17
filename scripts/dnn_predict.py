@@ -206,7 +206,8 @@ if __name__ == '__main__':
 	model_out_16s = 5
 	model_in_wgs = 1749
 	model_out_wgs = 3
-	batch_size = 16
+	batch_size_16s = 32
+	batch_size_wgs = 8
 	include_adenoma_wgs = True
 
 	model_intermediate_16s = 2**math.floor(math.log(model_in_16s, 2)-2)
@@ -218,14 +219,14 @@ if __name__ == '__main__':
 		else:
 			model = ResNet(model_in_16s, model_intermediate_16s, model_out_16s)
 
-		train_loader, test_loader = prepare_inputs_16s(biom_file_16s, metadata_file_16s, batch_size)
+		train_loader, test_loader = prepare_inputs_16s(biom_file_16s, metadata_file_16s, batch_size_16s)
 	elif useData == 'wgs':
 		if torch.cuda.is_available():
 			model = ResNet(model_in_wgs, model_intermediate_wgs, model_out_wgs).cuda()
 		else:
 			model = ResNet(model_in_wgs, model_intermediate_wgs, model_out_wgs)
 
-		train_loader, test_loader = prepare_inputs_wgs(profile_dir_wgs, metadata_file_wgs, phenotype_wgs, batch_size, include_adenoma_wgs)
+		train_loader, test_loader = prepare_inputs_wgs(profile_dir_wgs, metadata_file_wgs, phenotype_wgs, batch_size_wgs, include_adenoma_wgs)
 
 	optimizer = optim.SGD(model.parameters(), lr=1e-2)
 
