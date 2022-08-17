@@ -1,4 +1,4 @@
-import sys, os
+import sys, os, math
 import biom, torch, csv, dendropy
 sys.path.append('../L2-UniFrac')
 sys.path.append('../L2-UniFrac/src')
@@ -12,6 +12,8 @@ from scipy.sparse import coo_matrix
 from scipy.sparse import csr_matrix
 from random import shuffle
 from math import floor
+import L2UniFrac as L2U
+import pandas as pd
 from sklearn.metrics.cluster import adjusted_rand_score
 from sklearn.metrics.cluster import normalized_mutual_info_score
 from sklearn.metrics.cluster import adjusted_mutual_info_score
@@ -21,7 +23,7 @@ from extract_data import extract_biom_samples, extract_samples, extract_metadata
 from sklearn.model_selection import train_test_split
 
 class ResNet(nn.Module):
-	def __init__(self):
+	def __init__(self, l1_in, l2_size, l3_out):
 		super().__init__()
 		self.l1 = nn.Linear(9160, 2048)
 		self.l2 = nn.Linear(2048, 2048)
@@ -54,7 +56,14 @@ def partition_sample(meta_dict, random_state, test_size=0.2):
 	samples_train, samples_test, targets_train, targets_test = train_test_split(sample_id, targets, test_size=test_size, random_state=random_state)
 	return samples_train, samples_test, targets_train, targets_test
 
-
+def get_pheno_sample_dict(samples_path_train, targets_train):
+	pheno_sample_dict = dict()
+	for i, pheno in enumerate(targets_train):
+		if pheno in pheno_sample_dict:
+			pheno_sample_dict[pheno].append(samples_path_train[i])
+		else:
+			pheno_sample_dict[pheno] = [samples_path_train[i]]
+	return pheno_sample_dict
 
 def prepare_data_16s(biom_file, metadata_file):
 	nodes_samples = extract_biom_samples(biom_file)
@@ -121,20 +130,50 @@ def prepare_inputs_16s(biom_file, metadata_file):
 	return train_loader, val_loader
 
 if __name__ == '__main__':
-	if torch.cuda.is_available():
-		model = ResNet().cuda()
-	else:
-		model = ResNet()
+	useData = 'wgs'
+	biom_file_16s = '../data/biom/47422_otu_table.biom'
+	metadata_file_16s = '../data/metadata/P_1928_65684500_raw_meta.txt'
+	profile_dir_wgs = '../data/adenoma_266076/profiles'
+	metadata_file_wgs = '../data/hmgdb_adenoma_bioproject266076.csv'
+	phenotype_wgs = 'HMgDB_diagnosis'
+	model_in_16s = 9160
+	model_out_16s = 5
+	model_in_wgs = 1749
+	model_out_wgs = 3
+	batch_size = 32
+
+	model_intermediate_16s = 2**math.floor(math.log(model_in_16s, 2)-2)
+	model_intermediate_wgs = 2**math.floor(math.log(model_in_wgs, 2)-2)
+
+	if useData == '16s':
+		if torch.cuda.is_available():
+			model = ResNet(model_in_16s, model_intermediate_16s, model_out_16s).cuda()
+		else:
+			model = ResNet(model_in_16s, model_intermediate_16s, model_out_16s)
+
+		train_loader, val_loader = prepare_inputs_16s(biom_file_16s, metadata_file_16s)
+	elif useData == 'wgs':
+		if torch.cuda.is_available():
+			model = ResNet(model_in_wgs, model_intermediate_wgs, model_out_wgs).cuda()
+		else:
+			model = ResNet(model_in_wgs, model_intermediate_wgs, model_out_wgs)
+
+		profile_path_lst = [os.path.join(profile_dir_wgs, file) for file in os.listdir(profile_dir_wgs)]
+		Tint, lint, nodes_in_order, nodes_to_index = L2U.get_wgs_tree(profile_path_lst)
+		meta_dict = get_metadata_dict(metadata_file_wgs, val_col=phenotype_wgs)
+		samples_train, samples_test, targets_train, targets_test = partition_sample(meta_dict, random_state=0, test_size=0.2)
+		print(len(set(targets_train)))
+		samples_train_paths = [profile_dir_wgs + '/' + sample + '.profile' for sample in samples_train]
+		#pheno_sample_dict = get_pheno_sample_dict(samples_train_paths, targets_train)
+		train_sample_dict = L2U.merge_profiles_by_dir(samples_train_paths, nodes_to_index)
+		samples_test_paths = [profile_dir_wgs + '/' + sample + '.profile' for sample in samples_test]
+		test_sample_dict = L2U.merge_profiles_by_dir(samples_test_paths, nodes_to_index)
+		print(train_sample_dict)
+		#print(train_sample_dict)
 
 	optimizer = optim.SGD(model.parameters(), lr=1e-2)
 
 	loss = nn.CrossEntropyLoss()
-
-	biom_file = '../data/biom/47422_otu_table.biom'
-	metadata_file = '../data/metadata/P_1928_65684500_raw_meta.txt'
-	batch_size = 32
-
-	train_loader, val_loader = prepare_inputs_16s(biom_file, metadata_file)
 
 	# Begin Training
 	nb_epochs = 50
