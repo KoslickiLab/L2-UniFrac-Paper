@@ -329,7 +329,7 @@ if __name__ == '__main__':
 			test_sample_dict = L2U.merge_profiles_by_dir(samples_test_paths, nodes_to_index)
 			prediction = [""] * len(targets_test)
 			for j, sample in enumerate(samples_test):
-				prediction[i] = get_label(test_sample_dict[sample], rep_sample_dict, Tint, lint, nodes_in_order)
+				prediction[j] = get_label(test_sample_dict[sample], rep_sample_dict, Tint, lint, nodes_in_order)
 			#print(prediction)
 			accuracy = accuracy_score(prediction, targets_test)
 			print(accuracy)
