@@ -472,6 +472,27 @@ class Profile(object):
 
         return Tint2, lint2, nodes_in_order2, nodes_to_index, P / 100., Q / 100.
 
+def EMDUnifrac_weighted(Tint, lint, nodes_in_order, P, Q):
+    '''
+    (Z, diffab) = EMDUnifrac_weighted(Tint, lint, nodes_in_order, P, Q)
+    This function takes the ancestor dictionary Tint, the lengths dictionary lint, the basis nodes_in_order
+    and two probability vectors P and Q (typically P = envs_prob_dict[samples[i]], Q = envs_prob_dict[samples[j]]).
+    Returns the weighted Unifrac distance Z and the flow F. The flow F is a dictionary with keys of the form (i,j) where
+    F[(i,j)] == num means that in the calculation of the Unifrac distance, a total mass of num was moved from the node
+    nodes_in_order[i] to the node nodes_in_order[j].
+    '''
+    num_nodes = len(nodes_in_order)
+    Z = 0
+    diffab = dict()
+    partial_sums = P - Q
+    for i in range(num_nodes - 1):
+        val = partial_sums[i]
+        partial_sums[Tint[i]] += val
+        if val != 0:
+            diffab[(i, Tint[i])] = lint[i, Tint[i]] * val  # Captures diffab
+        Z += lint[i, Tint[i]] * abs(val)
+    return (Z, diffab)
+
 
 def get_wgs_L1_pairwise_unifrac(profile_dir, save_as, alpha=-1):
     if save_as is None:
