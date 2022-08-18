@@ -73,11 +73,11 @@ def prepare_data_16s(biom_file, metadata_file):
 
 	return nodes_samples, sample_ids, metadata, sample_metadata
 
-def prepare_inputs_16s(biom_file, metadata_file, batch_size):
+def prepare_inputs_16s(biom_file, metadata_file, batch_size, test_size):
 	nodes_samples, sample_ids, metadata, sample_metadata = prepare_data_16s(biom_file, metadata_file)
 
 	l = len(sample_ids)
-	train_num = floor(l*(80/100))
+	train_num = floor(l*(1-test_size))
 	test_num = l - train_num
 	base_list = [0 for i in range(train_num)] + [1 for i in range(test_num)]
 	shuffled_list = shuffle(base_list)
@@ -131,11 +131,11 @@ def prepare_inputs_16s(biom_file, metadata_file, batch_size):
 
 	return train_loader, test_loader
 
-def prepare_data_wgs(profile_dir, metadata_file, phenotype):
+def prepare_data_wgs(profile_dir, metadata_file, phenotype, test_size):
 	profile_path_lst = [os.path.join(profile_dir, file) for file in os.listdir(profile_dir)]
 	Tint, lint, nodes_in_order, nodes_to_index = L2U.get_wgs_tree(profile_path_lst)
 	meta_dict = get_metadata_dict(metadata_file, val_col=phenotype)
-	train_samples, test_samples, targets_train, targets_test = partition_sample(meta_dict, random_state=0, test_size=0.2)
+	train_samples, test_samples, targets_train, targets_test = partition_sample(meta_dict, random_state=0, test_size=test_size)
 	samples_train_paths = [profile_dir + '/' + sample + '.profile' for sample in train_samples]
 	#pheno_sample_dict = get_pheno_sample_dict(samples_train_paths, targets_train)
 	train_sample_dict = L2U.merge_profiles_by_dir(samples_train_paths, nodes_to_index)
@@ -144,8 +144,8 @@ def prepare_data_wgs(profile_dir, metadata_file, phenotype):
 
 	return meta_dict, train_samples, test_samples, train_sample_dict, test_sample_dict
 
-def prepare_inputs_wgs(profile_dir, metadata_file, phenotype, batch_size, include_adenoma):
-	meta_dict, train_samples, test_samples, train_sample_dict, test_sample_dict = prepare_data_wgs(profile_dir, metadata_file, phenotype)
+def prepare_inputs_wgs(profile_dir, metadata_file, phenotype, batch_size, include_adenoma, test_size):
+	meta_dict, train_samples, test_samples, train_sample_dict, test_sample_dict = prepare_data_wgs(profile_dir, metadata_file, phenotype, test_size)
 
 	classifications = list(set(list(meta_dict.values())))
 	class_dict = {classifications[i]:i for i in range(len(classifications))}
@@ -209,6 +209,7 @@ if __name__ == '__main__':
 	batch_size_16s = 32
 	batch_size_wgs = 8
 	include_adenoma_wgs = True
+	test_sizes = [0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
 
 	model_intermediate_16s = 2**math.floor(math.log(model_in_16s, 2)-2)
 	model_intermediate_wgs = 2**math.floor(math.log(model_in_wgs, 2)-2)
@@ -219,14 +220,14 @@ if __name__ == '__main__':
 		else:
 			model = ResNet(model_in_16s, model_intermediate_16s, model_out_16s)
 
-		train_loader, test_loader = prepare_inputs_16s(biom_file_16s, metadata_file_16s, batch_size_16s)
+		train_loader, test_loader = prepare_inputs_16s(biom_file_16s, metadata_file_16s, batch_size_16s, test_sizes[4])
 	elif useData == 'wgs':
 		if torch.cuda.is_available():
 			model = ResNet(model_in_wgs, model_intermediate_wgs, model_out_wgs).cuda()
 		else:
 			model = ResNet(model_in_wgs, model_intermediate_wgs, model_out_wgs)
 
-		train_loader, test_loader = prepare_inputs_wgs(profile_dir_wgs, metadata_file_wgs, phenotype_wgs, batch_size_wgs, include_adenoma_wgs)
+		train_loader, test_loader = prepare_inputs_wgs(profile_dir_wgs, metadata_file_wgs, phenotype_wgs, batch_size_wgs, include_adenoma_wgs, test_sizes[4])
 
 	optimizer = optim.SGD(model.parameters(), lr=1e-2)
 
