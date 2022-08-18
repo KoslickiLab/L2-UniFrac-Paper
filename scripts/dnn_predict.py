@@ -310,6 +310,27 @@ def test_model(model, test_loader):
 
 	return classes_real, classes_test
 
+def run_scoring(classes_real, classes_test):
+	RI = rand_score(classes_real, classes_test)
+	ARI = adjusted_rand_score(classes_real, classes_test)
+	NMI = normalized_mutual_info_score(classes_real, classes_test)
+	AMI = adjusted_mutual_info_score(classes_real, classes_test)
+	FM = fowlkes_mallows_score(classes_real, classes_test)
+	AC = accuracy_score(classes_real, classes_test)
+	RE = recall_score(classes_real, classes_test, average='macro', zero_division=0)
+	PR = precision_score(classes_real, classes_test, average='macro', zero_division=0)
+	F1 = f1_score(classes_real, classes_test, average='macro', zero_division=0)
+
+	print(f'Rand Index Score:               {RI}')
+	print(f'Adjusted Rand Index Score:      {ARI}')
+	print(f'Normalized Mutual Index Score:  {NMI}')
+	print(f'Adjusted Mutual Info Score:     {AMI}')
+	print(f'Fowlkes Mallows Score:          {FM}')
+	print(f'Accuracy Score:          \t{AC}')
+	print(f'Recall Score:        	 \t{RE}')
+	print(f'Precision Score:         \t{PR}')
+	print(f'F1 Score:        		 \t{F1}')
+
 if __name__ == '__main__':
 	useData = 'wgs'
 	biom_file_16s = '../data/biom/47422_otu_table.biom'
@@ -353,22 +374,4 @@ if __name__ == '__main__':
 
 	classes_real, classes_test = test_model(model, test_loader)
 
-	RI = rand_score(classes_real, classes_test)
-	ARI = adjusted_rand_score(classes_real, classes_test)
-	NMI = normalized_mutual_info_score(classes_real, classes_test)
-	AMI = adjusted_mutual_info_score(classes_real, classes_test)
-	FM = fowlkes_mallows_score(classes_real, classes_test)
-	AC = accuracy_score(classes_real, classes_test)
-	RE = recall_score(classes_real, classes_test, average='macro', zero_division=0)
-	PR = precision_score(classes_real, classes_test, average='macro', zero_division=0)
-	F1 = f1_score(classes_real, classes_test, average='macro', zero_division=0)
-
-	print(f'Rand Index Score:               {RI}')
-	print(f'Adjusted Rand Index Score:      {ARI}')
-	print(f'Normalized Mutual Index Score:  {NMI}')
-	print(f'Adjusted Mutual Info Score:     {AMI}')
-	print(f'Fowlkes Mallows Score:          {FM}')
-	print(f'Accuracy Score:          \t{AC}')
-	print(f'Recall Score:        	 \t{RE}')
-	print(f'Precision Score:         \t{PR}')
-	print(f'F1 Score:        		 \t{F1}')
+	run_scoring(classes_real, classes_test)
