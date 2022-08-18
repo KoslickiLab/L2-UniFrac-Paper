@@ -18,7 +18,7 @@ from sklearn.metrics.cluster import adjusted_rand_score
 from sklearn.metrics.cluster import normalized_mutual_info_score
 from sklearn.metrics.cluster import adjusted_mutual_info_score
 from sklearn.metrics.cluster import fowlkes_mallows_score
-from sklearn.metrics import rand_score, accuracy_score
+from sklearn.metrics import rand_score, accuracy_score, recall_score, precision_score, f1_score
 from extract_data import extract_biom_samples, extract_samples, extract_metadata_direct, extract_sample_metadata
 from sklearn.model_selection import train_test_split
 
@@ -359,6 +359,9 @@ if __name__ == '__main__':
 	AMI = adjusted_mutual_info_score(classes_real, classes_test)
 	FM = fowlkes_mallows_score(classes_real, classes_test)
 	AC = accuracy_score(classes_real, classes_test)
+	RE = recall_score(classes_real, classes_test, average='macro', zero_division=0)
+	PR = precision_score(classes_real, classes_test, average='macro', zero_division=0)
+	F1 = f1_score(classes_real, classes_test, average='macro', zero_division=0)
 
 	print(f'Rand Index Score:               {RI}')
 	print(f'Adjusted Rand Index Score:      {ARI}')
@@ -366,3 +369,6 @@ if __name__ == '__main__':
 	print(f'Adjusted Mutual Info Score:     {AMI}')
 	print(f'Fowlkes Mallows Score:          {FM}')
 	print(f'Accuracy Score:          \t{AC}')
+	print(f'Recall Score:        	 \t{RE}')
+	print(f'Precision Score:         \t{PR}')
+	print(f'F1 Score:        		 \t{F1}')
