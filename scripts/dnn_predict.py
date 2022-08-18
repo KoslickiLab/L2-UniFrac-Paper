@@ -195,47 +195,8 @@ def prepare_inputs_wgs(profile_dir, metadata_file, phenotype, batch_size, includ
 
 	return train_loader, test_loader
 
-if __name__ == '__main__':
-	useData = 'wgs'
-	biom_file_16s = '../data/biom/47422_otu_table.biom'
-	metadata_file_16s = '../data/metadata/P_1928_65684500_raw_meta.txt'
-	profile_dir_wgs = '../data/adenoma_266076/profiles'
-	metadata_file_wgs = '../data/hmgdb_adenoma_bioproject266076.csv'
-	phenotype_wgs = 'HMgDB_diagnosis'
-	model_in_16s = 9160
-	model_out_16s = 5
-	model_in_wgs = 1749
-	model_out_wgs = 3
-	batch_size_16s = 32
-	batch_size_wgs = 8
-	include_adenoma_wgs = True
-	test_sizes = [0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
-
-	model_intermediate_16s = 2**math.floor(math.log(model_in_16s, 2)-2)
-	model_intermediate_wgs = 2**math.floor(math.log(model_in_wgs, 2)-2)
-
-	if useData == '16s':
-		if torch.cuda.is_available():
-			model = ResNet(model_in_16s, model_intermediate_16s, model_out_16s).cuda()
-		else:
-			model = ResNet(model_in_16s, model_intermediate_16s, model_out_16s)
-
-		train_loader, test_loader = prepare_inputs_16s(biom_file_16s, metadata_file_16s, batch_size_16s, test_sizes[4])
-	elif useData == 'wgs':
-		if torch.cuda.is_available():
-			model = ResNet(model_in_wgs, model_intermediate_wgs, model_out_wgs).cuda()
-		else:
-			model = ResNet(model_in_wgs, model_intermediate_wgs, model_out_wgs)
-
-		train_loader, test_loader = prepare_inputs_wgs(profile_dir_wgs, metadata_file_wgs, phenotype_wgs, batch_size_wgs, include_adenoma_wgs, test_sizes[4])
-
-	optimizer = optim.SGD(model.parameters(), lr=1e-2)
-
-	loss = nn.CrossEntropyLoss()
-
+def train_model(model, train_loader, test_loader, nb_epochs, verbose=False):
 	# Begin Training
-	nb_epochs = 50
-	classes_test = []
 	for epoch in range(nb_epochs):
 		losses = list()
 		accuracies = list()
@@ -272,40 +233,89 @@ if __name__ == '__main__':
 			else:
 				accuracies.append(y.eq(l.detach().argmax(dim=1)).float().mean())
 
-		print(f'Epoch {epoch + 1}, training loss: {torch.tensor(losses).mean():.2f}, training accuracy: {torch.tensor(accuracies).mean():.2f}')
+		if verbose:
+			print(f'Epoch {epoch + 1}, training loss: {torch.tensor(losses).mean():.2f}, training accuracy: {torch.tensor(accuracies).mean():.2f}')
 
-		losses = list()
-		accuracies = list()
-		model.eval()
-		for batch in test_loader:
-			x, y = batch
+		if verbose:
+			losses = list()
+			accuracies = list()
+			model.eval()
+			for batch in test_loader:
+				x, y = batch
 
-			b = x.size(0)
-			if torch.cuda.is_available():
-				x = x[0].cuda()
-			else:
-				x = x[0]
+				b = x.size(0)
+				if torch.cuda.is_available():
+					x = x[0].cuda()
+				else:
+					x = x[0]
 
-			# 1) Forward
-			with torch.no_grad():
-				l = model(x) # logits
+				# 1) Forward
+				with torch.no_grad():
+					l = model(x) # logits
 
-			# 2) Compute the Objective Function
-			if torch.cuda.is_available():
-				J = loss(l, y.cuda())
-			else:
-				J = loss(l, y)
+				# 2) Compute the Objective Function
+				if torch.cuda.is_available():
+					J = loss(l, y.cuda())
+				else:
+					J = loss(l, y)
 
-			losses.append(J.item())
+				losses.append(J.item())
 
-			if torch.cuda.is_available():
-				accuracies.append(y.cuda().eq(l.detach().argmax(dim=1)).float().mean())
-			else:
-				accuracies.append(y.eq(l.detach().argmax(dim=1)).float().mean())
+				if torch.cuda.is_available():
+					accuracies.append(y.cuda().eq(l.detach().argmax(dim=1)).float().mean())
+				else:
+					accuracies.append(y.eq(l.detach().argmax(dim=1)).float().mean())
 
-		print(f'Epoch {epoch + 1}, validation loss: {torch.tensor(losses).mean():.2f}, validation accuracy: {torch.tensor(accuracies).mean():.2f}')
+			print(f'Epoch {epoch + 1}, validation loss: {torch.tensor(losses).mean():.2f}, validation accuracy: {torch.tensor(accuracies).mean():.2f}')
+
+	return model
+
+if __name__ == '__main__':
+	useData = 'wgs'
+	biom_file_16s = '../data/biom/47422_otu_table.biom'
+	metadata_file_16s = '../data/metadata/P_1928_65684500_raw_meta.txt'
+	profile_dir_wgs = '../data/adenoma_266076/profiles'
+	metadata_file_wgs = '../data/hmgdb_adenoma_bioproject266076.csv'
+	phenotype_wgs = 'HMgDB_diagnosis'
+	model_in_16s = 9160
+	model_out_16s = 5
+	model_in_wgs = 1749
+	model_out_wgs = 3
+	batch_size_16s = 32
+	batch_size_wgs = 8
+	include_adenoma_wgs = True
+	test_sizes = [0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
+	nb_epochs = 50
+
+	model_intermediate_16s = 2**math.floor(math.log(model_in_16s, 2)-2)
+	model_intermediate_wgs = 2**math.floor(math.log(model_in_wgs, 2)-2)
+
+	if useData == '16s':
+		if torch.cuda.is_available():
+			model = ResNet(model_in_16s, model_intermediate_16s, model_out_16s).cuda()
+		else:
+			model = ResNet(model_in_16s, model_intermediate_16s, model_out_16s)
+
+		train_loader, test_loader = prepare_inputs_16s(biom_file_16s, metadata_file_16s, batch_size_16s, test_sizes[4])
+	elif useData == 'wgs':
+		if torch.cuda.is_available():
+			model = ResNet(model_in_wgs, model_intermediate_wgs, model_out_wgs).cuda()
+		else:
+			model = ResNet(model_in_wgs, model_intermediate_wgs, model_out_wgs)
+
+		train_loader, test_loader = prepare_inputs_wgs(profile_dir_wgs, metadata_file_wgs, phenotype_wgs, batch_size_wgs, include_adenoma_wgs, test_sizes[4])
+
+	optimizer = optim.SGD(model.parameters(), lr=1e-2)
+
+	loss = nn.CrossEntropyLoss()
+
+	model = train_model(model, train_loader, test_loader, nb_epochs)	
 
 	# Classify using model:
+	classes_test = []
+	losses = list()
+	accuracies = list()
+	model.eval()
 	for batch in test_loader:
 		x, y = batch
 
