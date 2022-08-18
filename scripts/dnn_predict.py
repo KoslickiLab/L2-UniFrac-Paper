@@ -321,15 +321,15 @@ def run_scoring(classes_real, classes_test):
 	PR = precision_score(classes_real, classes_test, average='macro', zero_division=0)
 	F1 = f1_score(classes_real, classes_test, average='macro', zero_division=0)
 
-	print(f'Rand Index Score:               {RI}')
-	print(f'Adjusted Rand Index Score:      {ARI}')
-	print(f'Normalized Mutual Index Score:  {NMI}')
-	print(f'Adjusted Mutual Info Score:     {AMI}')
-	print(f'Fowlkes Mallows Score:          {FM}')
-	print(f'Accuracy Score:          \t{AC}')
-	print(f'Recall Score:        	 \t{RE}')
-	print(f'Precision Score:         \t{PR}')
-	print(f'F1 Score:        		 \t{F1}')
+	print(f'\tRand Index Score:               {RI}')
+	print(f'\tAdjusted Rand Index Score:      {ARI}')
+	print(f'\tNormalized Mutual Index Score:  {NMI}')
+	print(f'\tAdjusted Mutual Info Score:     {AMI}')
+	print(f'\tFowlkes Mallows Score:          {FM}')
+	print(f'\tAccuracy Score:          \t{AC}')
+	print(f'\tRecall Score:        	 \t{RE}')
+	print(f'\tPrecision Score:         \t{PR}')
+	print(f'\tF1 Score:        		 \t{F1}')
 
 if __name__ == '__main__':
 	useData = 'wgs'
@@ -351,27 +351,31 @@ if __name__ == '__main__':
 	model_intermediate_16s = 2**math.floor(math.log(model_in_16s, 2)-2)
 	model_intermediate_wgs = 2**math.floor(math.log(model_in_wgs, 2)-2)
 
-	if useData == '16s':
-		if torch.cuda.is_available():
-			model = ResNet(model_in_16s, model_intermediate_16s, model_out_16s).cuda()
-		else:
-			model = ResNet(model_in_16s, model_intermediate_16s, model_out_16s)
+	for test_size in test_sizes:
+		
+		print(f'Running on {int(test_size*100)}% Testing Size:')
 
-		train_loader, test_loader = prepare_inputs_16s(biom_file_16s, metadata_file_16s, batch_size_16s, test_sizes[4])
-	elif useData == 'wgs':
-		if torch.cuda.is_available():
-			model = ResNet(model_in_wgs, model_intermediate_wgs, model_out_wgs).cuda()
-		else:
-			model = ResNet(model_in_wgs, model_intermediate_wgs, model_out_wgs)
+		if useData == '16s':
+			if torch.cuda.is_available():
+				model = ResNet(model_in_16s, model_intermediate_16s, model_out_16s).cuda()
+			else:
+				model = ResNet(model_in_16s, model_intermediate_16s, model_out_16s)
 
-		train_loader, test_loader = prepare_inputs_wgs(profile_dir_wgs, metadata_file_wgs, phenotype_wgs, batch_size_wgs, include_adenoma_wgs, test_sizes[4])
+			train_loader, test_loader = prepare_inputs_16s(biom_file_16s, metadata_file_16s, batch_size_16s, test_size)
+		elif useData == 'wgs':
+			if torch.cuda.is_available():
+				model = ResNet(model_in_wgs, model_intermediate_wgs, model_out_wgs).cuda()
+			else:
+				model = ResNet(model_in_wgs, model_intermediate_wgs, model_out_wgs)
 
-	optimizer = optim.SGD(model.parameters(), lr=1e-2)
+			train_loader, test_loader = prepare_inputs_wgs(profile_dir_wgs, metadata_file_wgs, phenotype_wgs, batch_size_wgs, include_adenoma_wgs, test_size)
 
-	loss = nn.CrossEntropyLoss()
+		optimizer = optim.SGD(model.parameters(), lr=1e-2)
 
-	model = train_model(model, train_loader, test_loader, nb_epochs)	
+		loss = nn.CrossEntropyLoss()
 
-	classes_real, classes_test = test_model(model, test_loader)
+		model = train_model(model, train_loader, test_loader, nb_epochs)	
 
-	run_scoring(classes_real, classes_test)
+		classes_real, classes_test = test_model(model, test_loader)
+
+		run_scoring(classes_real, classes_test)
