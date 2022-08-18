@@ -270,6 +270,46 @@ def train_model(model, train_loader, test_loader, nb_epochs, verbose=False):
 
 	return model
 
+def test_model(model, test_loader):
+	# Classify using model:
+	classes_test = []
+	losses = list()
+	accuracies = list()
+	model.eval()
+	for batch in test_loader:
+		x, y = batch
+
+		b = x.size(0)
+		if torch.cuda.is_available():
+			x = x[0].cuda()
+		else:
+			x = x[0]
+
+		# 1) Forward
+		with torch.no_grad():
+			l = model(x) # logits
+
+		# 2) Compute the Objective Function
+		if torch.cuda.is_available():
+			J = loss(l, y.cuda())
+		else:
+			J = loss(l, y)
+
+		losses.append(J.item())
+
+		if torch.cuda.is_available():
+			accuracies.append(y.cuda().eq(l.detach().argmax(dim=1)).float().mean())
+		else:
+			accuracies.append(y.eq(l.detach().argmax(dim=1)).float().mean())
+
+		classes_test = classes_test + l.detach().argmax(dim=1).tolist()
+
+	classes_real = []
+	for x, y in test_loader:
+		classes_real = classes_real + y.tolist()
+
+	return classes_real, classes_test
+
 if __name__ == '__main__':
 	useData = 'wgs'
 	biom_file_16s = '../data/biom/47422_otu_table.biom'
@@ -311,42 +351,7 @@ if __name__ == '__main__':
 
 	model = train_model(model, train_loader, test_loader, nb_epochs)	
 
-	# Classify using model:
-	classes_test = []
-	losses = list()
-	accuracies = list()
-	model.eval()
-	for batch in test_loader:
-		x, y = batch
-
-		b = x.size(0)
-		if torch.cuda.is_available():
-			x = x[0].cuda()
-		else:
-			x = x[0]
-
-		# 1) Forward
-		with torch.no_grad():
-			l = model(x) # logits
-
-		# 2) Compute the Objective Function
-		if torch.cuda.is_available():
-			J = loss(l, y.cuda())
-		else:
-			J = loss(l, y)
-
-		losses.append(J.item())
-
-		if torch.cuda.is_available():
-			accuracies.append(y.cuda().eq(l.detach().argmax(dim=1)).float().mean())
-		else:
-			accuracies.append(y.eq(l.detach().argmax(dim=1)).float().mean())
-
-		classes_test = classes_test + l.detach().argmax(dim=1).tolist()
-
-	classes_real = []
-	for x, y in test_loader:
-		classes_real = classes_real + y.tolist()
+	classes_real, classes_test = test_model(model, test_loader)
 
 	RI = rand_score(classes_real, classes_test)
 	ARI = adjusted_rand_score(classes_real, classes_test)
