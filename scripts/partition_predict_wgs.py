@@ -198,7 +198,7 @@ def get_clustering_scores(predictions, train_dict, test_dict, meta_dict, sample_
 	return results_dict
 
 def get_KMedoids_prediction(dmatrix_file, n_clusters):
-	distance_matrix = pd.read_csv(dmatrix_file, header=None)
+	distance_matrix = pd.read_csv(dmatrix_file, header=0, index_col=0, sep='\t')
 	sample_ids =  distance_matrix.columns
 	kmedoids_prediction = KMedoids(n_clusters=n_clusters, metric='precomputed', method='pam',
 								   init='heuristic').fit_predict(distance_matrix)
