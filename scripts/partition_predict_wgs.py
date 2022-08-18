@@ -3,15 +3,12 @@ import sys, biom
 sys.path.append('L2-UniFrac')
 sys.path.append('L2-UniFrac/src')
 sys.path.append('L2-UniFrac/scripts')
-from extract_data import extract_biom, extract_samples, extract_metadata, parse_tree_file, parse_envs
-from random import shuffle
-from math import floor
 import argparse
 import L2UniFrac as L2U
 import pandas as pd
 from sklearn.cluster import AgglomerativeClustering
 from sklearn_extra.cluster import KMedoids
-from sklearn.metrics import accuracy_score, rand_score
+from sklearn.metrics import accuracy_score, rand_score, balanced_accuracy_score, precision_score, recall_score
 from sklearn.metrics.cluster import adjusted_rand_score, normalized_mutual_info_score, adjusted_mutual_info_score, fowlkes_mallows_score
 from collections import Counter
 from sklearn.model_selection import train_test_split
@@ -56,6 +53,12 @@ def partition_sample(meta_dict, random_state, test_size=0.2):
 	return samples_train, samples_test, targets_train, targets_test
 
 def get_pheno_sample_dict(samples_path_train, targets_train):
+	'''
+
+	:param samples_path_train:
+	:param targets_train:
+	:return: {phenotype:[list of samples]}
+	'''
 	pheno_sample_dict = dict()
 	for i, pheno in enumerate(targets_train):
 		if pheno in pheno_sample_dict:
@@ -65,6 +68,15 @@ def get_pheno_sample_dict(samples_path_train, targets_train):
 	return pheno_sample_dict
 
 def get_rep_sample_dict(pheno_sample_dict, Tint, lint, nodes_in_order, nodes_to_index):
+	'''
+
+	:param pheno_sample_dict:
+	:param Tint:
+	:param lint:
+	:param nodes_in_order:
+	:param nodes_to_index:
+	:return: {phenotype:rep_sample}
+	'''
 	rep_sample_dict = dict()
 	for pheno in pheno_sample_dict.keys():
 		profile_path_list = pheno_sample_dict[pheno]
@@ -91,6 +103,7 @@ def get_label(test_vector, rep_sample_dict, Tint, lint, nodes_in_order):
 			label = phenotype
 	return label
 
+###maybe remove###
 def get_score_by_clustering_method(clustering_method, train_dict, test_dict, meta_dict, sample_dict, distance_matrix_file, n_clusters):
 	distance_matrix = pd.read_csv(distance_matrix_file, header=None)
 	#n_clusters = len(train_dict.keys()) #number of classes
@@ -102,62 +115,94 @@ def get_score_by_clustering_method(clustering_method, train_dict, test_dict, met
 		kmedoids_prediction = KMedoids(n_clusters=n_clusters, metric='precomputed', method='pam', init='heuristic').fit_predict(distance_matrix)
 		results = get_clustering_scores(kmedoids_prediction, train_dict, test_dict, meta_dict, sample_dict)
 	return results
+###maybe remove###
 
-def get_clustering_scores(predictions, train_dict, test_dict, meta_dict, sample_dict):
+def decipher_label_by_vote(predictions, training, group_name, meta_dict, sample_dict):
+	'''
+	:param predictions: a list of prediction of all samples. e.g. [0,1,3,0,...]
+	:param training: list of training ids.
+	:param meta_dict: body_site:sample_id dict
+	:param group_name: cluster name. e.g. 0,1,2 ...
+	:return: predicted label by vote
+	'''
+	train_id_this_group = [train_id for train_id in training if predictions[sample_dict[train_id]] == group_name]
+	predicted_labels = [meta_dict[i]['body_site'] for i in train_id_this_group]
+	#print(predicted_labels)
+	c = Counter(predicted_labels)
+	predicted_by_vote = c.most_common(1)[0][0]
+	return predicted_by_vote
+
+def decipher_label_alternative(predictions, index_sample_dict, group_name, meta_dict):
+	'''
+	A slight variation from the above function. The above function uses the overlap between training samples and each cluster to vote.
+	Alternatively, use 80% data of each cluster to vote. Though we suspect the difference will not be significant.
+	:return:
+	'''
+	indices_this_group = [i for i in range(len(predictions)) if predictions[i] == group_name]
+	predicted_labels = [meta_dict[index_sample_dict[i]] for i in indices_this_group]
+	c = Counter(predicted_labels)
+	predicted_by_vote = c.most_common(1)[0][0]
+	return predicted_by_vote
+
+def get_clustering_scores(predictions, train_dict, test_dict, meta_dict, sample_index_dict):
 	'''
 	Returns a dict of scores for a particular set of predictions
 	:param predictions:
-	:param train_dict: {body_site:{sample_id: vector}}
+	:param train_dict:
 	:param test_dict:
 	:param meta_dict:
 	:param sample_dict:
 	:return:
 	'''
-
 	train_ids = get_sample_id_from_dict(train_dict)
 	test_ids = get_sample_id_from_dict(test_dict)
 	group_label_dict = dict()
 	results_dict = dict()
-
+	index_sample_dict = get_reverse_dict(sample_index_dict)
 	#decipher label
 	for group in set(predictions):
-		label = decipher_label_by_vote(predictions, train_ids, group, meta_dict, sample_dict)
+		label = decipher_label_alternative(predictions, index_sample_dict, group, meta_dict)
 		# may need a tie breaker to ensure values are unique. For now just hope for the best
 		group_label_dict[group] = label
 	print(group_label_dict)
-	for body_site in test_dict.keys():
-		results_dict[body_site] = dict()
-		test_ids_this_bs = test_dict[body_site]
-		test_indices_this_bs = [sample_dict[sample_id] for sample_id in test_ids_this_bs]
-		predicted_group_test_this_bs = [predictions[i] for i in test_indices_this_bs]
-		predicted_labels_this_bs = [group_label_dict[group] for group in predicted_group_test_this_bs]
-		true_labels_this_bs = [meta_dict[i]['body_site'] for i in test_ids_this_bs]
-		results_dict[body_site]['accuracy_score'] = accuracy_score(true_labels_this_bs, predicted_labels_this_bs)
-		results_dict[body_site]['rand_score'] = rand_score(true_labels_this_bs, predicted_labels_this_bs)
-		results_dict[body_site]['adjusted_rand_score'] = adjusted_rand_score(true_labels_this_bs, predicted_labels_this_bs)
-		results_dict[body_site]['adjusted_mutual_info_score'] = adjusted_mutual_info_score(true_labels_this_bs, predicted_labels_this_bs)
-		results_dict[body_site]['normalized_mutual_info_score'] = normalized_mutual_info_score(true_labels_this_bs,predicted_labels_this_bs)
-		results_dict[body_site]['fowlkes_mallows_score'] = fowlkes_mallows_score(true_labels_this_bs,predicted_labels_this_bs)
-	test_indices = [sample_dict[sample_id] for sample_id in test_ids]
+	for phenotype in test_dict.keys():
+		results_dict[phenotype] = dict()
+		test_ids_this_pheno = test_dict[phenotype]
+		test_indices_this_pheno = [sample_index_dict[sample_id] for sample_id in test_ids_this_pheno]
+		predicted_group_test_this_pheno = [predictions[i] for i in test_indices_this_pheno]
+		predicted_labels_this_pheno = [group_label_dict[group] for group in predicted_group_test_this_pheno]
+		true_labels_this_pheno = [meta_dict[i] for i in test_ids_this_pheno]
+		results_dict[phenotype]['balanced_accuracy_score'] = balanced_accuracy_score(true_labels_this_pheno, predicted_labels_this_pheno)
+		results_dict[phenotype]['precision_score'] = precision_score(true_labels_this_pheno, predicted_labels_this_pheno)
+		results_dict[phenotype]['recall_score'] = recall_score(true_labels_this_pheno, predicted_labels_this_pheno)
+		results_dict[phenotype]['rand_score'] = rand_score(true_labels_this_pheno, predicted_group_test_this_pheno)
+		results_dict[phenotype]['adjusted_rand_score'] = adjusted_rand_score(true_labels_this_pheno, predicted_group_test_this_pheno)
+		results_dict[phenotype]['adjusted_mutual_info_score'] = adjusted_mutual_info_score(true_labels_this_pheno, predicted_group_test_this_pheno)
+		results_dict[phenotype]['normalized_mutual_info_score'] = normalized_mutual_info_score(true_labels_this_pheno,predicted_group_test_this_pheno)
+		results_dict[phenotype]['fowlkes_mallows_score'] = fowlkes_mallows_score(true_labels_this_pheno, predicted_group_test_this_pheno)
+	test_indices = [sample_index_dict[sample_id] for sample_id in test_ids]
 	predicted_group_test = [predictions[i] for i in test_indices]
 	predicted_labels = [group_label_dict[group] for group in predicted_group_test]
-	true_labels = [meta_dict[i]['body_site'] for i in test_ids]
+	true_labels = [meta_dict[i] for i in test_ids]
 	results_dict['overall'] = dict()
-	#results_dict['overall']['accuracy_score'] = accuracy_score(true_labels, predicted_labels)
-	#results_dict['overall']['rand_score'] = rand_score(true_labels, predicted_labels)
-	#results_dict['overall']['adjusted_rand_score'] = adjusted_rand_score(true_labels, predicted_labels)
-	#results_dict['overall']['adjusted_mutual_info_score'] = adjusted_mutual_info_score(true_labels,predicted_labels)
-	#results_dict['overall']['normalized_mutual_info_score'] = normalized_mutual_info_score(true_labels, predicted_labels)
-	#results_dict['overall']['fowlkes_mallows_score'] = fowlkes_mallows_score(true_labels, predicted_labels)
 	results_dict['overall']['accuracy_score'] = accuracy_score(true_labels, predicted_labels)
 	results_dict['overall']['rand_score'] = rand_score(true_labels, predicted_group_test)
 	results_dict['overall']['adjusted_rand_score'] = adjusted_rand_score(true_labels, predicted_group_test)
 	results_dict['overall']['adjusted_mutual_info_score'] = adjusted_mutual_info_score(true_labels, predicted_group_test)
 	results_dict['overall']['normalized_mutual_info_score'] = normalized_mutual_info_score(true_labels, predicted_group_test)
 	results_dict['overall']['fowlkes_mallows_score'] = fowlkes_mallows_score(true_labels, predicted_group_test)
+	results_dict['overall']['precision_score'] = precision_score(true_labels, predicted_labels)
+	results_dict['overall']['recall_score'] = recall_score(true_labels, predicted_labels)
 	print("clustering results:")
 	print(results_dict)
 	return results_dict
+
+def get_KMedoids_prediction(dmatrix_file):
+	distance_matrix = pd.read_csv(dmatrix_file, header=None)
+	sample_ids =  distance_matrix.columns
+	kmedoids_prediction = KMedoids(n_clusters=n_clusters, metric='precomputed', method='pam',
+								   init='heuristic').fit_predict(distance_matrix)
+	return kmedoids_prediction, sample_ids
 
 def get_sample_id_from_dict(t_dict):
 	'''
@@ -166,8 +211,8 @@ def get_sample_id_from_dict(t_dict):
 	:return: a list of sample_id
 	'''
 	sample_lst = []
-	for body_site in t_dict.keys():
-		sample_lst+=list(t_dict[body_site].keys())
+	for phenotype in t_dict.keys():
+		sample_lst+=list(t_dict[phenotype].keys())
 	return sample_lst
 
 def get_L2UniFrac_accuracy_results(train_dict, test_dict,Tint, lint, nodes_in_order, meta_dict):
@@ -248,29 +293,6 @@ def compile_dataframe(n_repeat, train_percentage, biom_file, tree_file, metadata
 	df["Score"] = score_col
 	return df
 
-def decipher_label_by_vote(predictions, training, group_name, meta_dict, sample_dict):
-	'''
-	:param predictions: a list of prediction of all samples. e.g. [0,1,3,0,...]
-	:param training: list of training ids.
-	:param meta_dict: body_site:sample_id dict
-	:param group_name: cluster name. e.g. 0,1,2 ...
-	:return: predicted label by vote
-	'''
-	train_id_this_group = [train_id for train_id in training if predictions[sample_dict[train_id]] == group_name]
-	predicted_labels = [meta_dict[i]['body_site'] for i in train_id_this_group]
-	#print(predicted_labels)
-	c = Counter(predicted_labels)
-	predicted_by_vote = c.most_common(1)[0][0]
-	return predicted_by_vote
-
-def decipher_label_alternative():
-	'''
-	A slight variation from the above function. The above function uses the overlap between training samples and each cluster to vote.
-	Alternatively, use 80% data of each cluster to vote. Though we suspect the difference will not be significant.
-	:return:
-	'''
-	return
-
 def get_index_dict(lst):
 	'''
 	Get a dictionary with keys being items in the list and values being their respective positions in the list
@@ -279,6 +301,10 @@ def get_index_dict(lst):
 	'''
 	index_dict = dict(zip(lst, range(len(lst))))
 	return index_dict
+
+def get_reverse_dict(dct):
+	reverse_dict = {x:y for y,x in dct.items()}
+	return reverse_dict
 
 
 #extract_samples_by_group(biom_file, metadata_file, metadata_key)
