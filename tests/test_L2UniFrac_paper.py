@@ -149,7 +149,7 @@ def test_get_wgs_clustering_results():
 
 def test_get_KMedoids_prediction():
     dmatrix_file = 'data/adenoma_266076/adenoma_pairwise_L1UniFrac.txt'
-    kmedoids_prediction, sample_ids = pp2.get_KMedoids_prediction(dmatrix_file)
+    kmedoids_prediction, sample_ids = pp2.get_KMedoids_prediction(dmatrix_file,3)
     print(kmedoids_prediction[:10])
     print(sample_ids[:10])
 
