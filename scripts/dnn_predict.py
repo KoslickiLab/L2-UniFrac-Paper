@@ -18,7 +18,7 @@ from sklearn.metrics.cluster import adjusted_rand_score
 from sklearn.metrics.cluster import normalized_mutual_info_score
 from sklearn.metrics.cluster import adjusted_mutual_info_score
 from sklearn.metrics.cluster import fowlkes_mallows_score
-from sklearn.metrics import rand_score, accuracy_score
+from sklearn.metrics import rand_score, accuracy_score, recall_score, precision_score, f1_score
 from extract_data import extract_biom_samples, extract_samples, extract_metadata_direct, extract_sample_metadata
 from sklearn.model_selection import train_test_split
 
@@ -73,11 +73,11 @@ def prepare_data_16s(biom_file, metadata_file):
 
 	return nodes_samples, sample_ids, metadata, sample_metadata
 
-def prepare_inputs_16s(biom_file, metadata_file, batch_size):
+def prepare_inputs_16s(biom_file, metadata_file, batch_size, test_size):
 	nodes_samples, sample_ids, metadata, sample_metadata = prepare_data_16s(biom_file, metadata_file)
 
 	l = len(sample_ids)
-	train_num = floor(l*(80/100))
+	train_num = floor(l*(1-test_size))
 	test_num = l - train_num
 	base_list = [0 for i in range(train_num)] + [1 for i in range(test_num)]
 	shuffled_list = shuffle(base_list)
@@ -131,11 +131,11 @@ def prepare_inputs_16s(biom_file, metadata_file, batch_size):
 
 	return train_loader, test_loader
 
-def prepare_data_wgs(profile_dir, metadata_file, phenotype):
+def prepare_data_wgs(profile_dir, metadata_file, phenotype, test_size):
 	profile_path_lst = [os.path.join(profile_dir, file) for file in os.listdir(profile_dir)]
 	Tint, lint, nodes_in_order, nodes_to_index = L2U.get_wgs_tree(profile_path_lst)
 	meta_dict = get_metadata_dict(metadata_file, val_col=phenotype)
-	train_samples, test_samples, targets_train, targets_test = partition_sample(meta_dict, random_state=0, test_size=0.2)
+	train_samples, test_samples, targets_train, targets_test = partition_sample(meta_dict, random_state=0, test_size=test_size)
 	samples_train_paths = [profile_dir + '/' + sample + '.profile' for sample in train_samples]
 	#pheno_sample_dict = get_pheno_sample_dict(samples_train_paths, targets_train)
 	train_sample_dict = L2U.merge_profiles_by_dir(samples_train_paths, nodes_to_index)
@@ -144,8 +144,8 @@ def prepare_data_wgs(profile_dir, metadata_file, phenotype):
 
 	return meta_dict, train_samples, test_samples, train_sample_dict, test_sample_dict
 
-def prepare_inputs_wgs(profile_dir, metadata_file, phenotype, batch_size, include_adenoma):
-	meta_dict, train_samples, test_samples, train_sample_dict, test_sample_dict = prepare_data_wgs(profile_dir, metadata_file, phenotype)
+def prepare_inputs_wgs(profile_dir, metadata_file, phenotype, batch_size, include_adenoma, test_size):
+	meta_dict, train_samples, test_samples, train_sample_dict, test_sample_dict = prepare_data_wgs(profile_dir, metadata_file, phenotype, test_size)
 
 	classifications = list(set(list(meta_dict.values())))
 	class_dict = {classifications[i]:i for i in range(len(classifications))}
@@ -195,46 +195,8 @@ def prepare_inputs_wgs(profile_dir, metadata_file, phenotype, batch_size, includ
 
 	return train_loader, test_loader
 
-if __name__ == '__main__':
-	useData = 'wgs'
-	biom_file_16s = '../data/biom/47422_otu_table.biom'
-	metadata_file_16s = '../data/metadata/P_1928_65684500_raw_meta.txt'
-	profile_dir_wgs = '../data/adenoma_266076/profiles'
-	metadata_file_wgs = '../data/hmgdb_adenoma_bioproject266076.csv'
-	phenotype_wgs = 'HMgDB_diagnosis'
-	model_in_16s = 9160
-	model_out_16s = 5
-	model_in_wgs = 1749
-	model_out_wgs = 3
-	batch_size_16s = 32
-	batch_size_wgs = 8
-	include_adenoma_wgs = True
-
-	model_intermediate_16s = 2**math.floor(math.log(model_in_16s, 2)-2)
-	model_intermediate_wgs = 2**math.floor(math.log(model_in_wgs, 2)-2)
-
-	if useData == '16s':
-		if torch.cuda.is_available():
-			model = ResNet(model_in_16s, model_intermediate_16s, model_out_16s).cuda()
-		else:
-			model = ResNet(model_in_16s, model_intermediate_16s, model_out_16s)
-
-		train_loader, test_loader = prepare_inputs_16s(biom_file_16s, metadata_file_16s, batch_size_16s)
-	elif useData == 'wgs':
-		if torch.cuda.is_available():
-			model = ResNet(model_in_wgs, model_intermediate_wgs, model_out_wgs).cuda()
-		else:
-			model = ResNet(model_in_wgs, model_intermediate_wgs, model_out_wgs)
-
-		train_loader, test_loader = prepare_inputs_wgs(profile_dir_wgs, metadata_file_wgs, phenotype_wgs, batch_size_wgs, include_adenoma_wgs)
-
-	optimizer = optim.SGD(model.parameters(), lr=1e-2)
-
-	loss = nn.CrossEntropyLoss()
-
+def train_model(model, train_loader, test_loader, nb_epochs, verbose=False):
 	# Begin Training
-	nb_epochs = 50
-	classes_test = []
 	for epoch in range(nb_epochs):
 		losses = list()
 		accuracies = list()
@@ -271,40 +233,49 @@ if __name__ == '__main__':
 			else:
 				accuracies.append(y.eq(l.detach().argmax(dim=1)).float().mean())
 
-		print(f'Epoch {epoch + 1}, training loss: {torch.tensor(losses).mean():.2f}, training accuracy: {torch.tensor(accuracies).mean():.2f}')
+		if verbose:
+			print(f'Epoch {epoch + 1}, training loss: {torch.tensor(losses).mean():.2f}, training accuracy: {torch.tensor(accuracies).mean():.2f}')
 
-		losses = list()
-		accuracies = list()
-		model.eval()
-		for batch in test_loader:
-			x, y = batch
+		if verbose:
+			losses = list()
+			accuracies = list()
+			model.eval()
+			for batch in test_loader:
+				x, y = batch
 
-			b = x.size(0)
-			if torch.cuda.is_available():
-				x = x[0].cuda()
-			else:
-				x = x[0]
+				b = x.size(0)
+				if torch.cuda.is_available():
+					x = x[0].cuda()
+				else:
+					x = x[0]
 
-			# 1) Forward
-			with torch.no_grad():
-				l = model(x) # logits
+				# 1) Forward
+				with torch.no_grad():
+					l = model(x) # logits
 
-			# 2) Compute the Objective Function
-			if torch.cuda.is_available():
-				J = loss(l, y.cuda())
-			else:
-				J = loss(l, y)
+				# 2) Compute the Objective Function
+				if torch.cuda.is_available():
+					J = loss(l, y.cuda())
+				else:
+					J = loss(l, y)
 
-			losses.append(J.item())
+				losses.append(J.item())
 
-			if torch.cuda.is_available():
-				accuracies.append(y.cuda().eq(l.detach().argmax(dim=1)).float().mean())
-			else:
-				accuracies.append(y.eq(l.detach().argmax(dim=1)).float().mean())
+				if torch.cuda.is_available():
+					accuracies.append(y.cuda().eq(l.detach().argmax(dim=1)).float().mean())
+				else:
+					accuracies.append(y.eq(l.detach().argmax(dim=1)).float().mean())
 
-		print(f'Epoch {epoch + 1}, validation loss: {torch.tensor(losses).mean():.2f}, validation accuracy: {torch.tensor(accuracies).mean():.2f}')
+			print(f'Epoch {epoch + 1}, validation loss: {torch.tensor(losses).mean():.2f}, validation accuracy: {torch.tensor(accuracies).mean():.2f}')
 
+	return model
+
+def test_model(model, test_loader):
 	# Classify using model:
+	classes_test = []
+	losses = list()
+	accuracies = list()
+	model.eval()
 	for batch in test_loader:
 		x, y = batch
 
@@ -337,16 +308,74 @@ if __name__ == '__main__':
 	for x, y in test_loader:
 		classes_real = classes_real + y.tolist()
 
+	return classes_real, classes_test
+
+def run_scoring(classes_real, classes_test):
 	RI = rand_score(classes_real, classes_test)
 	ARI = adjusted_rand_score(classes_real, classes_test)
 	NMI = normalized_mutual_info_score(classes_real, classes_test)
 	AMI = adjusted_mutual_info_score(classes_real, classes_test)
 	FM = fowlkes_mallows_score(classes_real, classes_test)
 	AC = accuracy_score(classes_real, classes_test)
+	RE = recall_score(classes_real, classes_test, average='macro', zero_division=0)
+	PR = precision_score(classes_real, classes_test, average='macro', zero_division=0)
+	F1 = f1_score(classes_real, classes_test, average='macro', zero_division=0)
 
-	print(f'Rand Index Score:               {RI}')
-	print(f'Adjusted Rand Index Score:      {ARI}')
-	print(f'Normalized Mutual Index Score:  {NMI}')
-	print(f'Adjusted Mutual Info Score:     {AMI}')
-	print(f'Fowlkes Mallows Score:          {FM}')
-	print(f'Accuracy Score:          \t{AC}')
+	print(f'\tRand Index Score:               {RI}')
+	print(f'\tAdjusted Rand Index Score:      {ARI}')
+	print(f'\tNormalized Mutual Index Score:  {NMI}')
+	print(f'\tAdjusted Mutual Info Score:     {AMI}')
+	print(f'\tFowlkes Mallows Score:          {FM}')
+	print(f'\tAccuracy Score:          \t{AC}')
+	print(f'\tRecall Score:        	 \t{RE}')
+	print(f'\tPrecision Score:         \t{PR}')
+	print(f'\tF1 Score:        		 \t{F1}')
+
+if __name__ == '__main__':
+	useData = 'wgs'
+	biom_file_16s = '../data/biom/47422_otu_table.biom'
+	metadata_file_16s = '../data/metadata/P_1928_65684500_raw_meta.txt'
+	profile_dir_wgs = '../data/adenoma_266076/profiles'
+	metadata_file_wgs = '../data/hmgdb_adenoma_bioproject266076.csv'
+	phenotype_wgs = 'HMgDB_diagnosis'
+	model_in_16s = 9160
+	model_out_16s = 5
+	model_in_wgs = 1749
+	model_out_wgs = 3
+	batch_size_16s = 32
+	batch_size_wgs = 8
+	include_adenoma_wgs = True
+	test_sizes = [0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
+	nb_epochs = 50
+
+	model_intermediate_16s = 2**math.floor(math.log(model_in_16s, 2)-2)
+	model_intermediate_wgs = 2**math.floor(math.log(model_in_wgs, 2)-2)
+
+	for test_size in test_sizes:
+		
+		print(f'Running on {int(test_size*100)}% Testing Size:')
+
+		if useData == '16s':
+			if torch.cuda.is_available():
+				model = ResNet(model_in_16s, model_intermediate_16s, model_out_16s).cuda()
+			else:
+				model = ResNet(model_in_16s, model_intermediate_16s, model_out_16s)
+
+			train_loader, test_loader = prepare_inputs_16s(biom_file_16s, metadata_file_16s, batch_size_16s, test_size)
+		elif useData == 'wgs':
+			if torch.cuda.is_available():
+				model = ResNet(model_in_wgs, model_intermediate_wgs, model_out_wgs).cuda()
+			else:
+				model = ResNet(model_in_wgs, model_intermediate_wgs, model_out_wgs)
+
+			train_loader, test_loader = prepare_inputs_wgs(profile_dir_wgs, metadata_file_wgs, phenotype_wgs, batch_size_wgs, include_adenoma_wgs, test_size)
+
+		optimizer = optim.SGD(model.parameters(), lr=1e-2)
+
+		loss = nn.CrossEntropyLoss()
+
+		model = train_model(model, train_loader, test_loader, nb_epochs)	
+
+		classes_real, classes_test = test_model(model, test_loader)
+
+		run_scoring(classes_real, classes_test)
