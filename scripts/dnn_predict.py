@@ -326,10 +326,10 @@ def run_scoring(classes_real, classes_test):
 	print(f'\tNormalized Mutual Index Score:  {NMI}')
 	print(f'\tAdjusted Mutual Info Score:     {AMI}')
 	print(f'\tFowlkes Mallows Score:          {FM}')
-	print(f'\tAccuracy Score:          \t{AC}')
-	print(f'\tRecall Score:        	 \t{RE}')
-	print(f'\tPrecision Score:         \t{PR}')
-	print(f'\tF1 Score:        		 \t{F1}')
+	print(f'\tAccuracy Score:          \t\t{AC}')
+	print(f'\tRecall Score:        	 \t\t{RE}')
+	print(f'\tPrecision Score:         \t\t{PR}')
+	print(f'\tF1 Score:        		 \t\t{F1}')
 
 if __name__ == '__main__':
 	useData = 'wgs'
