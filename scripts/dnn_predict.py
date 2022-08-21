@@ -1,4 +1,4 @@
-import sys, os, math
+import sys, os, math, argparse
 import biom, torch, csv, dendropy
 sys.path.append('../L2-UniFrac')
 sys.path.append('../L2-UniFrac/src')
@@ -332,12 +332,6 @@ def run_scoring(classes_real, classes_test):
 	print(f'\tF1 Score:        		 \t\t{F1}')
 
 if __name__ == '__main__':
-	useData = 'wgs'
-	biom_file_16s = '../data/biom/47422_otu_table.biom'
-	metadata_file_16s = '../data/metadata/P_1928_65684500_raw_meta.txt'
-	profile_dir_wgs = '../data/adenoma_266076/profiles'
-	metadata_file_wgs = '../data/hmgdb_adenoma_bioproject266076.csv'
-	phenotype_wgs = 'HMgDB_diagnosis'
 	model_in_16s = 9160
 	model_out_16s = 5
 	model_in_wgs = 1749
@@ -347,6 +341,20 @@ if __name__ == '__main__':
 	include_adenoma_wgs = True
 	test_sizes = [0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
 	nb_epochs = 50
+
+	parser = argparse.ArgumentParser(description='Get testing statistics of classification test.')
+	parser.add_argument('-d', '--data_type', type=str, help='16s data or WGS data', nargs='?', default='wgs')
+	parser.add_argument('-b', '--biom_file', type=str, help='Path to biom file', nargs='?', default='../data/biom/47422_otu_table.biom')
+	parser.add_argument('-m', '--metadata_file', type=str, help='Path to metadata file', nargs='?', default='../data/hmgdb_adenoma_bioproject266076.csv')
+	parser.add_argument('-p', '--profile_dir', type=str, help='Path to profiles', nargs='?', default='../data/adenoma_266076/profiles')
+	parser.add_argument('-d', '--phenotype', type=str, help='Phenotype to use on WGS', nargs='?', default='HMgDB_diagnosis')
+
+	useData = parser.data_type #'wgs'
+	biom_file_16s = parser.biom_file #'../data/biom/47422_otu_table.biom'
+	metadata_file_16s = parser.metadata_file #'../data/metadata/P_1928_65684500_raw_meta.txt'
+	profile_dir_wgs = parser.profile_dir #'../data/adenoma_266076/profiles'
+	metadata_file_wgs = parser.metadata_file #'../data/hmgdb_adenoma_bioproject266076.csv'
+	phenotype_wgs = parser.phenotype #'HMgDB_diagnosis'
 
 	model_intermediate_16s = 2**math.floor(math.log(model_in_16s, 2)-2)
 	model_intermediate_wgs = 2**math.floor(math.log(model_in_wgs, 2)-2)
