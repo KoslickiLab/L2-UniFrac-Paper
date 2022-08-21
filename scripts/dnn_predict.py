@@ -1,26 +1,20 @@
-import sys, os, math, argparse
-import biom, torch, csv, dendropy
+import sys, os, argparse, torch, csv, dendropy
 sys.path.append('../L2-UniFrac')
 sys.path.append('../L2-UniFrac/src')
 sys.path.append('../L2-UniFrac/scripts')
-from torch import nn
-from torch import optim
+from torch import nn, optim, FloatTensor, LongTensor, cuda, tensor, no_grad
 from torchvision import datasets, transforms
 from torch.utils.data import random_split, DataLoader
 import numpy as np
-from scipy.sparse import coo_matrix
-from scipy.sparse import csr_matrix
+from scipy.sparse import coo_matrix, csr_matrix
 from random import shuffle
-from math import floor
-import L2UniFrac as L2U
+from math import floor, log
 import pandas as pd
-from sklearn.metrics.cluster import adjusted_rand_score
-from sklearn.metrics.cluster import normalized_mutual_info_score
-from sklearn.metrics.cluster import adjusted_mutual_info_score
-from sklearn.metrics.cluster import fowlkes_mallows_score
+from sklearn.metrics.cluster import adjusted_rand_score, normalized_mutual_info_score, adjusted_mutual_info_score, fowlkes_mallows_score
 from sklearn.metrics import rand_score, accuracy_score, recall_score, precision_score, f1_score
 from extract_data import extract_biom_samples, extract_samples, extract_metadata_direct, extract_sample_metadata
 from sklearn.model_selection import train_test_split
+import L2UniFrac as L2U
 
 class ResNet(nn.Module):
 	def __init__(self, l1_in, l2_size, l3_out):
@@ -103,13 +97,13 @@ def prepare_inputs_16s(biom_file, metadata_file, batch_size, test_size):
 		tmp_y.append(meta_p)
 		curr_len += 1
 		if curr_len == batch_size:
-			train_loader.append([torch.FloatTensor([tmp_x]), torch.LongTensor(tmp_y)])
+			train_loader.append([FloatTensor([tmp_x]), LongTensor(tmp_y)])
 			curr_len = 0
 			tmp_x = []
 			tmp_y = []
 
 	if len(tmp_x) > 0:
-		train_loader.append([torch.FloatTensor([tmp_x]), torch.LongTensor(tmp_y)])
+		train_loader.append([FloatTensor([tmp_x]), LongTensor(tmp_y)])
 
 	tmp_x = []
 	tmp_y = []
@@ -121,13 +115,13 @@ def prepare_inputs_16s(biom_file, metadata_file, batch_size, test_size):
 		tmp_y.append(meta_p)
 		curr_len += 1
 		if curr_len == batch_size:
-			test_loader.append([torch.FloatTensor([tmp_x]), torch.LongTensor(tmp_y)])
+			test_loader.append([FloatTensor([tmp_x]), LongTensor(tmp_y)])
 			curr_len = 0
 			tmp_x = []
 			tmp_y = []
 
 	if len(tmp_x) > 0:
-		test_loader.append([torch.FloatTensor([tmp_x]), torch.LongTensor(tmp_y)])
+		test_loader.append([FloatTensor([tmp_x]), LongTensor(tmp_y)])
 
 	return train_loader, test_loader
 
@@ -166,13 +160,13 @@ def prepare_inputs_wgs(profile_dir, metadata_file, phenotype, batch_size, includ
 			tmp_y.append(meta_p)
 			curr_len += 1
 			if curr_len == batch_size:
-				train_loader.append([torch.FloatTensor([tmp_x]), torch.LongTensor(tmp_y)])
+				train_loader.append([FloatTensor([tmp_x]), LongTensor(tmp_y)])
 				curr_len = 0
 				tmp_x = []
 				tmp_y = []
 
 	if len(tmp_x) > 0:
-		train_loader.append([torch.FloatTensor([tmp_x]), torch.LongTensor(tmp_y)])
+		train_loader.append([FloatTensor([tmp_x]), LongTensor(tmp_y)])
 
 	tmp_x = []
 	tmp_y = []
@@ -185,13 +179,13 @@ def prepare_inputs_wgs(profile_dir, metadata_file, phenotype, batch_size, includ
 			tmp_y.append(meta_p)
 			curr_len += 1
 			if curr_len == batch_size:
-				test_loader.append([torch.FloatTensor([tmp_x]), torch.LongTensor(tmp_y)])
+				test_loader.append([FloatTensor([tmp_x]), LongTensor(tmp_y)])
 				curr_len = 0
 				tmp_x = []
 				tmp_y = []
 
 	if len(tmp_x) > 0:
-		test_loader.append([torch.FloatTensor([tmp_x]), torch.LongTensor(tmp_y)])
+		test_loader.append([FloatTensor([tmp_x]), LongTensor(tmp_y)])
 
 	return train_loader, test_loader
 
@@ -204,7 +198,7 @@ def train_model(model, train_loader, test_loader, nb_epochs, verbose=False):
 		for batch in train_loader:
 			x, y = batch
 			b = x.size(0)
-			if torch.cuda.is_available():
+			if cuda.is_available():
 				x = x[0].cuda()
 			else:
 				x = x[0]
@@ -213,7 +207,7 @@ def train_model(model, train_loader, test_loader, nb_epochs, verbose=False):
 			l = model(x) # logits
 
 			# 2) Compute the Objective Function
-			if torch.cuda.is_available():
+			if cuda.is_available():
 				J = loss(l, y.cuda())
 			else:
 				J = loss(l, y)
@@ -228,13 +222,13 @@ def train_model(model, train_loader, test_loader, nb_epochs, verbose=False):
 			optimizer.step()
 
 			losses.append(J.item())
-			if torch.cuda.is_available():
+			if cuda.is_available():
 				accuracies.append(y.cuda().eq(l.detach().argmax(dim=1)).float().mean())
 			else:
 				accuracies.append(y.eq(l.detach().argmax(dim=1)).float().mean())
 
 		if verbose:
-			print(f'Epoch {epoch + 1}, training loss: {torch.tensor(losses).mean():.2f}, training accuracy: {torch.tensor(accuracies).mean():.2f}')
+			print(f'Epoch {epoch + 1}, training loss: {tensor(losses).mean():.2f}, training accuracy: {tensor(accuracies).mean():.2f}')
 
 		if verbose:
 			losses = list()
@@ -244,29 +238,29 @@ def train_model(model, train_loader, test_loader, nb_epochs, verbose=False):
 				x, y = batch
 
 				b = x.size(0)
-				if torch.cuda.is_available():
+				if cuda.is_available():
 					x = x[0].cuda()
 				else:
 					x = x[0]
 
 				# 1) Forward
-				with torch.no_grad():
+				with no_grad():
 					l = model(x) # logits
 
 				# 2) Compute the Objective Function
-				if torch.cuda.is_available():
+				if cuda.is_available():
 					J = loss(l, y.cuda())
 				else:
 					J = loss(l, y)
 
 				losses.append(J.item())
 
-				if torch.cuda.is_available():
+				if cuda.is_available():
 					accuracies.append(y.cuda().eq(l.detach().argmax(dim=1)).float().mean())
 				else:
 					accuracies.append(y.eq(l.detach().argmax(dim=1)).float().mean())
 
-			print(f'Epoch {epoch + 1}, validation loss: {torch.tensor(losses).mean():.2f}, validation accuracy: {torch.tensor(accuracies).mean():.2f}')
+			print(f'Epoch {epoch + 1}, validation loss: {tensor(losses).mean():.2f}, validation accuracy: {tensor(accuracies).mean():.2f}')
 
 	return model
 
@@ -280,24 +274,24 @@ def test_model(model, test_loader):
 		x, y = batch
 
 		b = x.size(0)
-		if torch.cuda.is_available():
+		if cuda.is_available():
 			x = x[0].cuda()
 		else:
 			x = x[0]
 
 		# 1) Forward
-		with torch.no_grad():
+		with no_grad():
 			l = model(x) # logits
 
 		# 2) Compute the Objective Function
-		if torch.cuda.is_available():
+		if cuda.is_available():
 			J = loss(l, y.cuda())
 		else:
 			J = loss(l, y)
 
 		losses.append(J.item())
 
-		if torch.cuda.is_available():
+		if cuda.is_available():
 			accuracies.append(y.cuda().eq(l.detach().argmax(dim=1)).float().mean())
 		else:
 			accuracies.append(y.eq(l.detach().argmax(dim=1)).float().mean())
@@ -333,7 +327,7 @@ def run_scoring(classes_real, classes_test):
 
 if __name__ == '__main__':
 	
-	test_sizes = [0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
+	test_sizes = [0.3, 0.2, 0.1]
 
 	parser = argparse.ArgumentParser(description='Get testing statistics of classification test.')
 	parser.add_argument('-d', '--data_type', type=str, help='16s data or WGS data', nargs='?', default='wgs')
@@ -363,22 +357,22 @@ if __name__ == '__main__':
 	include_adenoma_wgs = args.include_adenoma #True
 	nb_epochs = args.nb_epochs #50
 
-	model_intermediate_16s = 2**math.floor(math.log(model_in_16s, 2)-2)
-	model_intermediate_wgs = 2**math.floor(math.log(model_in_wgs, 2)-2)
+	model_intermediate_16s = 2**floor(log(model_in_16s, 2)-2)
+	model_intermediate_wgs = 2**floor(log(model_in_wgs, 2)-2)
 
 	for test_size in test_sizes:
 		
 		print(f'Running on {int(test_size*100)}% Testing Size:')
 
 		if useData == '16s':
-			if torch.cuda.is_available():
+			if cuda.is_available():
 				model = ResNet(model_in_16s, model_intermediate_16s, model_out_16s).cuda()
 			else:
 				model = ResNet(model_in_16s, model_intermediate_16s, model_out_16s)
 
 			train_loader, test_loader = prepare_inputs_16s(biom_file_16s, metadata_file_16s, batch_size_16s, test_size)
 		elif useData == 'wgs':
-			if torch.cuda.is_available():
+			if cuda.is_available():
 				model = ResNet(model_in_wgs, model_intermediate_wgs, model_out_wgs).cuda()
 			else:
 				model = ResNet(model_in_wgs, model_intermediate_wgs, model_out_wgs)
