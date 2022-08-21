@@ -332,29 +332,36 @@ def run_scoring(classes_real, classes_test):
 	print(f'\tF1 Score:        		 \t\t{F1}')
 
 if __name__ == '__main__':
-	model_in_16s = 9160
-	model_out_16s = 5
-	model_in_wgs = 1749
-	model_out_wgs = 3
-	batch_size_16s = 32
-	batch_size_wgs = 8
-	include_adenoma_wgs = True
+	
 	test_sizes = [0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
-	nb_epochs = 50
 
 	parser = argparse.ArgumentParser(description='Get testing statistics of classification test.')
 	parser.add_argument('-d', '--data_type', type=str, help='16s data or WGS data', nargs='?', default='wgs')
 	parser.add_argument('-b', '--biom_file', type=str, help='Path to biom file', nargs='?', default='../data/biom/47422_otu_table.biom')
 	parser.add_argument('-m', '--metadata_file', type=str, help='Path to metadata file', nargs='?', default='../data/hmgdb_adenoma_bioproject266076.csv')
 	parser.add_argument('-p', '--profile_dir', type=str, help='Path to profiles', nargs='?', default='../data/adenoma_266076/profiles')
-	parser.add_argument('-d', '--phenotype', type=str, help='Phenotype to use on WGS', nargs='?', default='HMgDB_diagnosis')
+	parser.add_argument('-ph', '--phenotype', type=str, help='Phenotype to use on WGS', nargs='?', default='HMgDB_diagnosis')
+	parser.add_argument('-mi', '--model_in', type=int, help='Layer 1 input dimension', nargs='?', default=1749)
+	parser.add_argument('-mo', '--model_out', type=int, help='Layer 3 output dimension', nargs='?', default=3)
+	parser.add_argument('-ba', '--batch_size', type=int, help='Batch size to use', nargs='?', default=8)
+	parser.add_argument('-a', '--include_adenoma', type=bool, help='Include or exclude adenoma in WGS', nargs='?', default=True)
+	parser.add_argument('-e', '--nb_epochs', type=int, help='Number of training epochs', nargs='?', default=50)
 
-	useData = parser.data_type #'wgs'
-	biom_file_16s = parser.biom_file #'../data/biom/47422_otu_table.biom'
-	metadata_file_16s = parser.metadata_file #'../data/metadata/P_1928_65684500_raw_meta.txt'
-	profile_dir_wgs = parser.profile_dir #'../data/adenoma_266076/profiles'
-	metadata_file_wgs = parser.metadata_file #'../data/hmgdb_adenoma_bioproject266076.csv'
-	phenotype_wgs = parser.phenotype #'HMgDB_diagnosis'
+	args = parser.parse_args()
+	useData = args.data_type #'wgs'
+	biom_file_16s = args.biom_file #'../data/biom/47422_otu_table.biom'
+	metadata_file_16s = args.metadata_file #'../data/metadata/P_1928_65684500_raw_meta.txt'
+	profile_dir_wgs = args.profile_dir #'../data/adenoma_266076/profiles'
+	metadata_file_wgs = args.metadata_file #'../data/hmgdb_adenoma_bioproject266076.csv'
+	phenotype_wgs = args.phenotype #'HMgDB_diagnosis'
+	model_in_16s = args.model_in #9160
+	model_out_16s = args.model_out #5
+	model_in_wgs = args.model_in #1749
+	model_out_wgs = args.model_out #3
+	batch_size_16s = args.batch_size #32
+	batch_size_wgs = args.batch_size #8
+	include_adenoma_wgs = args.include_adenoma #True
+	nb_epochs = args.nb_epochs #50
 
 	model_intermediate_16s = 2**math.floor(math.log(model_in_16s, 2)-2)
 	model_intermediate_wgs = 2**math.floor(math.log(model_in_wgs, 2)-2)
