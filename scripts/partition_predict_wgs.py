@@ -142,12 +142,12 @@ def try_cluster(init_n, max_try, true_n, clustering_method, clustering_basis, me
 		else:
 			print("After trying {} times it worked".format(init_n))
 	elif clustering_method.lower() == "kmeans":
-		prediction = get_KMeans_prediction(list(clustering_basis.keys()), clustering_basis, init_n) #clustering_basis = sample:vector dict
+		prediction, sample_ids = get_KMeans_prediction(list(clustering_basis.keys()), clustering_basis, init_n) #clustering_basis = sample:vector dict
 		sample_index_dict = get_index_dict(list(clustering_basis.keys()))
 		group_label_dict = get_group_label_dict(prediction, sample_index_dict, meta_dict)
 		while len(set(group_label_dict.values())) < true_n and init_n < max_try:
 			init_n+=1
-			prediction = get_KMeans_prediction(list(sample_index_dict.keys()), clustering_basis,
+			prediction, sample_ids = get_KMeans_prediction(list(sample_index_dict.keys()), clustering_basis,
 													  init_n)  # clustering_basis = sample:vector dict
 			group_label_dict = get_group_label_dict(prediction, sample_index_dict, meta_dict)
 		if len(set(group_label_dict.values())) < true_n:
@@ -239,10 +239,11 @@ def get_KMedoids_prediction(dmatrix_file, n_clusters):
 								   init='heuristic').fit_predict(distance_matrix)
 	return kmedoids_prediction, sample_ids
 
-def get_KMeans_prediction(sample_ids, sample_vector_dict, n_clusters):
+def get_KMeans_prediction(sample_vector_dict, n_clusters):
+	sample_ids = list(sample_vector_dict.keys())
 	all_vectors = [sample_vector_dict[i] for i in sample_ids]
 	kmeans_predict = KMeans(n_clusters=n_clusters).fit_predict(all_vectors)
-	return kmeans_predict
+	return kmeans_predict, sample_ids
 
 def get_sample_id_from_dict(t_dict):
 	'''
