@@ -129,6 +129,8 @@ def try_cluster(init_n, max_try, true_n, clustering_method, clustering_basis, me
 	'''
 	if clustering_method.lower() == "kmedoids":
 		prediction, sample_ids = get_KMedoids_prediction(clustering_basis, init_n)
+		print(prediction)
+		print(type(prediction))
 		sample_index_dict = get_index_dict(sample_ids)
 		group_label_dict = get_group_label_dict(prediction, sample_index_dict, meta_dict)
 		while len(set(group_label_dict.values())) < true_n and init_n < max_try:
@@ -191,8 +193,8 @@ def get_group_label_dict(predictions, sample_index_dict, meta_dict):
 	results_dict = dict()
 	index_sample_dict = get_reverse_dict(sample_index_dict)
 	# decipher label
-	print(predictions.labels_)
-	for group in set(predictions._labels):
+	print(predictions)
+	for group in set(predictions):
 		label = decipher_label_alternative(predictions, index_sample_dict, group, meta_dict)
 		# may need a tie breaker to ensure values are unique. For now just hope for the best
 		group_label_dict[group] = label
