@@ -18,9 +18,6 @@ def main():
 
     x = args.x
     y = args.y
-    if args.column:
-        df = df[df[args.column] == args.phenotype]
-        print(df)
     if args.type == 'box':
         print("box plot")
         sns.boxplot(x=x, y=y, hue=args.hue, data=df)
