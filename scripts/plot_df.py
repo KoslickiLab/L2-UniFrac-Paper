@@ -9,20 +9,12 @@ def main():
     parser.add_argument('-x', '--x', type=str, help="x axis.")
     parser.add_argument('-y', '--y', type=str, help="y axis.")
     parser.add_argument('-s', '--save', type=str, help="If wants to save df for future use, file name to save as")
-    parser.add_argument('-p', '--phenotype', type=str, help="Condition/site of interest.")
-    parser.add_argument('-c', '--column', type=str, help="Column name in which -p input falls.")
     parser.add_argument('-hue', '--hue', type=str, help="Hue", nargs='?', default="Method")
     parser.add_argument('-t', '--type', type=str, help="Plot type.", choices=['box', 'line'])
 
     args = parser.parse_args()
     dataframe_file = args.file
     df = pd.read_table(dataframe_file)
-    if args.column:
-        s = pd.Series(list(df[args.column]))
-        try:
-            args.phenotype in s.values
-        except:
-            print("Phenotype not found in column specified.")
 
     x = args.x
     y = args.y
@@ -31,7 +23,6 @@ def main():
         print(df)
     if args.type == 'box':
         print("box plot")
-        print(df.columns)
         sns.boxplot(x=x, y=y, hue=args.hue, data=df)
     # sns.set_theme(style="ticks", palette="pastel")
     elif args.type == 'line':
