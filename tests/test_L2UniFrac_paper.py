@@ -159,7 +159,7 @@ def test_get_KMedoids_prediction():
 
 def test_get_merged_clusters():
     dmatrix_file = 'data/adenoma_266076/adenoma_pairwise_L1UniFrac.txt'
-    merged_prediction, updated_group_label_dict = pp2.try_cluster(2, 10, 3, "kmedois", dmatrix_file)
+    merged_prediction, updated_group_label_dict = pp2.try_cluster(2, 10, 3, "kmedoids", dmatrix_file)
     print(updated_group_label_dict)
 
 if __name__ == '__main__':
