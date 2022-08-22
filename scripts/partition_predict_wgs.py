@@ -130,11 +130,11 @@ def try_cluster(init_n, max_try, true_n, clustering_method, clustering_basis, me
 	if clustering_method.lower() == "kmedoids":
 		prediction, sample_ids = get_KMedoids_prediction(clustering_basis, init_n)
 		sample_index_dict = get_index_dict(sample_ids)
-		group_label_dict = get_group_label_dict(prediction, sample_index_dict, meta_dict)
+		group_label_dict = get_group_label_dict(prediction.flatten(), sample_index_dict, meta_dict)
 		while len(set(group_label_dict.values())) < true_n and init_n < max_try:
 			init_n+=1
 			prediction = get_KMedoids_prediction(clustering_basis, init_n)
-			group_label_dict = get_group_label_dict(prediction, sample_index_dict, meta_dict)
+			group_label_dict = get_group_label_dict(prediction.flatten(), sample_index_dict, meta_dict)
 		if len(set(group_label_dict.values())) < true_n:
 			print("Clustering results still not ideal but I did my best. Try increasing max_n")
 		else:
@@ -142,12 +142,12 @@ def try_cluster(init_n, max_try, true_n, clustering_method, clustering_basis, me
 	elif clustering_method.lower() == "kmeans":
 		prediction = get_KMeans_prediction(list(clustering_basis.keys()), clustering_basis, init_n) #clustering_basis = sample:vector dict
 		sample_index_dict = get_index_dict(list(clustering_basis.keys()))
-		group_label_dict = get_group_label_dict(prediction, sample_index_dict, meta_dict)
+		group_label_dict = get_group_label_dict(prediction.flatten(), sample_index_dict, meta_dict)
 		while len(set(group_label_dict.values())) < true_n and init_n < max_try:
 			init_n+=1
 			prediction = get_KMeans_prediction(list(sample_index_dict.keys()), clustering_basis,
 													  init_n)  # clustering_basis = sample:vector dict
-			group_label_dict = get_group_label_dict(prediction, sample_index_dict, meta_dict)
+			group_label_dict = get_group_label_dict(prediction.flatten(), sample_index_dict, meta_dict)
 		if len(set(group_label_dict.values())) < true_n:
 			print("Clustering results still not ideal but I did my best. Try increasing max_n")
 		else:
@@ -156,7 +156,7 @@ def try_cluster(init_n, max_try, true_n, clustering_method, clustering_basis, me
 		prediction = 0
 		group_label_dict = 0
 		print("Clustering method is wrong")
-	merged_prediction, updated_group_label_dict = merge_clusters(prediction, group_label_dict)
+	merged_prediction, updated_group_label_dict = merge_clusters(prediction.flatten(), group_label_dict)
 	return merged_prediction, updated_group_label_dict
 
 def decipher_label_by_vote(predictions, training, group_name, meta_dict, sample_dict):
