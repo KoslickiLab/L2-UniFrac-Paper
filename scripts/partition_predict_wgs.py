@@ -154,6 +154,7 @@ def try_cluster(init_n, max_try, true_n, clustering_method, clustering_basis):
 			print("After trying {} times it worked".format(init_n))
 	else:
 		prediction = 0
+		group_label_dict = 0
 		print("Clustering method is wrong")
 	merged_prediction, updated_group_label_dict = merge_clusters(prediction, group_label_dict)
 	return merged_prediction, updated_group_label_dict
