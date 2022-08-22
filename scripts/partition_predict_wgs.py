@@ -116,7 +116,7 @@ def merge_clusters(predictions, group_label_dict):
 	updated_group_label_dict = get_reverse_dict(get_reverse_dict(group_label_dict))
 	return merged_predictions, updated_group_label_dict
 
-def try_cluster(init_n, max_try, true_n, clustering_method, clustering_basis):
+def try_cluster(init_n, max_try, true_n, clustering_method, clustering_basis, meta_dict):
 	'''
 
 	:param init_n: initial clustering number
@@ -130,11 +130,11 @@ def try_cluster(init_n, max_try, true_n, clustering_method, clustering_basis):
 	if clustering_method.lower() == "kmedoids":
 		prediction, sample_ids = get_KMedoids_prediction(clustering_basis, init_n)
 		sample_index_dict = get_index_dict(sample_ids)
-		group_label_dict = get_group_label_dict(prediction, sample_index_dict)
+		group_label_dict = get_group_label_dict(prediction, sample_index_dict, meta_dict)
 		while len(set(group_label_dict.values())) < true_n and init_n < max_try:
 			init_n+=1
 			prediction = get_KMedoids_prediction(clustering_basis, init_n)
-			group_label_dict = get_group_label_dict(prediction, sample_index_dict)
+			group_label_dict = get_group_label_dict(prediction, sample_index_dict, meta_dict)
 		if len(set(group_label_dict.values())) < true_n:
 			print("Clustering results still not ideal but I did my best. Try increasing max_n")
 		else:
@@ -142,12 +142,12 @@ def try_cluster(init_n, max_try, true_n, clustering_method, clustering_basis):
 	elif clustering_method.lower() == "kmeans":
 		prediction = get_KMeans_prediction(list(clustering_basis.keys()), clustering_basis, init_n) #clustering_basis = sample:vector dict
 		sample_index_dict = get_index_dict(list(clustering_basis.keys()))
-		group_label_dict = get_group_label_dict(prediction, sample_index_dict)
+		group_label_dict = get_group_label_dict(prediction, sample_index_dict, meta_dict)
 		while len(set(group_label_dict.values())) < true_n and init_n < max_try:
 			init_n+=1
 			prediction = get_KMeans_prediction(list(sample_index_dict.keys()), clustering_basis,
 													  init_n)  # clustering_basis = sample:vector dict
-			group_label_dict = get_group_label_dict(prediction, sample_index_dict, init_n)
+			group_label_dict = get_group_label_dict(prediction, sample_index_dict, meta_dict)
 		if len(set(group_label_dict.values())) < true_n:
 			print("Clustering results still not ideal but I did my best. Try increasing max_n")
 		else:
@@ -186,7 +186,7 @@ def decipher_label_alternative(predictions, index_sample_dict, group_name, meta_
 	predicted_by_vote = c.most_common(1)[0][0]
 	return predicted_by_vote
 
-def get_group_label_dict(predictions, sample_index_dict):
+def get_group_label_dict(predictions, sample_index_dict, meta_dict):
 	group_label_dict = dict()
 	results_dict = dict()
 	index_sample_dict = get_reverse_dict(sample_index_dict)
