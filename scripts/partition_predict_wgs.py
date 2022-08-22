@@ -1,3 +1,4 @@
+import copy
 import os
 import sys, biom
 sys.path.append('L2-UniFrac')
@@ -103,19 +104,57 @@ def get_label(test_vector, rep_sample_dict, Tint, lint, nodes_in_order):
 			label = phenotype
 	return label
 
-###maybe remove###
-def get_score_by_clustering_method(clustering_method, train_dict, test_dict, meta_dict, sample_dict, distance_matrix_file, n_clusters):
-	distance_matrix = pd.read_csv(distance_matrix_file, header=None)
-	#n_clusters = len(train_dict.keys()) #number of classes
-	if clustering_method.lower() == "agglomerative": #case insensitive
-		agglomerative_prediction = AgglomerativeClustering(n_clusters=n_clusters, affinity='precomputed', linkage='complete').fit_predict(distance_matrix)
-		#accuracy score by body site
-		results = get_clustering_scores(agglomerative_prediction, train_dict,test_dict, meta_dict, sample_dict)
+def merge_clusters(predictions, group_label_dict):
+	'''
+	Merge predictions by collapsing clusters with the same phenotype
+	:param predictions:
+	:param group_label_dict: {group:label}
+	:return:
+	'''
+	label_group_dict = get_reverse_dict(group_label_dict)
+	merged_predictions = [label_group_dict[group_label_dict[i]] for i in predictions]
+	updated_group_label_dict = get_reverse_dict(get_reverse_dict(group_label_dict))
+	return merged_predictions, updated_group_label_dict
+
+def try_cluster(init_n, max_try, true_n, clustering_method, clustering_basis):
+	'''
+
+	:param init_n: initial clustering number
+	:param max_try: max number of clustering number to try
+	:param true_n: true desired number of unique labels
+	:param clustering_method: kmedoids or kmeans
+	:param clustering_basis: distance matrix or sample_vector_dict, depending on clustering method
+	:param sample_index_dict:
+	:return:
+	'''
 	if clustering_method.lower() == "kmedoids":
-		kmedoids_prediction = KMedoids(n_clusters=n_clusters, metric='precomputed', method='pam', init='heuristic').fit_predict(distance_matrix)
-		results = get_clustering_scores(kmedoids_prediction, train_dict, test_dict, meta_dict, sample_dict)
-	return results
-###maybe remove###
+		kmedoids_prediction, sample_ids = get_KMedoids_prediction(clustering_basis, init_n)
+		sample_index_dict = get_index_dict(sample_ids)
+		group_label_dict = get_group_label_dict(kmedoids_prediction, sample_index_dict)
+		while len(set(group_label_dict.values())) < true_n and init_n < max_try:
+			init_n+=1
+			kmedoids_prediction = get_KMedoids_prediction(clustering_basis, init_n)
+			group_label_dict = get_group_label_dict(kmedoids_prediction, sample_index_dict)
+		if len(set(group_label_dict.values())) < true_n:
+			print("Clustering results still not ideal but I did my best. Try increasing max_n")
+		else:
+			print("After trying {} times it worked".format(init_n))
+		merged_prediction, updated_group_label_dict = merge_clusters(kmedoids_prediction, group_label_dict)
+	elif clustering_method.lower() == "kmeans":
+		kmeans_prediction = get_KMeans_prediction(list(clustering_basis.keys()), clustering_basis, init_n) #clustering_basis = sample:vector dict
+		sample_index_dict = get_index_dict(list(clustering_basis.keys()))
+		group_label_dict = get_group_label_dict(kmeans_prediction, sample_index_dict)
+		while len(set(group_label_dict.values())) < true_n and init_n < max_try:
+			init_n+=1
+			kmeans_prediction = get_KMeans_prediction(list(sample_index_dict.keys()), clustering_basis,
+													  init_n)  # clustering_basis = sample:vector dict
+			group_label_dict = get_group_label_dict(kmeans_prediction, sample_index_dict, init_n)
+		if len(set(group_label_dict.values())) < true_n:
+			print("Clustering results still not ideal but I did my best. Try increasing max_n")
+		else:
+			print("After trying {} times it worked".format(init_n))
+		merged_prediction, updated_group_label_dict = merge_clusters(kmeans_prediction, group_label_dict)
+	return merged_prediction, updated_group_label_dict
 
 def decipher_label_by_vote(predictions, training, group_name, meta_dict, sample_dict):
 	'''
@@ -144,7 +183,20 @@ def decipher_label_alternative(predictions, index_sample_dict, group_name, meta_
 	predicted_by_vote = c.most_common(1)[0][0]
 	return predicted_by_vote
 
-def get_clustering_scores(predictions, test_ids, meta_dict, sample_index_dict):
+def get_group_label_dict(predictions, sample_index_dict):
+	group_label_dict = dict()
+	results_dict = dict()
+	index_sample_dict = get_reverse_dict(sample_index_dict)
+	# decipher label
+	for group in set(predictions):
+		label = decipher_label_alternative(predictions, index_sample_dict, group, meta_dict)
+		# may need a tie breaker to ensure values are unique. For now just hope for the best
+		group_label_dict[group] = label
+	print('group label dict:')
+	print(group_label_dict)
+	return group_label_dict
+
+def get_clustering_scores(predictions, test_ids, meta_dict, sample_index_dict, group_label_dict):
 	'''
 	Returns a dict of scores for a particular set of predictions
 	:param predictions:
@@ -154,17 +206,7 @@ def get_clustering_scores(predictions, test_ids, meta_dict, sample_index_dict):
 	:param sample_dict:
 	:return:
 	'''
-	group_label_dict = dict()
 	results_dict = dict()
-	index_sample_dict = get_reverse_dict(sample_index_dict)
-	#decipher label
-	for group in set(predictions):
-		label = decipher_label_alternative(predictions, index_sample_dict, group, meta_dict)
-		# may need a tie breaker to ensure values are unique. For now just hope for the best
-		group_label_dict[group] = label
-	print('group label dict:')
-	print(group_label_dict)
-
 	test_indices = [sample_index_dict[sample_id] for sample_id in test_ids]
 	predicted_group_test = [predictions[i] for i in test_indices]
 	predicted_labels = [group_label_dict[group] for group in predicted_group_test]
@@ -191,7 +233,7 @@ def get_KMedoids_prediction(dmatrix_file, n_clusters):
 								   init='heuristic').fit_predict(distance_matrix)
 	return kmedoids_prediction, sample_ids
 
-def get_KMeans_prediction(sample_ids, sample_vector_dict):
+def get_KMeans_prediction(sample_ids, sample_vector_dict, n_clusters):
 	all_vectors = [sample_vector_dict[i] for i in sample_ids]
 	kmeans_predict = KMeans(n_clusters=n_clusters).fit_predict(all_vectors)
 	return kmeans_predict

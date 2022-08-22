@@ -157,6 +157,11 @@ def test_get_KMedoids_prediction():
     print(kmedoids_prediction[:10])
     print(sample_ids[:10])
 
+def test_get_merged_clusters():
+    dmatrix_file = 'data/adenoma_266076/adenoma_pairwise_L1UniFrac.txt'
+    merged_prediction, updated_group_label_dict = pp2.try_cluster(2, 10, 3, "kmedois", dmatrix_file)
+    print(updated_group_label_dict)
+
 if __name__ == '__main__':
 	#test_partition_sample()
     #test_decipher_label()
@@ -167,4 +172,5 @@ if __name__ == '__main__':
     #test_get_rep_sample_from_profiles()
     #test_wgs_L2UniFrac()
     #test_get_KMedoids_prediction()
-    test_get_wgs_clustering_results()
+    #test_get_wgs_clustering_results()
+    test_get_merged_clusters()
