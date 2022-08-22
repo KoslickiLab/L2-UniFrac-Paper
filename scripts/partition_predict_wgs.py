@@ -162,6 +162,7 @@ def get_clustering_scores(predictions, test_ids, meta_dict, sample_index_dict):
 		label = decipher_label_alternative(predictions, index_sample_dict, group, meta_dict)
 		# may need a tie breaker to ensure values are unique. For now just hope for the best
 		group_label_dict[group] = label
+	print('group label dict:')
 	print(group_label_dict)
 
 	test_indices = [sample_index_dict[sample_id] for sample_id in test_ids]
@@ -179,8 +180,8 @@ def get_clustering_scores(predictions, test_ids, meta_dict, sample_index_dict):
 	results_dict['precision_macro'] = precision_score(true_labels, predicted_labels, average='macro')
 	results_dict['recall_micro'] = recall_score(true_labels, predicted_labels, average='micro')
 	results_dict['recall_macro'] = recall_score(true_labels, predicted_labels, average='macro')
-	print("clustering results:")
-	print(results_dict)
+	#print("clustering results:")
+	#print(results_dict)
 	return results_dict
 
 def get_KMedoids_prediction(dmatrix_file, n_clusters):
