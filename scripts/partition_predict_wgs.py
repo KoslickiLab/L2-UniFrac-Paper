@@ -191,8 +191,8 @@ def get_group_label_dict(predictions, sample_index_dict, meta_dict):
 	results_dict = dict()
 	index_sample_dict = get_reverse_dict(sample_index_dict)
 	# decipher label
-	print(predictions)
-	for group in set(list(predictions)):
+	print(predictions.labels_)
+	for group in set(predictions._labels):
 		label = decipher_label_alternative(predictions, index_sample_dict, group, meta_dict)
 		# may need a tie breaker to ensure values are unique. For now just hope for the best
 		group_label_dict[group] = label
