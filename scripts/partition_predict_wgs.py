@@ -157,9 +157,10 @@ def try_cluster(init_n, max_try, true_n, clustering_method, clustering_basis, me
 	else:
 		prediction = 0
 		group_label_dict = 0
+		sample_ids = 0
 		print("Clustering method is wrong")
 	merged_prediction, updated_group_label_dict = merge_clusters(prediction, group_label_dict)
-	return merged_prediction, updated_group_label_dict
+	return merged_prediction, updated_group_label_dict, sample_ids
 
 def decipher_label_by_vote(predictions, training, group_name, meta_dict, sample_dict):
 	'''
@@ -311,26 +312,36 @@ if __name__ == '__main__':
 
 	test_sizes = [0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
 
-	col_names = ["Method", "Test_size", "Score_type", "Score"]
+	col_names = ["Method", "Test_size", "accuracy_score", 'rand_score', 'adjusted_rand_score', 'adjusted_mutual_info_score', 'normalized_mutual_info_score', 'fowlkes_mallows_score', 'balanced_accuracy_score', 'precision_micro', 'precision_macro', 'recall_micro', 'recall_macro']
 	df = pd.DataFrame(columns=col_names)
-	scores_col = []
+	method_col = []
 	test_size_col = []
 
 	#clusterings (independent of sample splitting)
-	init_n = len(set(meta_dict))
-	true_n = init_n
+	true_n = len(set(meta_dict))
+	init_n = true_n
 	#kmedoids
-	kmedoids_prediction, kmedoids_group_label_dict = try_cluster(init_n, 30, 3, "kmedoids", args.distance_matrix, meta_dict)
+	kmedoids_prediction, kmedoids_group_label_dict, kmedoids_sample_ids = try_cluster(init_n, 30, true_n, "kmedoids", args.distance_matrix, meta_dict)
+	kmedoids_sample_index_dict = get_index_dict(kmedoids_sample_ids)
+	#kmeans
 	all_samples = sample_id = list(meta_dict.keys())
 	all_samples_paths = [profile_dir + '/' + sample + '.profile' for sample in all_samples]
 	sample_vector_dict = L2U.merge_profiles_by_dir(all_samples_paths, nodes_to_index)
-
+	init_n = true_n #may not be needed, just to be safe
+	kmeans_prediction, kmeans_group_label_dict, kmeans_sample_ids = try_cluster(init_n, 30, true_n, 'kmeans', sample_vector_dict, meta_dict)
+	kmeans_sample_index_dict = get_index_dict(kmeans_sample_ids)
 
 	for test_size in test_sizes:
 		print('test size:', test_size)
 		for i in range(10):
 			#data prep
-			test_size_col.append(test_size)
+			col_names = ["Method", "Test_size", "accuracy_score", 'rand_score', 'adjusted_rand_score',
+						 'adjusted_mutual_info_score', 'normalized_mutual_info_score', 'fowlkes_mallows_score',
+						 'balanced_accuracy_score', 'precision_micro', 'precision_macro', 'recall_micro',
+						 'recall_macro']
+			df_tmp = pd.DataFrame(columns=col_names)
+			df_tmp['Test_size'] = [test_size] * 3
+			df_tmp['Method'] = ['L2UniFrac', 'KMedoids', 'KMeans']
 			samples_train, samples_test, targets_train, targets_test = partition_sample(meta_dict, random_state=i, test_size=test_size)
 			samples_train_paths = [profile_dir + '/' + sample + '.profile' for sample in samples_train]
 			pheno_sample_dict = get_pheno_sample_dict(samples_train_paths, targets_train)
@@ -338,13 +349,16 @@ if __name__ == '__main__':
 			#L2UniFrac results
 			L2_results_dict = get_L2UniFrac_accuracy_results(samples_test, targets_test, Tint, lint, nodes_in_order, rep_sample_dict, sample_vector_dict)
 			#KMedoids results
-
-
-	df['Method'] = ['L2UniFrac'] * len(scores_col)
-	df['Test_size'] = test_size_col
-	df['Score_type'] = ['Accuracy'] * len(scores_col)
-	df['Score'] = scores_col
-
+			kmedoids_results = get_clustering_scores(kmedoids_prediction, samples_test, meta_dict, kmedoids_sample_index_dict, kmedoids_group_label_dict)
+			#KMeans results
+			kmeans_results = get_clustering_scores(kmeans_prediction, samples_test, meta_dict, kmeans_sample_index_dict, kmeans_group_label_dict)
+			for score_type in L2_results_dict.keys():
+				col_tmp = []
+				col_tmp.append(L2_results_dict[score_type])
+				col_tmp.append(kmedoids_results[score_type])
+				col_tmp.append(kmeans_results[score_type])
+				df_tmp[score_type] = col_tmp
+			df = df.append(df_tmp, ignore_index=True)
 	df.to_csv(args.save, sep="\t")
 
 
