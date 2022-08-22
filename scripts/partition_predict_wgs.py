@@ -175,8 +175,10 @@ def get_clustering_scores(predictions, test_ids, meta_dict, sample_index_dict):
 	results_dict['adjusted_mutual_info_score'] = adjusted_mutual_info_score(true_labels, predicted_group_test)
 	results_dict['normalized_mutual_info_score'] = normalized_mutual_info_score(true_labels, predicted_group_test)
 	results_dict['fowlkes_mallows_score'] = fowlkes_mallows_score(true_labels, predicted_group_test)
-	results_dict['precision_score'] = precision_score(true_labels, predicted_labels)
-	results_dict['recall_score'] = recall_score(true_labels, predicted_labels)
+	results_dict['precision_micro'] = precision_score(true_labels, predicted_labels, average='micro')
+	results_dict['precision_macro'] = precision_score(true_labels, predicted_labels, average='macro')
+	results_dict['recall_micro'] = recall_score(true_labels, predicted_labels, average='micro')
+	results_dict['recall_macro'] = recall_score(true_labels, predicted_labels, average='macro')
 	print("clustering results:")
 	print(results_dict)
 	return results_dict
@@ -219,8 +221,10 @@ def get_L2UniFrac_accuracy_results(test_ids, test_targets,Tint, lint, nodes_in_o
 	results_dict['normalized_mutual_info_score'] = normalized_mutual_info_score(test_targets, overall_predictions)
 	results_dict['fowlkes_mallows_score'] = fowlkes_mallows_score(test_targets, overall_predictions)
 	results_dict['balanced_accuracy_score'] = balanced_accuracy_score(test_targets, overall_predictions)
-	results_dict['precision_score'] = precision_score(test_targets, overall_predictions)
-	results_dict['recall_score'] = recall_score(test_targets, overall_predictions)
+	results_dict['precision_micro'] = precision_score(test_targets, overall_predictions, average='micro')
+	results_dict['precision_macro'] = precision_score(test_targets, overall_predictions, average='macro')
+	results_dict['recall_micro'] = recall_score(test_targets, overall_predictions, average='micro')
+	results_dict['recall_macro'] = recall_score(test_targets, overall_predictions, average='macro')
 	return results_dict
 
 def compile_dataframe(n_repeat, train_percentage, biom_file, tree_file, metadata_file, metadata_key, sample_dict, dm_file, n_clusters):
