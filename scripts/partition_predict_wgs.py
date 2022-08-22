@@ -293,7 +293,6 @@ if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Get testing statistics of classification test.')
 	parser.add_argument('-m', '--meta_file', type=str, help='A metadata file.', nargs='?')
 	parser.add_argument('-p', '--phenotype', type=str, help='A selected phenotype corresponding to a column name in the metadata file.', nargs='?', default="HMgDB_diagnosis")
-	#parser.add_argument('-t', '--test_size', type=int, help='What percentage of data used in testing.', nargs='?', default=0.2)
 	parser.add_argument('-n', '--num_repeats', type=int, help="Number of repeats for each experiment.", nargs='?', default=10)
 	parser.add_argument('-s', '--save', type=str, help="Save the dataframe file as.")
 	parser.add_argument('-dm', '--distance_matrix', type=str, help="Pairwise unifrac distance matrix.")
@@ -303,7 +302,6 @@ if __name__ == '__main__':
 	metadata_file = args.meta_file
 	metadata_key = args.phenotype
 	n_repeat = args.num_repeats
-	n_clusters = args.num_clusters
 	profile_dir = args.pdir
 
 	profile_path_lst = [os.path.join(profile_dir, file) for file in os.listdir(profile_dir)]
@@ -333,7 +331,7 @@ if __name__ == '__main__':
 
 	for test_size in test_sizes:
 		print('test size:', test_size)
-		for i in range(10):
+		for i in range(n_repeat):
 			#data prep
 			col_names = ["Method", "Test_size", "accuracy_score", 'rand_score', 'adjusted_rand_score',
 						 'adjusted_mutual_info_score', 'normalized_mutual_info_score', 'fowlkes_mallows_score',
