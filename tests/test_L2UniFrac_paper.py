@@ -144,8 +144,10 @@ def test_wgs_L2UniFrac():
 def test_get_wgs_clustering_results():
     meta_dict = pp2.get_metadata_dict('data/hmgdb_adenoma_bioproject266076.csv')
     samples_train, samples_test, targets_train, targets_test = pp2.partition_sample(meta_dict, 0)
-
-    results = get_clustering_scores(predictions, train_dict, test_dict, meta_dict, sample_index_dict)
+    kmedoids_prediction, sample_ids = pp2.get_KMedoids_prediction('data/adenoma_266076/adenoma_pairwise_L1UniFrac.txt', len(meta_dict.keys()))
+    sample_index_dict = pp2.get_index_dict(sample_ids)
+    results = pp2.get_clustering_scores(kmedoids_prediction, samples_test, meta_dict, sample_index_dict)
+    print(results)
 
 def test_get_KMedoids_prediction():
     dmatrix_file = 'data/adenoma_266076/adenoma_pairwise_L1UniFrac.txt'
@@ -162,4 +164,5 @@ if __name__ == '__main__':
     #test_merge_profile()
     #test_get_rep_sample_from_profiles()
     #test_wgs_L2UniFrac()
-    test_get_KMedoids_prediction()
+    #test_get_KMedoids_prediction()
+    test_get_wgs_clustering_results()

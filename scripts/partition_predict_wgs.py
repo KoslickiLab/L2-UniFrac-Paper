@@ -6,7 +6,7 @@ sys.path.append('L2-UniFrac/scripts')
 import argparse
 import L2UniFrac as L2U
 import pandas as pd
-from sklearn.cluster import AgglomerativeClustering
+from sklearn.cluster import KMeans
 from sklearn_extra.cluster import KMedoids
 from sklearn.metrics import accuracy_score, rand_score, balanced_accuracy_score, precision_score, recall_score
 from sklearn.metrics.cluster import adjusted_rand_score, normalized_mutual_info_score, adjusted_mutual_info_score, fowlkes_mallows_score
@@ -144,7 +144,7 @@ def decipher_label_alternative(predictions, index_sample_dict, group_name, meta_
 	predicted_by_vote = c.most_common(1)[0][0]
 	return predicted_by_vote
 
-def get_clustering_scores(predictions, train_dict, test_dict, meta_dict, sample_index_dict):
+def get_clustering_scores(predictions, test_ids, meta_dict, sample_index_dict):
 	'''
 	Returns a dict of scores for a particular set of predictions
 	:param predictions:
@@ -154,8 +154,6 @@ def get_clustering_scores(predictions, train_dict, test_dict, meta_dict, sample_
 	:param sample_dict:
 	:return:
 	'''
-	train_ids = get_sample_id_from_dict(train_dict)
-	test_ids = get_sample_id_from_dict(test_dict)
 	group_label_dict = dict()
 	results_dict = dict()
 	index_sample_dict = get_reverse_dict(sample_index_dict)
@@ -165,34 +163,20 @@ def get_clustering_scores(predictions, train_dict, test_dict, meta_dict, sample_
 		# may need a tie breaker to ensure values are unique. For now just hope for the best
 		group_label_dict[group] = label
 	print(group_label_dict)
-	for phenotype in test_dict.keys():
-		results_dict[phenotype] = dict()
-		test_ids_this_pheno = test_dict[phenotype]
-		test_indices_this_pheno = [sample_index_dict[sample_id] for sample_id in test_ids_this_pheno]
-		predicted_group_test_this_pheno = [predictions[i] for i in test_indices_this_pheno]
-		predicted_labels_this_pheno = [group_label_dict[group] for group in predicted_group_test_this_pheno]
-		true_labels_this_pheno = [meta_dict[i] for i in test_ids_this_pheno]
-		results_dict[phenotype]['balanced_accuracy_score'] = balanced_accuracy_score(true_labels_this_pheno, predicted_labels_this_pheno)
-		results_dict[phenotype]['precision_score'] = precision_score(true_labels_this_pheno, predicted_labels_this_pheno)
-		results_dict[phenotype]['recall_score'] = recall_score(true_labels_this_pheno, predicted_labels_this_pheno)
-		results_dict[phenotype]['rand_score'] = rand_score(true_labels_this_pheno, predicted_group_test_this_pheno)
-		results_dict[phenotype]['adjusted_rand_score'] = adjusted_rand_score(true_labels_this_pheno, predicted_group_test_this_pheno)
-		results_dict[phenotype]['adjusted_mutual_info_score'] = adjusted_mutual_info_score(true_labels_this_pheno, predicted_group_test_this_pheno)
-		results_dict[phenotype]['normalized_mutual_info_score'] = normalized_mutual_info_score(true_labels_this_pheno,predicted_group_test_this_pheno)
-		results_dict[phenotype]['fowlkes_mallows_score'] = fowlkes_mallows_score(true_labels_this_pheno, predicted_group_test_this_pheno)
+
 	test_indices = [sample_index_dict[sample_id] for sample_id in test_ids]
 	predicted_group_test = [predictions[i] for i in test_indices]
 	predicted_labels = [group_label_dict[group] for group in predicted_group_test]
 	true_labels = [meta_dict[i] for i in test_ids]
-	results_dict['overall'] = dict()
-	results_dict['overall']['accuracy_score'] = accuracy_score(true_labels, predicted_labels)
-	results_dict['overall']['rand_score'] = rand_score(true_labels, predicted_group_test)
-	results_dict['overall']['adjusted_rand_score'] = adjusted_rand_score(true_labels, predicted_group_test)
-	results_dict['overall']['adjusted_mutual_info_score'] = adjusted_mutual_info_score(true_labels, predicted_group_test)
-	results_dict['overall']['normalized_mutual_info_score'] = normalized_mutual_info_score(true_labels, predicted_group_test)
-	results_dict['overall']['fowlkes_mallows_score'] = fowlkes_mallows_score(true_labels, predicted_group_test)
-	results_dict['overall']['precision_score'] = precision_score(true_labels, predicted_labels)
-	results_dict['overall']['recall_score'] = recall_score(true_labels, predicted_labels)
+	results_dict['accuracy_score'] = accuracy_score(true_labels, predicted_labels)
+	results_dict['balanced_accuracy_score'] = balanced_accuracy_score(true_labels, predicted_labels)
+	results_dict['rand_score'] = rand_score(true_labels, predicted_group_test)
+	results_dict['adjusted_rand_score'] = adjusted_rand_score(true_labels, predicted_group_test)
+	results_dict['adjusted_mutual_info_score'] = adjusted_mutual_info_score(true_labels, predicted_group_test)
+	results_dict['normalized_mutual_info_score'] = normalized_mutual_info_score(true_labels, predicted_group_test)
+	results_dict['fowlkes_mallows_score'] = fowlkes_mallows_score(true_labels, predicted_group_test)
+	results_dict['precision_score'] = precision_score(true_labels, predicted_labels)
+	results_dict['recall_score'] = recall_score(true_labels, predicted_labels)
 	print("clustering results:")
 	print(results_dict)
 	return results_dict
@@ -203,6 +187,11 @@ def get_KMedoids_prediction(dmatrix_file, n_clusters):
 	kmedoids_prediction = KMedoids(n_clusters=n_clusters, metric='precomputed', method='pam',
 								   init='heuristic').fit_predict(distance_matrix)
 	return kmedoids_prediction, sample_ids
+
+def get_KMeans_prediction(sample_ids, sample_vector_dict):
+	all_vectors = [sample_vector_dict[i] for i in sample_ids]
+	kmeans_predict = KMeans(n_clusters=n_clusters).fit_predict(all_vectors)
+	return kmeans_predict
 
 def get_sample_id_from_dict(t_dict):
 	'''
@@ -215,41 +204,23 @@ def get_sample_id_from_dict(t_dict):
 		sample_lst+=list(t_dict[phenotype].keys())
 	return sample_lst
 
-def get_L2UniFrac_accuracy_results(train_dict, test_dict,Tint, lint, nodes_in_order, meta_dict):
+def get_L2UniFrac_accuracy_results(test_ids, test_targets,Tint, lint, nodes_in_order, rep_sample_dict, sample_vector_dict):
 	results_dict = dict()
-	rep_sample_dict = dict()
-	for phenotype in train_dict.keys():
-		print(phenotype)
-		vectors = train_dict[phenotype].values()
-		rep_sample = get_average_sample(vectors, Tint, lint, nodes_in_order)
-		rep_sample_dict[phenotype] = rep_sample
-	test_id = []
-	overall_predictions = []
-	all_true_labels = []
-	for phenotype in test_dict.keys():
-		test_id += list(test_dict[phenotype].keys())
-		true_labels = [str(phenotype)] * len(test_dict[phenotype].keys())
-		predictions = []
-		for test_vector in test_dict[phenotype].values(): #list of samples in a particular phenotype
-			prediction = get_label(test_vector, rep_sample_dict, Tint, lint, nodes_in_order)
-			predictions.append(prediction)
-		overall_predictions += predictions
-		all_true_labels += true_labels
-		results_dict[phenotype] = dict()
-		results_dict[phenotype]['accuracy_score'] = accuracy_score(true_labels, predictions)
-		results_dict[phenotype]['rand_score'] = rand_score(true_labels, predictions)
-		results_dict[phenotype]['adjusted_rand_score'] = adjusted_rand_score(true_labels, predictions)
-		results_dict[phenotype]['adjusted_mutual_info_score'] = adjusted_mutual_info_score(true_labels, predictions)
-		results_dict[phenotype]['normalized_mutual_info_score'] = normalized_mutual_info_score(true_labels, predictions)
-		results_dict[phenotype]['fowlkes_mallows_score'] = fowlkes_mallows_score(true_labels, predictions)
-	results_dict['overall'] = dict()
-	results_dict['overall']['accuracy_score'] = accuracy_score(all_true_labels, overall_predictions)
-	results_dict['overall']['rand_score'] = rand_score(all_true_labels, overall_predictions)
-	results_dict['overall']['adjusted_rand_score'] = adjusted_rand_score(all_true_labels, overall_predictions)
-	results_dict['overall']['adjusted_mutual_info_score'] = adjusted_mutual_info_score(all_true_labels, overall_predictions)
-	results_dict['overall']['normalized_mutual_info_score'] = normalized_mutual_info_score(all_true_labels, overall_predictions)
-	results_dict['overall']['fowlkes_mallows_score'] = fowlkes_mallows_score(all_true_labels, overall_predictions)
 
+	overall_predictions = []
+	for i, id in enumerate(test_ids):
+		prediction = get_label(sample_vector_dict[id], rep_sample_dict, Tint, lint, nodes_in_order)
+		overall_predictions.append(prediction)
+
+	results_dict['accuracy_score'] = accuracy_score(test_targets, overall_predictions)
+	results_dict['rand_score'] = rand_score(test_targets, overall_predictions)
+	results_dict['adjusted_rand_score'] = adjusted_rand_score(test_targets, overall_predictions)
+	results_dict['adjusted_mutual_info_score'] = adjusted_mutual_info_score(test_targets, overall_predictions)
+	results_dict['normalized_mutual_info_score'] = normalized_mutual_info_score(test_targets, overall_predictions)
+	results_dict['fowlkes_mallows_score'] = fowlkes_mallows_score(test_targets, overall_predictions)
+	results_dict['balanced_accuracy_score'] = balanced_accuracy_score(test_targets, overall_predictions)
+	results_dict['precision_score'] = precision_score(test_targets, overall_predictions)
+	results_dict['recall_score'] = recall_score(test_targets, overall_predictions)
 	return results_dict
 
 def compile_dataframe(n_repeat, train_percentage, biom_file, tree_file, metadata_file, metadata_key, sample_dict, dm_file, n_clusters):
@@ -307,26 +278,19 @@ def get_reverse_dict(dct):
 	return reverse_dict
 
 
-#extract_samples_by_group(biom_file, metadata_file, metadata_key)
-#extract_sample_names_by_group(biom_file, metadata_file, metadata_key)
-#extract_samples_direct(biom_file, tree_file)
-#extract_samples_direct_by_group(biom_file, tree_file, metadata_file, metadata_key)
-#partition_samples(train_percentage, biom_file, tree_file, metadata_file, metadata_key)
-
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Get testing statistics of classification test.')
-	parser.add_argument('-m', '--meta_file', type=str, help='A metadata file.', nargs='?', default='data/metadata/P_1928_65684500_raw_meta.txt')
+	parser.add_argument('-m', '--meta_file', type=str, help='A metadata file.', nargs='?')
 	parser.add_argument('-p', '--phenotype', type=str, help='A selected phenotype corresponding to a column name in the metadata file.', nargs='?', default="HMgDB_diagnosis")
 	#parser.add_argument('-t', '--test_size', type=int, help='What percentage of data used in testing.', nargs='?', default=0.2)
 	parser.add_argument('-n', '--num_repeats', type=int, help="Number of repeats for each experiment.", nargs='?', default=10)
 	parser.add_argument('-s', '--save', type=str, help="Save the dataframe file as.")
-	parser.add_argument('-c', '--num_clusters', type=int, help="Number of clusters.", nargs='?', default=5)
+	parser.add_argument('-c', '--num_clusters', type=int, help="Number of clusters.", nargs='?')
 	parser.add_argument('-d', '--pdir', type=str, help="Directory of profiles")
 
 	args = parser.parse_args()
 	metadata_file = args.meta_file
 	metadata_key = args.phenotype
-	#test_size = args.test_size
 	n_repeat = args.num_repeats
 	n_clusters = args.num_clusters
 	profile_dir = args.pdir
