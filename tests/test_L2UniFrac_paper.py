@@ -144,6 +144,7 @@ def test_wgs_L2UniFrac():
 def test_get_wgs_clustering_results():
     meta_dict = pp2.get_metadata_dict('data/hmgdb_adenoma_bioproject266076.csv')
     samples_train, samples_test, targets_train, targets_test = pp2.partition_sample(meta_dict, 0)
+    print(targets_train)
     kmedoids_prediction, sample_ids = pp2.get_KMedoids_prediction('data/adenoma_266076/adenoma_pairwise_L1UniFrac.txt',4)
     sample_index_dict = pp2.get_index_dict(sample_ids)
     print(kmedoids_prediction)
