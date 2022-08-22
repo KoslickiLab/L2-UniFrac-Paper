@@ -135,7 +135,7 @@ def try_cluster(init_n, max_try, true_n, clustering_method, clustering_basis, me
 		group_label_dict = get_group_label_dict(prediction, sample_index_dict, meta_dict)
 		while len(set(group_label_dict.values())) < true_n and init_n < max_try:
 			init_n+=1
-			prediction = get_KMedoids_prediction(clustering_basis, init_n)
+			prediction, sample_ids = get_KMedoids_prediction(clustering_basis, init_n)
 			group_label_dict = get_group_label_dict(prediction, sample_index_dict, meta_dict)
 		if len(set(group_label_dict.values())) < true_n:
 			print("Clustering results still not ideal but I did my best. Try increasing max_n")
