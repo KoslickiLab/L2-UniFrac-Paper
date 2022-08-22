@@ -327,7 +327,7 @@ if __name__ == '__main__':
 	all_samples_paths = [profile_dir + '/' + sample + '.profile' for sample in all_samples]
 	sample_vector_dict = L2U.merge_profiles_by_dir(all_samples_paths, nodes_to_index)
 	init_n = true_n #may not be needed, just to be safe
-	kmeans_prediction, kmeans_group_label_dict, kmeans_sample_ids = try_cluster(init_n, 30, true_n, 'kmeans', sample_vector_dict, meta_dict)
+	kmeans_prediction, kmeans_group_label_dict, kmeans_sample_ids = try_cluster(init_n, 5, true_n, 'kmeans', sample_vector_dict, meta_dict)
 	kmeans_sample_index_dict = get_index_dict(kmeans_sample_ids)
 
 	for test_size in test_sizes:
