@@ -128,32 +128,31 @@ def try_cluster(init_n, max_try, true_n, clustering_method, clustering_basis):
 	:return:
 	'''
 	if clustering_method.lower() == "kmedoids":
-		kmedoids_prediction, sample_ids = get_KMedoids_prediction(clustering_basis, init_n)
+		prediction, sample_ids = get_KMedoids_prediction(clustering_basis, init_n)
 		sample_index_dict = get_index_dict(sample_ids)
-		group_label_dict = get_group_label_dict(kmedoids_prediction, sample_index_dict)
+		group_label_dict = get_group_label_dict(prediction, sample_index_dict)
 		while len(set(group_label_dict.values())) < true_n and init_n < max_try:
 			init_n+=1
-			kmedoids_prediction = get_KMedoids_prediction(clustering_basis, init_n)
-			group_label_dict = get_group_label_dict(kmedoids_prediction, sample_index_dict)
+			prediction = get_KMedoids_prediction(clustering_basis, init_n)
+			group_label_dict = get_group_label_dict(prediction, sample_index_dict)
 		if len(set(group_label_dict.values())) < true_n:
 			print("Clustering results still not ideal but I did my best. Try increasing max_n")
 		else:
 			print("After trying {} times it worked".format(init_n))
-		merged_prediction, updated_group_label_dict = merge_clusters(kmedoids_prediction, group_label_dict)
 	elif clustering_method.lower() == "kmeans":
-		kmeans_prediction = get_KMeans_prediction(list(clustering_basis.keys()), clustering_basis, init_n) #clustering_basis = sample:vector dict
+		prediction = get_KMeans_prediction(list(clustering_basis.keys()), clustering_basis, init_n) #clustering_basis = sample:vector dict
 		sample_index_dict = get_index_dict(list(clustering_basis.keys()))
-		group_label_dict = get_group_label_dict(kmeans_prediction, sample_index_dict)
+		group_label_dict = get_group_label_dict(prediction, sample_index_dict)
 		while len(set(group_label_dict.values())) < true_n and init_n < max_try:
 			init_n+=1
-			kmeans_prediction = get_KMeans_prediction(list(sample_index_dict.keys()), clustering_basis,
+			prediction = get_KMeans_prediction(list(sample_index_dict.keys()), clustering_basis,
 													  init_n)  # clustering_basis = sample:vector dict
-			group_label_dict = get_group_label_dict(kmeans_prediction, sample_index_dict, init_n)
+			group_label_dict = get_group_label_dict(prediction, sample_index_dict, init_n)
 		if len(set(group_label_dict.values())) < true_n:
 			print("Clustering results still not ideal but I did my best. Try increasing max_n")
 		else:
 			print("After trying {} times it worked".format(init_n))
-		merged_prediction, updated_group_label_dict = merge_clusters(kmeans_prediction, group_label_dict)
+	merged_prediction, updated_group_label_dict = merge_clusters(prediction, group_label_dict)
 	return merged_prediction, updated_group_label_dict
 
 def decipher_label_by_vote(predictions, training, group_name, meta_dict, sample_dict):
