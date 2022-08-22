@@ -8,6 +8,7 @@ import partition_predict_16s as pp
 from extract_data import extract_biom, extract_samples, extract_metadata, parse_tree_file, parse_envs
 import partition_predict_wgs as pp2
 from copy import deepcopy
+import os
 
 
 def test_push_up_from_wgs_profile():
@@ -159,9 +160,19 @@ def test_get_KMedoids_prediction():
 
 def test_get_merged_clusters():
     dmatrix_file = 'data/adenoma_266076/adenoma_pairwise_L1UniFrac.txt'
+    profile_dir = 'data/adenoma_266076/profiles'
+    profile_path_lst = [os.path.join(profile_dir, file) for file in os.listdir(profile_dir)]
+    Tint, lint, nodes_in_order, nodes_to_index = L2U.get_wgs_tree(profile_path_lst)
+
     meta_dict = pp2.get_metadata_dict('data/hmgdb_adenoma_bioproject266076.csv')
-    merged_prediction, updated_group_label_dict = pp2.try_cluster(2, 20, 3, "kmedoids", dmatrix_file, meta_dict)
+    #merged_prediction, updated_group_label_dict = pp2.try_cluster(2, 20, 3, "kmedoids", dmatrix_file, meta_dict)
+    #print(updated_group_label_dict)
+    all_samples = sample_id = list(meta_dict.keys())
+    all_samples_paths = [profile_dir + '/' + sample + '.profile' for sample in all_samples]
+    sample_vector_dict = L2U.merge_profiles_by_dir(all_samples_paths, nodes_to_index)
+    merged_prediction, updated_group_label_dict = pp2.try_cluster(2, 20, 3, "kmeans", sample_vector_dict, meta_dict)
     print(updated_group_label_dict)
+
 
 if __name__ == '__main__':
 	#test_partition_sample()

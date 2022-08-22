@@ -190,16 +190,15 @@ def decipher_label_alternative(predictions, index_sample_dict, group_name, meta_
 
 def get_group_label_dict(predictions, sample_index_dict, meta_dict):
 	group_label_dict = dict()
-	results_dict = dict()
 	index_sample_dict = get_reverse_dict(sample_index_dict)
 	# decipher label
-	print(predictions)
+	#print(predictions)
 	for group in set(predictions):
 		label = decipher_label_alternative(predictions, index_sample_dict, group, meta_dict)
 		# may need a tie breaker to ensure values are unique. For now just hope for the best
 		group_label_dict[group] = label
-	print('group label dict:')
-	print(group_label_dict)
+	#print('group label dict:')
+	#print(group_label_dict)
 	return group_label_dict
 
 def get_clustering_scores(predictions, test_ids, meta_dict, sample_index_dict, group_label_dict):
@@ -257,7 +256,6 @@ def get_sample_id_from_dict(t_dict):
 
 def get_L2UniFrac_accuracy_results(test_ids, test_targets,Tint, lint, nodes_in_order, rep_sample_dict, sample_vector_dict):
 	results_dict = dict()
-
 	overall_predictions = []
 	for i, id in enumerate(test_ids):
 		prediction = get_label(sample_vector_dict[id], rep_sample_dict, Tint, lint, nodes_in_order)
@@ -275,47 +273,6 @@ def get_L2UniFrac_accuracy_results(test_ids, test_targets,Tint, lint, nodes_in_o
 	results_dict['recall_micro'] = recall_score(test_targets, overall_predictions, average='micro')
 	results_dict['recall_macro'] = recall_score(test_targets, overall_predictions, average='macro')
 	return results_dict
-
-def compile_dataframe(n_repeat, train_percentage, biom_file, tree_file, metadata_file, metadata_key, sample_dict, dm_file, n_clusters):
-
-	col_names = ["Method", "Site", "Score_type", "Score"]
-	df = pd.DataFrame(columns=col_names)
-	score_type_col = []
-	score_col = []
-	site_col = []
-	method_col = []
-	for i in range(n_repeat):
-		train_dict, test_dict = partition_sample(train_percentage, biom_file, tree_file, metadata_file, metadata_key)
-		# kmedoids clustering
-		results = get_score_by_clustering_method("kmedoids", train_dict, test_dict, meta_dict, sample_dict, dm_file,
-												 n_clusters)
-		for site in results.keys():  # skin, gut, overall ...
-			for score_type in results[site].keys():
-				method_col.append("KMedoids")
-				site_col.append(site)
-				score_type_col.append(score_type)
-				score_col.append(results[site][score_type])
-		#agglomerative clustering
-		#results = get_score_by_clustering_method("agglomerative", train_dict, test_dict, meta_dict, sample_dict, dm_file, n_clusters)
-		#for site in results.keys(): #skin, gut, overall ...
-		#	for score_type in results[site].keys():
-		#		method_col.append("Agglomerative")
-		#		site_col.append(site)
-		#		score_type_col.append(score_type)
-		#		score_col.append(results[site][score_type])
-		#L2UniFrac
-		results = get_L2UniFrac_accuracy_results(train_dict,test_dict, Tint, lint, nodes_in_order, meta_dict)
-		for site in results.keys(): #skin, gut, overall ...
-			for score_type in results[site].keys():
-				method_col.append("L2UniFrac")
-				site_col.append(site)
-				score_type_col.append(score_type)
-				score_col.append(results[site][score_type])
-	df["Method"] = method_col
-	df["Site"] = site_col
-	df["Score_type"] = score_type_col
-	df["Score"] = score_col
-	return df
 
 def get_index_dict(lst):
 	'''
@@ -338,7 +295,7 @@ if __name__ == '__main__':
 	#parser.add_argument('-t', '--test_size', type=int, help='What percentage of data used in testing.', nargs='?', default=0.2)
 	parser.add_argument('-n', '--num_repeats', type=int, help="Number of repeats for each experiment.", nargs='?', default=10)
 	parser.add_argument('-s', '--save', type=str, help="Save the dataframe file as.")
-	parser.add_argument('-c', '--num_clusters', type=int, help="Number of clusters.", nargs='?')
+	parser.add_argument('-dm', '--distance_matrix', type=str, help="Pairwise unifrac distance matrix.")
 	parser.add_argument('-d', '--pdir', type=str, help="Directory of profiles")
 
 	args = parser.parse_args()
@@ -359,24 +316,30 @@ if __name__ == '__main__':
 	scores_col = []
 	test_size_col = []
 
+	#clusterings (independent of sample splitting)
+	init_n = len(set(meta_dict))
+	true_n = init_n
+	#kmedoids
+	kmedoids_prediction, kmedoids_group_label_dict = try_cluster(init_n, 30, 3, "kmedoids", args.distance_matrix, meta_dict)
+	all_samples = sample_id = list(meta_dict.keys())
+	all_samples_paths = [profile_dir + '/' + sample + '.profile' for sample in all_samples]
+	sample_vector_dict = L2U.merge_profiles_by_dir(all_samples_paths, nodes_to_index)
+
+
 	for test_size in test_sizes:
 		print('test size:', test_size)
 		for i in range(10):
+			#data prep
 			test_size_col.append(test_size)
 			samples_train, samples_test, targets_train, targets_test = partition_sample(meta_dict, random_state=i, test_size=test_size)
 			samples_train_paths = [profile_dir + '/' + sample + '.profile' for sample in samples_train]
 			pheno_sample_dict = get_pheno_sample_dict(samples_train_paths, targets_train)
 			rep_sample_dict = get_rep_sample_dict(pheno_sample_dict, Tint, lint, nodes_in_order, nodes_to_index) #get rep sample by phenotype
-			#print(rep_sample_dict)
-			samples_test_paths = [profile_dir + '/' + sample + '.profile' for sample in samples_test]
-			test_sample_dict = L2U.merge_profiles_by_dir(samples_test_paths, nodes_to_index)
-			prediction = [""] * len(targets_test)
-			for j, sample in enumerate(samples_test):
-				prediction[j] = get_label(test_sample_dict[sample], rep_sample_dict, Tint, lint, nodes_in_order)
-			#print(prediction)
-			accuracy = accuracy_score(prediction, targets_test)
-			print(accuracy)
-			scores_col.append(accuracy)
+			#L2UniFrac results
+			L2_results_dict = get_L2UniFrac_accuracy_results(samples_test, targets_test, Tint, lint, nodes_in_order, rep_sample_dict, sample_vector_dict)
+			#KMedoids results
+
+
 	df['Method'] = ['L2UniFrac'] * len(scores_col)
 	df['Test_size'] = test_size_col
 	df['Score_type'] = ['Accuracy'] * len(scores_col)
