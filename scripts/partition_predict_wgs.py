@@ -357,7 +357,7 @@ if __name__ == '__main__':
 				col_tmp.append(kmedoids_results[score_type])
 				col_tmp.append(kmeans_results[score_type])
 				df_tmp[score_type] = col_tmp
-			df = df.append(df_tmp, ignore_index=True)
+			df = pd.concat([df, df_tmp], ignore_index=True)
 	df.to_csv(args.save, sep="\t")
 
 
