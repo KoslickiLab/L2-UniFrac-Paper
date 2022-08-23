@@ -165,12 +165,12 @@ def test_get_merged_clusters():
     Tint, lint, nodes_in_order, nodes_to_index = L2U.get_wgs_tree(profile_path_lst)
 
     meta_dict = pp2.get_metadata_dict('data/hmgdb_adenoma_bioproject266076.csv')
-    #merged_prediction, updated_group_label_dict = pp2.try_cluster(2, 20, 3, "kmedoids", dmatrix_file, meta_dict)
+    #merged_prediction, updated_group_label_dict, sample_ids = pp2.try_cluster(2, 20, 3, "kmedoids", dmatrix_file, meta_dict)
     #print(updated_group_label_dict)
     all_samples = sample_id = list(meta_dict.keys())
     all_samples_paths = [profile_dir + '/' + sample + '.profile' for sample in all_samples]
     sample_vector_dict = L2U.merge_profiles_by_dir(all_samples_paths, nodes_to_index)
-    merged_prediction, updated_group_label_dict = pp2.try_cluster(2, 20, 3, "kmeans", sample_vector_dict, meta_dict)
+    merged_prediction, updated_group_label_dict, sample_ids = pp2.try_cluster(2, 20, 3, "kmeans", sample_vector_dict, meta_dict)
     print(updated_group_label_dict)
 
 
@@ -183,6 +183,6 @@ if __name__ == '__main__':
     #test_merge_profile()
     #test_get_rep_sample_from_profiles()
     #test_wgs_L2UniFrac()
-    #test_get_KMedoids_prediction()
+    test_get_KMedoids_prediction()
     #test_get_wgs_clustering_results()
-    test_get_merged_clusters()
+    #test_get_merged_clusters()
