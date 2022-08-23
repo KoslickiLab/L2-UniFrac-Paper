@@ -236,6 +236,8 @@ def get_KMedoids_prediction(dmatrix_file, n_clusters):
 	sample_ids = list(distance_matrix.columns)
 	kmedoids_prediction = KMedoids(n_clusters=n_clusters, metric='precomputed', method='pam',
 								   init='heuristic').fit_predict(distance_matrix)
+	print('get_KMedoids_prediction', kmedoids_prediction)
+	print(distance_matrix)
 	return kmedoids_prediction, sample_ids
 
 def get_KMeans_prediction(sample_vector_dict, n_clusters):
