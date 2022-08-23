@@ -157,6 +157,10 @@ def test_get_KMedoids_prediction():
     kmedoids_prediction, sample_ids = pp2.get_KMedoids_prediction(dmatrix_file,3)
     print(kmedoids_prediction[:10])
     print(sample_ids[:10])
+    meta_dict = pp2.get_metadata_dict('data/hmgdb_adenoma_bioproject266076.csv')
+
+    merged_prediction, updated_group_label_dict, sample_ids = pp2.try_cluster(2, 30, 3, 'kmedoids', dmatrix_file, meta_dict)
+    print('merged prediction', merged_prediction)
 
 def test_get_merged_clusters():
     dmatrix_file = 'data/adenoma_266076/adenoma_pairwise_L1UniFrac.txt'

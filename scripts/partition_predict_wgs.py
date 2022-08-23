@@ -129,8 +129,7 @@ def try_cluster(init_n, max_try, true_n, clustering_method, clustering_basis, me
 	'''
 	if clustering_method.lower() == "kmedoids":
 		prediction, sample_ids = get_KMedoids_prediction(clustering_basis, init_n)
-		print(prediction)
-		print(type(prediction))
+		print("kmedoids prediction", prediction)
 		sample_index_dict = get_index_dict(sample_ids)
 		group_label_dict = get_group_label_dict(prediction, sample_index_dict, meta_dict)
 		while len(set(group_label_dict.values())) < true_n and init_n < max_try:
@@ -234,7 +233,7 @@ def get_clustering_scores(predictions, test_ids, meta_dict, sample_index_dict, g
 
 def get_KMedoids_prediction(dmatrix_file, n_clusters):
 	distance_matrix = pd.read_csv(dmatrix_file, header=0, index_col=0, sep='\t')
-	sample_ids =  distance_matrix.columns
+	sample_ids = list(distance_matrix.columns)
 	kmedoids_prediction = KMedoids(n_clusters=n_clusters, metric='precomputed', method='pam',
 								   init='heuristic').fit_predict(distance_matrix)
 	return kmedoids_prediction, sample_ids
