@@ -160,6 +160,7 @@ def test_get_KMedoids_prediction():
     meta_dict = pp2.get_metadata_dict('data/hmgdb_adenoma_bioproject266076.csv')
 
     merged_prediction, updated_group_label_dict, sample_ids = pp2.try_cluster(2, 30, 3, 'kmedoids', dmatrix_file, meta_dict)
+    print(meta_dict)
     print('merged prediction', merged_prediction)
 
 def test_get_merged_clusters():

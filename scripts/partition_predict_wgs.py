@@ -319,6 +319,8 @@ if __name__ == '__main__':
 
 	#clusterings (independent of sample splitting)
 	true_n = len(set(meta_dict))
+	print(meta_dict)
+	print('true n =', true_n)
 	init_n = true_n
 	#kmedoids
 	kmedoids_prediction, kmedoids_group_label_dict, kmedoids_sample_ids = try_cluster(init_n, 5, true_n, "kmedoids", args.distance_matrix, meta_dict)
