@@ -129,7 +129,7 @@ def try_cluster(init_n, max_try, true_n, clustering_method, clustering_basis, me
 	'''
 	if clustering_method.lower() == "kmedoids":
 		prediction, sample_ids = get_KMedoids_prediction(clustering_basis, init_n)
-		print("kmedoids prediction", prediction)
+		print("kmedoids prediction", prediction[1:20])
 		sample_index_dict = get_index_dict(sample_ids)
 		group_label_dict = get_group_label_dict(prediction, sample_index_dict, meta_dict)
 		while len(set(group_label_dict.values())) < true_n and init_n < max_try:
@@ -295,7 +295,7 @@ if __name__ == '__main__':
 	parser.add_argument('-p', '--phenotype', type=str, help='A selected phenotype corresponding to a column name in the metadata file.', nargs='?', default="HMgDB_diagnosis")
 	parser.add_argument('-n', '--num_repeats', type=int, help="Number of repeats for each experiment.", nargs='?', default=10)
 	parser.add_argument('-s', '--save', type=str, help="Save the dataframe file as.")
-	parser.add_argument('-dm', '--distance_matrix', type=str, help="Pairwise unifrac distance matrix.")
+	parser.add_argument('-dm', '--distance_matrix', type=str, help="Pairwise unifrac distance matrix file.")
 	parser.add_argument('-d', '--pdir', type=str, help="Directory of profiles")
 
 	args = parser.parse_args()
