@@ -129,7 +129,7 @@ def try_cluster(init_n, max_try, true_n, clustering_method, clustering_basis, me
 	'''
 	if clustering_method.lower() == "kmedoids":
 		prediction, sample_ids = get_KMedoids_prediction(clustering_basis, init_n)
-		print("kmedoids prediction", prediction[1:20])
+		print("Check kmedoids prediction", prediction[:20])
 		sample_index_dict = get_index_dict(sample_ids)
 		group_label_dict = get_group_label_dict(prediction, sample_index_dict, meta_dict)
 		while len(set(group_label_dict.values())) < true_n and init_n < max_try:
@@ -236,8 +236,6 @@ def get_KMedoids_prediction(dmatrix_file, n_clusters):
 	sample_ids = list(distance_matrix.columns)
 	kmedoids_prediction = KMedoids(n_clusters=n_clusters, metric='precomputed', method='pam',
 								   init='heuristic').fit_predict(distance_matrix)
-	print('get_KMedoids_prediction', kmedoids_prediction)
-	print(distance_matrix)
 	return kmedoids_prediction, sample_ids
 
 def get_KMeans_prediction(sample_vector_dict, n_clusters):
@@ -318,19 +316,18 @@ if __name__ == '__main__':
 	test_size_col = []
 
 	#clusterings (independent of sample splitting)
-	true_n = len(set(meta_dict))
-	print(meta_dict)
-	print('true n =', true_n)
+	true_n = len(set(meta_dict.values()))
+	print('True number of clusters:', true_n)
 	init_n = true_n
 	#kmedoids
-	kmedoids_prediction, kmedoids_group_label_dict, kmedoids_sample_ids = try_cluster(init_n, 5, true_n, "kmedoids", args.distance_matrix, meta_dict)
+	kmedoids_prediction, kmedoids_group_label_dict, kmedoids_sample_ids = try_cluster(init_n, 30, true_n, "kmedoids", args.distance_matrix, meta_dict)
 	kmedoids_sample_index_dict = get_index_dict(kmedoids_sample_ids)
 	#kmeans
 	all_samples = sample_id = list(meta_dict.keys())
 	all_samples_paths = [profile_dir + '/' + sample + '.profile' for sample in all_samples]
 	sample_vector_dict = L2U.merge_profiles_by_dir(all_samples_paths, nodes_to_index)
 	init_n = true_n #may not be needed, just to be safe
-	kmeans_prediction, kmeans_group_label_dict, kmeans_sample_ids = try_cluster(init_n, 5, true_n, 'kmeans', sample_vector_dict, meta_dict)
+	kmeans_prediction, kmeans_group_label_dict, kmeans_sample_ids = try_cluster(init_n, 30, true_n, 'kmeans', sample_vector_dict, meta_dict)
 	kmeans_sample_index_dict = get_index_dict(kmeans_sample_ids)
 
 	for test_size in test_sizes:
