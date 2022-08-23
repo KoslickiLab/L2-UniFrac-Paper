@@ -319,7 +319,7 @@ if __name__ == '__main__':
 	true_n = len(set(meta_dict))
 	init_n = true_n
 	#kmedoids
-	kmedoids_prediction, kmedoids_group_label_dict, kmedoids_sample_ids = try_cluster(init_n, 30, true_n, "kmedoids", args.distance_matrix, meta_dict)
+	kmedoids_prediction, kmedoids_group_label_dict, kmedoids_sample_ids = try_cluster(init_n, 5, true_n, "kmedoids", args.distance_matrix, meta_dict)
 	kmedoids_sample_index_dict = get_index_dict(kmedoids_sample_ids)
 	#kmeans
 	all_samples = sample_id = list(meta_dict.keys())
