@@ -370,9 +370,9 @@ if __name__ == '__main__':
 
 	for test_size in test_sizes:
 		print(f'Running on {int(test_size*100)}% Testing Size:')
-		RI_list = ARI_list = NMI_list = AMI_list = FM_list = AC_list = RE_list = PR_list = F1_list = []
+		RI_list, ARI_list, NMI_list, AMI_list, FM_list, AC_list, RE_list, PR_list, F1_list = [], [], [], [], [], [], [], [], []
 		for run in range(run_n):
-			print(f'Run {run+1} Results:')
+			print(f'\tRun {run+1} Results:')
 			if useData == '16s':
 				if cuda.is_available():
 					model = ResNet(model_in_16s, model_intermediate_16s, model_out_16s).cuda()
@@ -407,6 +407,7 @@ if __name__ == '__main__':
 			PR_list.append(PR)
 			F1_list.append(F1)
 
+		print(f'\tAverage results of {int(test_size*100)}% Testing Size:')
 		RI = mean(RI_list)
 		ARI = mean(ARI_list)
 		NMI = mean(NMI_list)
@@ -416,4 +417,4 @@ if __name__ == '__main__':
 		RE = mean(RE_list)
 		PR = mean(PR_list)
 		F1 = mean(F1_list)
-		print_results(1, RI, ARI, NMI, AMI, FM, AC, RE, PR, F1)
+		print_results(2, RI, ARI, NMI, AMI, FM, AC, RE, PR, F1)
