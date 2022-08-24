@@ -9,6 +9,7 @@ import numpy as np
 from scipy.sparse import coo_matrix, csr_matrix
 from random import shuffle
 from math import floor, log
+from statistics import mean
 import pandas as pd
 from sklearn.metrics.cluster import adjusted_rand_score, normalized_mutual_info_score, adjusted_mutual_info_score, fowlkes_mallows_score
 from sklearn.metrics import rand_score, accuracy_score, recall_score, precision_score, f1_score
@@ -304,7 +305,19 @@ def test_model(model, test_loader):
 
 	return classes_real, classes_test
 
-def run_scoring(classes_real, classes_test):
+def print_results(indents, RI, ARI, NMI, AMI, FM, AC, RE, PR, F1):
+	tabs = '\t'*indents
+	print(f'{tabs}Rand Index Score:               {RI}')
+	print(f'{tabs}Adjusted Rand Index Score:      {ARI}')
+	print(f'{tabs}Normalized Mutual Index Score:  {NMI}')
+	print(f'{tabs}Adjusted Mutual Info Score:     {AMI}')
+	print(f'{tabs}Fowlkes Mallows Score:          {FM}')
+	print(f'{tabs}Accuracy Score:          \t\t{AC}')
+	print(f'{tabs}Recall Score:        	 \t\t{RE}')
+	print(f'{tabs}Precision Score:         \t\t{PR}')
+	print(f'{tabs}F1 Score:        		 \t\t{F1}')
+
+def run_scoring(classes_real, classes_test, verbose=True):
 	RI = rand_score(classes_real, classes_test)
 	ARI = adjusted_rand_score(classes_real, classes_test)
 	NMI = normalized_mutual_info_score(classes_real, classes_test)
@@ -315,19 +328,14 @@ def run_scoring(classes_real, classes_test):
 	PR = precision_score(classes_real, classes_test, average='macro', zero_division=0)
 	F1 = f1_score(classes_real, classes_test, average='macro', zero_division=0)
 
-	print(f'\tRand Index Score:               {RI}')
-	print(f'\tAdjusted Rand Index Score:      {ARI}')
-	print(f'\tNormalized Mutual Index Score:  {NMI}')
-	print(f'\tAdjusted Mutual Info Score:     {AMI}')
-	print(f'\tFowlkes Mallows Score:          {FM}')
-	print(f'\tAccuracy Score:          \t\t{AC}')
-	print(f'\tRecall Score:        	 \t\t{RE}')
-	print(f'\tPrecision Score:         \t\t{PR}')
-	print(f'\tF1 Score:        		 \t\t{F1}')
+	print_results(2, RI, ARI, NMI, AMI, FM, AC, RE, PR, F1)
+
+	return RI, ARI, NMI, AMI, FM, AC, RE, PR, F1
 
 if __name__ == '__main__':
 	
 	test_sizes = [0.3, 0.2, 0.1]
+	run_n = 10
 
 	parser = argparse.ArgumentParser(description='Get testing statistics of classification test.')
 	parser.add_argument('-d', '--data_type', type=str, help='16s data or WGS data', nargs='?', default='wgs')
@@ -361,30 +369,51 @@ if __name__ == '__main__':
 	model_intermediate_wgs = 2**floor(log(model_in_wgs, 2)-2)
 
 	for test_size in test_sizes:
-		
 		print(f'Running on {int(test_size*100)}% Testing Size:')
+		RI_list = ARI_list = NMI_list = AMI_list = FM_list = AC_list = RE_list = PR_list = F1_list = []
+		for run in range(run_n):
+			print(f'Run {run+1} Results:')
+			if useData == '16s':
+				if cuda.is_available():
+					model = ResNet(model_in_16s, model_intermediate_16s, model_out_16s).cuda()
+				else:
+					model = ResNet(model_in_16s, model_intermediate_16s, model_out_16s)
 
-		if useData == '16s':
-			if cuda.is_available():
-				model = ResNet(model_in_16s, model_intermediate_16s, model_out_16s).cuda()
-			else:
-				model = ResNet(model_in_16s, model_intermediate_16s, model_out_16s)
+				train_loader, test_loader = prepare_inputs_16s(biom_file_16s, metadata_file_16s, batch_size_16s, test_size)
+			elif useData == 'wgs':
+				if cuda.is_available():
+					model = ResNet(model_in_wgs, model_intermediate_wgs, model_out_wgs).cuda()
+				else:
+					model = ResNet(model_in_wgs, model_intermediate_wgs, model_out_wgs)
 
-			train_loader, test_loader = prepare_inputs_16s(biom_file_16s, metadata_file_16s, batch_size_16s, test_size)
-		elif useData == 'wgs':
-			if cuda.is_available():
-				model = ResNet(model_in_wgs, model_intermediate_wgs, model_out_wgs).cuda()
-			else:
-				model = ResNet(model_in_wgs, model_intermediate_wgs, model_out_wgs)
+				train_loader, test_loader = prepare_inputs_wgs(profile_dir_wgs, metadata_file_wgs, phenotype_wgs, batch_size_wgs, include_adenoma_wgs, test_size)
 
-			train_loader, test_loader = prepare_inputs_wgs(profile_dir_wgs, metadata_file_wgs, phenotype_wgs, batch_size_wgs, include_adenoma_wgs, test_size)
+			optimizer = optim.SGD(model.parameters(), lr=1e-2)
 
-		optimizer = optim.SGD(model.parameters(), lr=1e-2)
+			loss = nn.CrossEntropyLoss()
 
-		loss = nn.CrossEntropyLoss()
+			model = train_model(model, train_loader, test_loader, nb_epochs)	
 
-		model = train_model(model, train_loader, test_loader, nb_epochs)	
+			classes_real, classes_test = test_model(model, test_loader)
 
-		classes_real, classes_test = test_model(model, test_loader)
+			RI, ARI, NMI, AMI, FM, AC, RE, PR, F1 = run_scoring(classes_real, classes_test)
+			RI_list.append(RI)
+			ARI_list.append(ARI)
+			NMI_list.append(NMI)
+			AMI_list.append(AMI)
+			FM_list.append(FM)
+			AC_list.append(AC)
+			RE_list.append(RE)
+			PR_list.append(PR)
+			F1_list.append(F1)
 
-		run_scoring(classes_real, classes_test)
+		RI = mean(RI_list)
+		ARI = mean(ARI_list)
+		NMI = mean(NMI_list)
+		AMI = mean(AMI_list)
+		FM = mean(FM_list)
+		AC = mean(AC_list)
+		RE = mean(RE_list)
+		PR = mean(PR_list)
+		F1 = mean(F1_list)
+		print_results(1, RI, ARI, NMI, AMI, FM, AC, RE, PR, F1)
