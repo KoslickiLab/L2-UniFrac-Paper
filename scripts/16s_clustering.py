@@ -14,25 +14,25 @@ from extract_data import extract_biom, extract_samples, extract_sample_metadata,
 #Compare clustering among KMedoids, Kmeans and L2UniFrac
 
 def get_wgs_pushed_vectors(sample_dict, Tint, lint, nodes_in_order):
-    '''
+	'''
 
-    :param sample_dict: assume uniform length.
-    :return:
-    '''
-    pushed_dict = dict()
-    for sample, vector in sample_dict.items():
-        pushed_dict[sample] = L2U.push_up(vector, Tint, lint, nodes_in_order)
-    return pushed_dict
+	:param sample_dict: assume uniform length.
+	:return:
+	'''
+	pushed_dict = dict()
+	for sample, vector in sample_dict.items():
+		pushed_dict[sample] = L2U.push_up(vector, Tint, lint, nodes_in_order)
+	return pushed_dict
 
 def get_KMedoids_clustering_score(dmatrix_file, n_clusters, labels):
-    distance_matrix = pd.read_csv(dmatrix_file, header=0, index_col=0, sep='\t')
-    kmedoids_prediction = KMedoids(n_clusters=n_clusters, metric='precomputed', method='pam', init='heuristic').fit_predict(distance_matrix)
+	distance_matrix = pd.read_csv(dmatrix_file, header=0, index_col=0, sep='\t')
+	kmedoids_prediction = KMedoids(n_clusters=n_clusters, metric='precomputed', method='pam', init='heuristic').fit_predict(distance_matrix)
 	return fowlkes_mallows_score(kmedoids_prediction, labels)
 
 def get_L2_clustering_score(L2_samples, n_clusters, labels):
-    all_vectors = list(L2_samples)
-    kmeans_predict = KMeans(n_clusters=n_clusters).fit_predict(all_vectors)
-    return fowlkes_mallows_score(kmeans_predict, labels)
+	all_vectors = list(L2_samples)
+	kmeans_predict = KMeans(n_clusters=n_clusters).fit_predict(all_vectors)
+	return fowlkes_mallows_score(kmeans_predict, labels)
 
 def get_true_label(meta_dict, sample_ids):
 	'''
