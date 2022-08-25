@@ -5,7 +5,7 @@ sys.path.append('src')
 sys.path.append('scripts')
 import L2UniFrac as L2U
 import partition_predict_16s as pp
-from extract_data import extract_biom, extract_samples, extract_sample_metadata, parse_tree_file, parse_envs, extract_biom_samples
+from extract_data import extract_biom, extract_samples, extract_sample_metadata, parse_tree_file, parse_envs, extract_biom_samples, extract_metadata
 import partition_predict_wgs as pp2
 from copy import deepcopy
 import os
@@ -185,8 +185,9 @@ def test_16s_cluster():
     biom_file = 'data/biom/47422_otu_table.biom'
     dmatrix_file = 'data/L1-UniFrac-Out.csv'
     sample_vector = extract_biom_samples(biom_file)
-    print(list(sample_vector.keys())[0])
-    print(list(sample_vector.values())[0])
+    #print(list(sample_vector.keys())[0])
+    #print(list(sample_vector.values())[0])
+    print(Tint[8402])
     for k in sample_vector:
         L2U.push_up(sample_vector[k], Tint, lint, nodes_in_order)
 
