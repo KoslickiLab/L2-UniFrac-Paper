@@ -1,6 +1,5 @@
-import copy
 import os
-import sys, biom
+import sys
 sys.path.append('L2-UniFrac')
 sys.path.append('L2-UniFrac/src')
 sys.path.append('L2-UniFrac/scripts')

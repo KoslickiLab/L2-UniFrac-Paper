@@ -218,12 +218,6 @@ def get_clustering_scores(predictions, train_dict, test_dict, meta_dict, sample_
 	predicted_labels = [group_label_dict[group] for group in predicted_group_test]
 	true_labels = [meta_dict[i]['body_site'] for i in test_ids]
 	results_dict['overall'] = dict()
-	#results_dict['overall']['accuracy_score'] = accuracy_score(true_labels, predicted_labels)
-	#results_dict['overall']['rand_score'] = rand_score(true_labels, predicted_labels)
-	#results_dict['overall']['adjusted_rand_score'] = adjusted_rand_score(true_labels, predicted_labels)
-	#results_dict['overall']['adjusted_mutual_info_score'] = adjusted_mutual_info_score(true_labels,predicted_labels)
-	#results_dict['overall']['normalized_mutual_info_score'] = normalized_mutual_info_score(true_labels, predicted_labels)
-	#results_dict['overall']['fowlkes_mallows_score'] = fowlkes_mallows_score(true_labels, predicted_labels)
 	results_dict['overall']['accuracy_score'] = accuracy_score(true_labels, predicted_labels)
 	results_dict['overall']['rand_score'] = rand_score(true_labels, predicted_group_test)
 	results_dict['overall']['adjusted_rand_score'] = adjusted_rand_score(true_labels, predicted_group_test)

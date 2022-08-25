@@ -5,7 +5,7 @@ sys.path.append('src')
 sys.path.append('scripts')
 import L2UniFrac as L2U
 import partition_predict_16s as pp
-from extract_data import extract_biom, extract_samples, extract_metadata, parse_tree_file, parse_envs
+from extract_data import extract_biom, extract_samples, extract_sample_metadata, parse_tree_file, parse_envs, extract_biom_samples
 import partition_predict_wgs as pp2
 from copy import deepcopy
 import os
@@ -178,6 +178,18 @@ def test_get_merged_clusters():
     merged_prediction, updated_group_label_dict, sample_ids = pp2.try_cluster(2, 20, 3, "kmeans", sample_vector_dict, meta_dict)
     print(updated_group_label_dict)
 
+def test_16s_cluster():
+    tree_file = 'data/trees/gg_13_5_otus_99_annotated.tree'
+    Tint, lint, nodes_in_order = parse_tree_file(tree_file)
+    meta_file = 'data/metadata/P_1928_65684500_raw_meta.txt'
+    biom_file = 'data/biom/47422_otu_table.biom'
+    dmatrix_file = 'data/L1-UniFrac-Out.csv'
+    sample_vector = extract_biom_samples(biom_file)
+    print(list(sample_vector.keys())[0])
+    print(list(sample_vector.values())[0])
+    for k in sample_vector:
+        L2U.push_up(sample_vector[k], Tint, lint, nodes_in_order)
+
 
 if __name__ == '__main__':
 	#test_partition_sample()
@@ -188,6 +200,7 @@ if __name__ == '__main__':
     #test_merge_profile()
     #test_get_rep_sample_from_profiles()
     #test_wgs_L2UniFrac()
-    test_get_KMedoids_prediction()
+    #test_get_KMedoids_prediction()
     #test_get_wgs_clustering_results()
     #test_get_merged_clusters()
+    test_16s_cluster()
