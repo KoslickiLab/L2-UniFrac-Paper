@@ -69,6 +69,7 @@ if __name__ == '__main__':
 	metadata_key = args.phenotype
 	distance_matrix = args.distance_matrix
 	sample_ids = extract_samples(biom_file)
+	print(len(sample_ids))
 	meta_dict = extract_sample_metadata(biom_file, metadata_file)
 	n_clusters = args.num_clusters
 
