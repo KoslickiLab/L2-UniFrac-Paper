@@ -210,7 +210,7 @@ def test_get_KMedoids_clustering_score():
     biom_file = 'data/biom/47422_otu_table.biom'
     meta_dict = extract_metadata(meta_file)
     sample_ids = extract_samples(biom_file)
-    distance_matrix = pd.read_csv(dmatrix_file, header=0, index_col=0, sep='\t')
+    distance_matrix = pd.read_csv(dmatrix_file, header=None)
     kmedoids_prediction = KMedoids(n_clusters=5, metric='precomputed', method='pam',
                                    init='heuristic').fit_predict(distance_matrix)
     score = clustering.get_KMedoids_clustering_score(dmatrix_file, 5, sample_ids, meta_dict)
