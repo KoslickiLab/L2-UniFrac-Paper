@@ -136,6 +136,7 @@ if __name__ == '__main__':
 	sample_vector = combine_train_test(train_dict, test_dict)
 	L2_vectors = push_up_all(sample_vector, Tint, lint, nodes_in_order)
 
+	print("processed")
 	km_score = get_KMedoids_clustering_score(distance_matrix, n_clusters, meta_dict)
 	l2_score = get_L2_clustering_score(L2_vectors, n_clusters, meta_dict)
 	print('KMedoids clustering score: ', km_score)
