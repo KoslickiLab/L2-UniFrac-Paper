@@ -223,4 +223,5 @@ if __name__ == '__main__':
     #test_get_wgs_clustering_results()
     #test_get_merged_clusters()
     #test_16s_cluster()
-    test_combine_train_test()
+    #test_combine_train_test()
+    test_get_KMedoids_clustering_score()
