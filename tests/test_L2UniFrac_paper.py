@@ -9,7 +9,7 @@ from extract_data import extract_biom, extract_samples, extract_sample_metadata,
 import partition_predict_wgs as pp2
 from copy import deepcopy
 import os
-
+import clustering_16s as clustering
 
 def test_push_up_from_wgs_profile():
     print(L2U.push_up_from_wgs_profile('wgs-env0-sample24-reads.profile'))
@@ -191,11 +191,22 @@ def test_16s_cluster():
     for k in sample_vector:
         L2U.push_up(sample_vector[k], Tint, lint, nodes_in_order)
 
+def test_combine_train_test():
+    tree_file = 'data/trees/gg_13_5_otus_99_annotated.tree'
+    Tint, lint, nodes_in_order = parse_tree_file(tree_file)
+    meta_file = 'data/metadata/P_1928_65684500_raw_meta.txt'
+    biom_file = 'data/biom/47422_otu_table.biom'
+    dmatrix_file = 'data/L1-UniFrac-Out.csv'
+    train_dict, test_dict = pp.partition_samples(80, biom_file, tree_file, meta_file, 'body_site')
+    sample_dict = clustering.combine_train_test(train_dict, test_dict)
+    print(len(sample_dict))
+    print(len(list(sample_dict.values()[0])))
+
 
 if __name__ == '__main__':
 	#test_partition_sample()
     #test_decipher_label()
-    test_get_L2UniFrac_results()
+    #test_get_L2UniFrac_results()
     #test_get_wgs_metadict()
     #test_train_test_split()
     #test_merge_profile()
@@ -205,3 +216,4 @@ if __name__ == '__main__':
     #test_get_wgs_clustering_results()
     #test_get_merged_clusters()
     #test_16s_cluster()
+    test_combine_train_test()

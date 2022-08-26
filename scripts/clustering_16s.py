@@ -10,6 +10,7 @@ from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score, fowlkes_mallows_score
 from sklearn_extra.cluster import KMedoids
 from extract_data import extract_biom, extract_samples, extract_sample_metadata, parse_tree_file, parse_envs, extract_biom_samples
+from math import floor
 
 #Compare clustering among KMedoids, Kmeans and L2UniFrac
 
@@ -50,6 +51,50 @@ def push_up_all(sample_vectors, Tint, lint, nodes_in_order):
 		pushed_up_dict[sample] = L2U.push_up(sample_vectors[sample], Tint, lint, nodes_in_order)
 	return pushed_up_dict
 
+def partition_samples(train_percentage, biom_file, tree_file, metadata_file, metadata_key):
+	'''
+
+	:param train_percentage: what percentage of the sample should be training samples.
+	:param biom_file: a .biom file
+	:param tree_file:
+	:param metadata_file:
+	:param metadata_key: The phenotype of interest. For example, 'body sites'
+	:return:
+	'''
+	try:
+		assert train_percentage <= 90 and train_percentage >= 10
+	except:
+		raise TrainingRateTooHighOrLow(train_percentage)
+
+	group_name_samples, sample_ids, classes = extract_samples_direct_by_group(biom_file, tree_file, metadata_file, metadata_key)
+	train_dict = {}
+	test_dict = {}
+	for c in classes:
+		if c not in train_dict:
+			train_dict[c] = {}
+		if c not in test_dict:
+			test_dict[c] = {}
+		class_samples = [(key, value) for key, value in group_name_samples[c].items()]
+		l = len(class_samples)
+		train_num = floor(l*(train_percentage/100))
+		test_num = l - train_num
+		base_list = [0 for i in range(train_num)] + [1 for i in range(test_num)]
+		for i in range(len(base_list)):
+			if base_list[i] == 0:
+				train_dict[c][class_samples[i][0]] = class_samples[i][1]
+			if base_list[i] == 1:
+				test_dict[c][class_samples[i][0]] = class_samples[i][1]
+
+	return train_dict, test_dict
+
+def combine_train_test(train_dict, test_dict):
+	sample_dict = dict()
+	for group in train_dict:
+		sample_dict.update(train_dict[group])
+	for group in test_dict:
+		sample_dict.update(test_dict[group])
+	return sample_dict
+
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Get testing statistics of classification test.')
@@ -72,11 +117,7 @@ if __name__ == '__main__':
 	meta_dict = extract_sample_metadata(biom_file, metadata_file)
 	n_clusters = args.num_clusters
 
-	sample_vector = extract_biom_samples(biom_file)
-	samples = extract_biom(biom_file)
-	print(list(samples.keys())[0])
-	print(list(samples.values())[0])
-	print(len(list(samples.values())[0]))
+	train_dict, test_dict = partition_samples(80, biom_file, tree_file, metadata_file, metadata_key)
 
 	L2_vectors = push_up_all(sample_vector, Tint, lint, nodes_in_order)
 
