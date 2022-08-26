@@ -74,7 +74,10 @@ if __name__ == '__main__':
 
 	sample_vector = extract_biom_samples(biom_file)
 	samples = extract_biom(biom_file)
-	print(type(samples))
+	print(list(samples.keys())[0])
+	print(list(samples.values())[0])
+	print(len(list(samples.values())[0]))
+
 	L2_vectors = push_up_all(sample_vector, Tint, lint, nodes_in_order)
 
 	labels = get_true_label(meta_dict, sample_ids)
