@@ -31,7 +31,8 @@ def extract_samples_direct_by_group(biom_file, tree_file, metadata_file, metadat
 def get_KMedoids_clustering_score(dmatrix_file, n_clusters, sample_ids, meta_dict):
 	distance_matrix = pd.read_csv(dmatrix_file, header=0, index_col=0, sep='\t')
 	labels = get_true_label(meta_dict, sample_ids)
-	print(labels)
+	#print(labels)
+	print(distance_matrix)
 	kmedoids_prediction = KMedoids(n_clusters=n_clusters, metric='precomputed', method='pam', init='heuristic').fit_predict(distance_matrix)
 	return fowlkes_mallows_score(kmedoids_prediction, labels)
 
