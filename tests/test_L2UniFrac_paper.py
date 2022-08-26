@@ -200,7 +200,7 @@ def test_combine_train_test():
     train_dict, test_dict = pp.partition_samples(80, biom_file, tree_file, meta_file, 'body_site')
     sample_dict = clustering.combine_train_test(train_dict, test_dict)
     print(len(sample_dict))
-    print(len(list(sample_dict.values()[0])))
+    print(len(list(sample_dict.values())[0]))
 
 
 if __name__ == '__main__':
