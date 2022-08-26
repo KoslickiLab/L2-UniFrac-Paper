@@ -205,8 +205,10 @@ def test_combine_train_test():
 def test_get_KMedoids_clustering_score():
     dmatrix_file = 'data/L1-UniFrac-Out.csv'
     meta_file = 'data/metadata/P_1928_65684500_raw_meta.txt'
+    biom_file = 'data/biom/47422_otu_table.biom'
     meta_dict = extract_metadata(meta_file)
-    score = clustering.get_KMedoids_clustering_score(dmatrix_file, 5, meta_dict)
+    sample_ids = extract_samples(biom_file)
+    score = clustering.get_KMedoids_clustering_score(dmatrix_file, 5, sample_ids, meta_dict)
     print(score)
 
 

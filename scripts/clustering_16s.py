@@ -28,9 +28,8 @@ def extract_samples_direct_by_group(biom_file, tree_file, metadata_file, metadat
 
 	return group_name_samples, sample_ids, list(group_name_samples.keys())
 
-def get_KMedoids_clustering_score(dmatrix_file, n_clusters, meta_dict):
+def get_KMedoids_clustering_score(dmatrix_file, n_clusters, sample_ids, meta_dict):
 	distance_matrix = pd.read_csv(dmatrix_file, header=0, index_col=0, sep='\t')
-	sample_ids = distance_matrix.columns
 	labels = get_true_label(meta_dict, sample_ids)
 	print(labels)
 	kmedoids_prediction = KMedoids(n_clusters=n_clusters, metric='precomputed', method='pam', init='heuristic').fit_predict(distance_matrix)
@@ -116,7 +115,7 @@ if __name__ == '__main__':
 	metadata_file = args.meta_file
 	metadata_key = args.phenotype
 	distance_matrix = args.distance_matrix
-	#sample_ids = extract_samples(biom_file)
+	sample_ids = extract_samples(biom_file)
 	meta_dict = extract_metadata(metadata_file)
 	n_clusters = args.num_clusters
 
@@ -125,7 +124,7 @@ if __name__ == '__main__':
 	L2_vectors = push_up_all(sample_vector, Tint, lint, nodes_in_order)
 
 	print("processed")
-	km_score = get_KMedoids_clustering_score(distance_matrix, n_clusters, meta_dict)
+	km_score = get_KMedoids_clustering_score(distance_matrix, n_clusters, sample_ids, meta_dict)
 	l2_score = get_L2_clustering_score(L2_vectors, n_clusters, meta_dict)
 	print('KMedoids clustering score: ', km_score)
 	print('L2UniFrac clustering score: ', l2_score)
