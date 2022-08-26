@@ -69,11 +69,12 @@ if __name__ == '__main__':
 	metadata_key = args.phenotype
 	distance_matrix = args.distance_matrix
 	sample_ids = extract_samples(biom_file)
-	print(len(sample_ids))
 	meta_dict = extract_sample_metadata(biom_file, metadata_file)
 	n_clusters = args.num_clusters
 
 	sample_vector = extract_biom_samples(biom_file)
+	samples = extract_biom(biom_file)
+	print(type(samples))
 	L2_vectors = push_up_all(sample_vector, Tint, lint, nodes_in_order)
 
 	labels = get_true_label(meta_dict, sample_ids)
