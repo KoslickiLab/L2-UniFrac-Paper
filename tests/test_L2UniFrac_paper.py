@@ -196,7 +196,7 @@ def test_16s_cluster():
 if __name__ == '__main__':
 	#test_partition_sample()
     #test_decipher_label()
-    #test_get_L2UniFrac_results()
+    test_get_L2UniFrac_results()
     #test_get_wgs_metadict()
     #test_train_test_split()
     #test_merge_profile()
@@ -205,4 +205,4 @@ if __name__ == '__main__':
     #test_get_KMedoids_prediction()
     #test_get_wgs_clustering_results()
     #test_get_merged_clusters()
-    test_16s_cluster()
+    #test_16s_cluster()
