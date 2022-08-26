@@ -11,7 +11,7 @@ from copy import deepcopy
 import os
 import clustering_16s as clustering
 from sklearn_extra.cluster import KMedoids
-
+import pandas as pd
 
 def test_push_up_from_wgs_profile():
     print(L2U.push_up_from_wgs_profile('wgs-env0-sample24-reads.profile'))
