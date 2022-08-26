@@ -202,6 +202,13 @@ def test_combine_train_test():
     print(len(sample_dict))
     print(len(list(sample_dict.values())[0]))
 
+def test_get_KMedoids_clustering_score():
+    dmatrix_file = 'data/L1-UniFrac-Out.csv'
+    meta_file = 'data/metadata/P_1928_65684500_raw_meta.txt'
+    meta_dict = extract_metadata(meta_file)
+    score = clustering.get_KMedoids_clustering_score(dmatrix_file, 5, meta_dict)
+    print(score)
+
 
 if __name__ == '__main__':
 	#test_partition_sample()
