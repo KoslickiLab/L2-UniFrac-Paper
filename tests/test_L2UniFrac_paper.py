@@ -10,6 +10,8 @@ import partition_predict_wgs as pp2
 from copy import deepcopy
 import os
 import clustering_16s as clustering
+from sklearn_extra.cluster import KMedoids
+
 
 def test_push_up_from_wgs_profile():
     print(L2U.push_up_from_wgs_profile('wgs-env0-sample24-reads.profile'))
@@ -208,6 +210,9 @@ def test_get_KMedoids_clustering_score():
     biom_file = 'data/biom/47422_otu_table.biom'
     meta_dict = extract_metadata(meta_file)
     sample_ids = extract_samples(biom_file)
+    distance_matrix = pd.read_csv(dmatrix_file, header=0, index_col=0, sep='\t')
+    kmedoids_prediction = KMedoids(n_clusters=5, metric='precomputed', method='pam',
+                                   init='heuristic').fit_predict(distance_matrix)
     score = clustering.get_KMedoids_clustering_score(dmatrix_file, 5, sample_ids, meta_dict)
     print(score)
 
