@@ -138,12 +138,13 @@ def get_average_sample(sample_list, Tint, lint, nodes_in_order):
 	'''
 	all_vectors = []
 	for vector in sample_list:
+		print('len of vector:', len(vector))
 		pushed_vector = L2U.push_up(vector, Tint, lint, nodes_in_order)
-		print("len of pushed vector:", len(pushed_vector))
+		#print("len of pushed vector:", len(pushed_vector))
 		all_vectors.append(pushed_vector)
 	mean_vector = L2U.mean_of_vectors(all_vectors)
 	average_sample_vector = L2U.inverse_push_up(mean_vector, Tint, lint, nodes_in_order)
-	print(len(average_sample_vector))
+	#print(len(average_sample_vector))
 	return average_sample_vector
 
 def get_label(test_sample, rep_sample_dict, Tint, lint, nodes_in_order):

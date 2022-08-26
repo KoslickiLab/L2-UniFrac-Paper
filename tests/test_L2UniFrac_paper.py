@@ -187,8 +187,7 @@ def test_16s_cluster():
     sample_vector = extract_biom_samples(biom_file)
     #print(list(sample_vector.keys())[0])
     #print(list(sample_vector.values())[0])
-    print(Tint[8402])
-    print(Tint[9160])
+
     for k in sample_vector:
         L2U.push_up(sample_vector[k], Tint, lint, nodes_in_order)
 
