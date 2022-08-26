@@ -49,7 +49,7 @@ def get_true_label(meta_dict, sample_ids):
 	:param sample_ids: list of sample ids found in meta_dict
 	:return: a list of true labels
 	'''
-	true_labels = [meta_dict[i] for i in sample_ids]
+	true_labels = [meta_dict[i]['body_site'] for i in sample_ids]
 	return true_labels
 
 def push_up_all(sample_vectors, Tint, lint, nodes_in_order):
