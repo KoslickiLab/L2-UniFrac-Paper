@@ -9,10 +9,24 @@ import pandas as pd
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score, fowlkes_mallows_score
 from sklearn_extra.cluster import KMedoids
-from extract_data import extract_biom, extract_samples, extract_sample_metadata, parse_tree_file, parse_envs, extract_biom_samples
+from extract_data import extract_biom, extract_samples, extract_metadata, parse_tree_file, parse_envs, extract_biom_samples
 from math import floor
 
 #Compare clustering among KMedoids, Kmeans and L2UniFrac
+def extract_samples_direct_by_group(biom_file, tree_file, metadata_file, metadata_key):
+	nodes_samples = extract_biom(biom_file)
+	_, _, nodes_in_order = parse_tree_file(tree_file)
+	(nodes_weighted, samples_temp) = parse_envs(nodes_samples, nodes_in_order)
+	sample_ids = extract_samples(biom_file)
+
+	metadata = extract_metadata(metadata_file)
+	group_name_samples = {}
+	for sample in sample_ids:
+		if metadata[sample][metadata_key] not in group_name_samples:
+			group_name_samples[metadata[sample][metadata_key]] = {}
+		group_name_samples[metadata[sample][metadata_key]][sample] = nodes_weighted[sample]
+
+	return group_name_samples, sample_ids, list(group_name_samples.keys())
 
 def get_wgs_pushed_vectors(sample_dict, Tint, lint, nodes_in_order):
 	'''
@@ -25,13 +39,17 @@ def get_wgs_pushed_vectors(sample_dict, Tint, lint, nodes_in_order):
 		pushed_dict[sample] = L2U.push_up(vector, Tint, lint, nodes_in_order)
 	return pushed_dict
 
-def get_KMedoids_clustering_score(dmatrix_file, n_clusters, labels):
+def get_KMedoids_clustering_score(dmatrix_file, n_clusters, meta_dict):
 	distance_matrix = pd.read_csv(dmatrix_file, header=0, index_col=0, sep='\t')
+	sample_ids = distance_matrix.columns
+	labels = get_true_label(meta_dict, sample_ids)
 	kmedoids_prediction = KMedoids(n_clusters=n_clusters, metric='precomputed', method='pam', init='heuristic').fit_predict(distance_matrix)
 	return fowlkes_mallows_score(kmedoids_prediction, labels)
 
-def get_L2_clustering_score(L2_samples, n_clusters, labels):
-	all_vectors = list(L2_samples)
+def get_L2_clustering_score(L2_samples, n_clusters, meta_dict):
+	all_vectors = list(L2_samples.values())
+	sample_ids = list(L2_samples.keys())
+	labels = get_true_label(meta_dict, sample_ids)
 	kmeans_predict = KMeans(n_clusters=n_clusters).fit_predict(all_vectors)
 	return fowlkes_mallows_score(kmeans_predict, labels)
 
@@ -61,10 +79,7 @@ def partition_samples(train_percentage, biom_file, tree_file, metadata_file, met
 	:param metadata_key: The phenotype of interest. For example, 'body sites'
 	:return:
 	'''
-	try:
-		assert train_percentage <= 90 and train_percentage >= 10
-	except:
-		raise TrainingRateTooHighOrLow(train_percentage)
+
 
 	group_name_samples, sample_ids, classes = extract_samples_direct_by_group(biom_file, tree_file, metadata_file, metadata_key)
 	train_dict = {}
@@ -113,14 +128,15 @@ if __name__ == '__main__':
 	metadata_file = args.meta_file
 	metadata_key = args.phenotype
 	distance_matrix = args.distance_matrix
-	sample_ids = extract_samples(biom_file)
-	meta_dict = extract_sample_metadata(biom_file, metadata_file)
+	#sample_ids = extract_samples(biom_file)
+	meta_dict = extract_metadata(metadata_file)
 	n_clusters = args.num_clusters
 
 	train_dict, test_dict = partition_samples(80, biom_file, tree_file, metadata_file, metadata_key)
-
+	sample_vector = combine_train_test(train_dict, test_dict)
 	L2_vectors = push_up_all(sample_vector, Tint, lint, nodes_in_order)
 
-	labels = get_true_label(meta_dict, sample_ids)
-	km_score = get_KMedoids_clustering_score(distance_matrix, n_clusters, labels)
-	l2_score = get_L2_clustering_score(L2_vectors, n_clusters, labels)
+	km_score = get_KMedoids_clustering_score(distance_matrix, n_clusters, meta_dict)
+	l2_score = get_L2_clustering_score(L2_vectors, n_clusters, meta_dict)
+	print('KMedoids clustering score: ', km_score)
+	print('L2UniFrac clustering score: ', l2_score)
