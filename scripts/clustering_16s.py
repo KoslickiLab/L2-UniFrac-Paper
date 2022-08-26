@@ -29,7 +29,7 @@ def extract_samples_direct_by_group(biom_file, tree_file, metadata_file, metadat
 	return group_name_samples, sample_ids, list(group_name_samples.keys())
 
 def get_KMedoids_clustering_score(dmatrix_file, n_clusters, sample_ids, meta_dict):
-	distance_matrix = pd.read_csv(dmatrix_file, header=0, index_col=0, sep='\t')
+	distance_matrix = pd.read_csv(dmatrix_file, header=None)
 	labels = get_true_label(meta_dict, sample_ids)
 	#print(labels)
 	print(distance_matrix)
