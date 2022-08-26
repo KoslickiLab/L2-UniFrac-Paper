@@ -28,21 +28,11 @@ def extract_samples_direct_by_group(biom_file, tree_file, metadata_file, metadat
 
 	return group_name_samples, sample_ids, list(group_name_samples.keys())
 
-def get_wgs_pushed_vectors(sample_dict, Tint, lint, nodes_in_order):
-	'''
-
-	:param sample_dict: assume uniform length.
-	:return:
-	'''
-	pushed_dict = dict()
-	for sample, vector in sample_dict.items():
-		pushed_dict[sample] = L2U.push_up(vector, Tint, lint, nodes_in_order)
-	return pushed_dict
-
 def get_KMedoids_clustering_score(dmatrix_file, n_clusters, meta_dict):
 	distance_matrix = pd.read_csv(dmatrix_file, header=0, index_col=0, sep='\t')
 	sample_ids = distance_matrix.columns
 	labels = get_true_label(meta_dict, sample_ids)
+	print(labels)
 	kmedoids_prediction = KMedoids(n_clusters=n_clusters, metric='precomputed', method='pam', init='heuristic').fit_predict(distance_matrix)
 	return fowlkes_mallows_score(kmedoids_prediction, labels)
 
@@ -79,8 +69,6 @@ def partition_samples(train_percentage, biom_file, tree_file, metadata_file, met
 	:param metadata_key: The phenotype of interest. For example, 'body sites'
 	:return:
 	'''
-
-
 	group_name_samples, sample_ids, classes = extract_samples_direct_by_group(biom_file, tree_file, metadata_file, metadata_key)
 	train_dict = {}
 	test_dict = {}
