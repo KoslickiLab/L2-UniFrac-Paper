@@ -32,7 +32,6 @@ def get_KMedoids_clustering_score(dmatrix_file, n_clusters, sample_ids, meta_dic
 	distance_matrix = pd.read_csv(dmatrix_file, header=None)
 	labels = get_true_label(meta_dict, sample_ids)
 	#print(labels)
-	print(distance_matrix)
 	kmedoids_prediction = KMedoids(n_clusters=n_clusters, metric='precomputed', method='pam', init='heuristic').fit_predict(distance_matrix)
 	return fowlkes_mallows_score(kmedoids_prediction, labels)
 
@@ -127,5 +126,7 @@ if __name__ == '__main__':
 	print("processed")
 	km_score = get_KMedoids_clustering_score(distance_matrix, n_clusters, sample_ids, meta_dict)
 	l2_score = get_L2_clustering_score(L2_vectors, n_clusters, meta_dict)
+	km_l2_score = get_L2_clustering_score('data/L2-UniFrac-Out.csv', n_clusters, sample_ids, meta_dict)
 	print('KMedoids clustering score: ', km_score)
 	print('L2UniFrac clustering score: ', l2_score)
+	print('KMedoids with L2 pairwise distance matrix: ', km_l2_score)
