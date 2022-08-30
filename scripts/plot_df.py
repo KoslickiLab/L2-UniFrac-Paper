@@ -16,6 +16,7 @@ def main():
     dataframe_file = args.file
     df = pd.read_table(dataframe_file)
 
+    sns.color_palette("pastel")
     x = args.x
     y = args.y
     if args.type == 'box':
