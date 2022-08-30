@@ -3,6 +3,7 @@ import seaborn as sns
 import pandas as pd
 import matplotlib.pyplot as plt
 
+
 def main():
     parser = argparse.ArgumentParser(description="Get plot from a dataframe.")
     parser.add_argument('-f', '--file', type=str, help="Dataframe file.")
@@ -21,7 +22,7 @@ def main():
     y = args.y
     if args.type == 'box':
         print("box plot")
-        sns.boxplot(x=x, y=y, hue=args.hue, data=df)
+        sns.boxplot(x=x, y=y, hue=args.hue, data=df, palette='Set2')
     # sns.set_theme(style="ticks", palette="pastel")
     elif args.type == 'line':
         sns.lineplot(x=args.x, y=args.y, hue=args.hue, data=df)
