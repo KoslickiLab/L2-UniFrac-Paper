@@ -534,11 +534,59 @@ def get_wgs_L1_pairwise_unifrac(profile_dir, save_as, alpha=-1):
     pd.DataFrame(data=dist_matrix, index=sample_lst, columns=sample_lst).to_csv(save_as, sep="\t")
     return
 
+def get_profile_list_from_metafile(meta_file):
+    profile_lst = []
+    df = pd.read_csv(meta_file)
+    for id in df["HMgDB_diagnosis"]:
+        profile_name = id + '.profile'
+        profile_lst.append(profile_name)
+    return profile_lst
+
+def get_wgs_L1_pairwise_unifrac_selected(profile_dir, profile_list, save_as, alpha=-1):
+    if save_as is None:
+        save_as = "pairwise_WGSUniFrac_matrix.csv"
+    cur_dir = os.getcwd()
+    os.chdir(profile_dir)
+    sample_lst = [os.path.splitext(profile)[0].split('.')[0] for profile in profile_list] #e.g.env1sam10. i.e.filenames without extension
+    #print(sample_lst)
+    # enumerate sample_lst, for filling matrix
+    id_dict = dict()
+    for i, id in enumerate(profile_list):
+        id_dict[id] = i
+    # initialize matrix
+    dim = len(profile_list)
+    dist_matrix = np.zeros(shape=(dim, dim))
+    count=0
+    for pair in it.combinations(profile_list, 2): #all pairwise combinations
+        #to keep the running less boring
+        count+=1
+        if count % 100 == 0:
+            print(count)
+        id_1, id_2 = pair[0], pair[1]
+        i, j = id_dict[id_1], id_dict[id_2]
+        profile_list1 = L2U.open_profile_from_tsv(id_1, False)
+        profile_list2 = L2U.open_profile_from_tsv(id_2, False)
+        name1, metadata1, profile1 = profile_list1[0]
+        name2, metadata2, profile2 = profile_list2[0]
+        profile1 = Profile(sample_metadata=metadata1, profile=profile1, branch_length_fun=lambda x: x ** alpha)
+        profile2 = Profile(sample_metadata=metadata2, profile=profile2, branch_length_fun=lambda x: x ** alpha)
+        # (Tint, lint, nodes_in_order, nodes_to_index, P, Q) = profile1.make_unifrac_input_no_normalize(profile2)
+        (Tint, lint, nodes_in_order, nodes_to_index, P, Q) = profile1.make_unifrac_input_and_normalize(profile2)
+        (weighted, _) = EMDUnifrac_weighted(Tint, lint, nodes_in_order, P, Q)
+        dist_matrix[i][j] = dist_matrix[j][i] = weighted
+    os.chdir(cur_dir)
+    pd.DataFrame(data=dist_matrix, index=sample_lst, columns=sample_lst).to_csv(save_as, sep="\t")
+    return
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Get pairwise unifrac matrix given a directory of profiles.')
     parser.add_argument('-d', '--pdir', type=str, help="Directory of profiles")
     parser.add_argument('-s', '--save', type=str, help="Save the dataframe file as.")
-    args = parser.parse_args()
+    parser.add_argument('-m', '--meta_file', type=str, help='A metadata file.')
 
-    get_wgs_L1_pairwise_unifrac(args.pdir, args.save)
+    args = parser.parse_args()
+    if args.meta_file:
+        profile_lst = get_profile_list_from_metafile(args.meta_file)
+        get_wgs_L1_pairwise_unifrac_selected(args.pdir, profile_lst, args.save)
+    else:
+        get_wgs_L1_pairwise_unifrac(args.pdir, args.save)
