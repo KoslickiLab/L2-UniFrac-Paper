@@ -296,6 +296,7 @@ if __name__ == '__main__':
 	parser.add_argument('-s', '--save', type=str, help="Save the dataframe file as.")
 	parser.add_argument('-dm', '--distance_matrix', type=str, help="Pairwise unifrac distance matrix file.")
 	parser.add_argument('-d', '--pdir', type=str, help="Directory of profiles")
+	parser.add_argument('-max_n', '--max_n', type=int, help="If given, maximum number of clusters to try for try_cluster function.")
 
 	args = parser.parse_args()
 	metadata_file = args.meta_file
@@ -317,16 +318,18 @@ if __name__ == '__main__':
 	#clusterings (independent of sample splitting)
 	true_n = len(set(meta_dict.values()))
 	print('True number of clusters:', true_n)
+	if not args.max_n:
+		max_n = true_n
 	init_n = true_n
 	#kmedoids
-	kmedoids_prediction, kmedoids_group_label_dict, kmedoids_sample_ids = try_cluster(init_n, 30, true_n, "kmedoids", args.distance_matrix, meta_dict)
+	kmedoids_prediction, kmedoids_group_label_dict, kmedoids_sample_ids = try_cluster(init_n, max_n, true_n, "kmedoids", args.distance_matrix, meta_dict)
 	kmedoids_sample_index_dict = get_index_dict(kmedoids_sample_ids)
 	#kmeans
 	all_samples = sample_id = list(meta_dict.keys())
 	all_samples_paths = [profile_dir + '/' + sample + '.profile' for sample in all_samples]
 	sample_vector_dict = L2U.merge_profiles_by_dir(all_samples_paths, nodes_to_index)
 	init_n = true_n #may not be needed, just to be safe
-	kmeans_prediction, kmeans_group_label_dict, kmeans_sample_ids = try_cluster(init_n, 30, true_n, 'kmeans', sample_vector_dict, meta_dict)
+	kmeans_prediction, kmeans_group_label_dict, kmeans_sample_ids = try_cluster(init_n, max_n, true_n, 'kmeans', sample_vector_dict, meta_dict)
 	kmeans_sample_index_dict = get_index_dict(kmeans_sample_ids)
 
 	for test_size in test_sizes:
