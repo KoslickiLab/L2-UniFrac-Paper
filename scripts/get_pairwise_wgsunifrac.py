@@ -537,7 +537,7 @@ def get_wgs_L1_pairwise_unifrac(profile_dir, save_as, alpha=-1):
 def get_profile_list_from_metafile(meta_file):
     profile_lst = []
     df = pd.read_csv(meta_file)
-    for id in df["HMgDB_diagnosis"]:
+    for id in df["library_id"]:
         profile_name = id + '.profile'
         profile_lst.append(profile_name)
     return profile_lst
