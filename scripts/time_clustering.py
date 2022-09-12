@@ -98,7 +98,7 @@ def compile_dataframe(meta_dict, sample_dict, Tint, lint, nodes_in_order, save_a
 	for i in range(10):
 		for size in sample_size:
 			size_col+=[size * total_size]*2
-			sample_ids, sample_targets = partition_sample(meta_dict, test_size=size)
+			sample_ids, sample_targets = partition_sample(meta_dict, sample_dict, test_size=size)
 			t, s = get_L2UniFrac_method_time(sample_ids, meta_dict, sample_dict, Tint, lint, nodes_in_order)
 			time_col.append(t)
 			score_col.append(s)
