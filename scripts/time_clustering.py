@@ -100,7 +100,7 @@ def compile_dataframe(meta_dict, sample_dict, Tint, lint, nodes_in_order, save_a
 			t, s = get_L2UniFrac_method_time(sample_ids, meta_dict, sample_dict, Tint, lint, nodes_in_order)
 			time_col.append(t)
 			score_col.append(s)
-			t = get_traditional_method_time()
+			t = get_traditional_method_time(sample_ids, sample_dict, meta_dict, Tint, lint, nodes_in_order)
 			time_col.append(t)
 			score_col.append(s)
 	df['Method'] = method_col
@@ -172,6 +172,4 @@ if __name__ == '__main__':
 
 	train_dict, test_dict = partition_samples_to_dict(80, biom_file, tree_file, metadata_file, metadata_key)
 	sample_vector = combine_train_test(train_dict, test_dict)
-	print(list(sample_vector.keys())[0:2])
-	print(len(sample_vector))
 	compile_dataframe(meta_dict, sample_vector, Tint, lint, nodes_in_order, save_as)
