@@ -71,9 +71,7 @@ def push_up_by_id(sample_ids, sample_dict, Tint, lint, nodes_in_order):
 	:return:
 	'''
 	pushed_dict = dict()
-	print(sample_ids)
 	for sample in sample_ids:
-		print(sample)
 		pushed_vector = L2U.push_up(sample_dict[sample], Tint, lint, nodes_in_order)
 		pushed_dict[sample] = pushed_vector
 	return pushed_dict
