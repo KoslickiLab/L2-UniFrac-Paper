@@ -34,16 +34,15 @@ def extract_samples_direct_by_group(biom_file, tree_file, metadata_file, metadat
 
 	return group_name_samples, sample_ids, list(group_name_samples.keys())
 
-def partition_sample(meta_dict, test_size=0.2):
+def partition_sample(meta_dict, sample_dict, test_size=0.2):
 	'''
 	Partitions samples in the meta_dict into training and testing sets. Use as the sampling function.
 	:param meta_dict:
 	:param percentage: percentage of training data.
 	:return: train_dict, test_dict, {phenotype: [profile IDs]}
 	'''
-	sample_id = list(meta_dict.keys())
-	print(len(sample_id))
-	targets = list(meta_dict.values()) #true phenotypes
+	sample_id = list(sample_dict.keys())
+	targets = [meta_dict[i] for i in sample_id]
 	samples_train, samples_test, targets_train, targets_test = train_test_split(sample_id, targets, test_size=test_size)
 	return samples_test, targets_test
 
