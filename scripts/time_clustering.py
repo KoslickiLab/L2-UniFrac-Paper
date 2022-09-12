@@ -173,4 +173,5 @@ if __name__ == '__main__':
 	train_dict, test_dict = partition_samples_to_dict(80, biom_file, tree_file, metadata_file, metadata_key)
 	sample_vector = combine_train_test(train_dict, test_dict)
 	print(list(sample_vector.keys())[0:2])
+	print(len(sample_vector))
 	compile_dataframe(meta_dict, sample_vector, Tint, lint, nodes_in_order, save_as)
