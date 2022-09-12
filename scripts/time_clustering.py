@@ -42,6 +42,7 @@ def partition_sample(meta_dict, test_size=0.2):
 	:return: train_dict, test_dict, {phenotype: [profile IDs]}
 	'''
 	sample_id = list(meta_dict.keys())
+	print(len(sample_id))
 	targets = list(meta_dict.values()) #true phenotypes
 	samples_train, samples_test, targets_train, targets_test = train_test_split(sample_id, targets, test_size=test_size)
 	return samples_test, targets_test
@@ -71,7 +72,9 @@ def push_up_by_id(sample_ids, sample_dict, Tint, lint, nodes_in_order):
 	:return:
 	'''
 	pushed_dict = dict()
+	print(sample_ids)
 	for sample in sample_ids:
+		print(sample)
 		pushed_vector = L2U.push_up(sample_dict[sample], Tint, lint, nodes_in_order)
 		pushed_dict[sample] = pushed_vector
 	return pushed_dict
