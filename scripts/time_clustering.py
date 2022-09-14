@@ -112,7 +112,7 @@ def compile_dataframe(meta_dict, sample_dict, Tint, lint, nodes_in_order, save_a
 
 def small_scale_df(meta_dict, sample_dict, Tint, lint, nodes_in_order, sample_size):
 	total_size = 1000
-	total_sample = random.sample(sample_dict, 1000)
+	total_sample = random.sample(sorted(sample_dict), 1000)
 	sample_ids, sample_targets = partition_sample(meta_dict, sample_dict, test_size=sample_size)
 	L2_t, L2_s = get_L2UniFrac_method_time(sample_ids, meta_dict, sample_dict, Tint, lint, nodes_in_order)
 	M_t, M_s = get_traditional_method_time(sample_ids, sample_dict, meta_dict, Tint, lint, nodes_in_order)
