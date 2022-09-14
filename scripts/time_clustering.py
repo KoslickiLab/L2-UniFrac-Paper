@@ -1,3 +1,4 @@
+import random
 import sys
 import time
 
@@ -93,22 +94,32 @@ def compile_dataframe(meta_dict, sample_dict, Tint, lint, nodes_in_order, save_a
 	sample_size = np.arange(0.1, 1, 0.1)
 	method_col = ['L2UniFrac', 'Matrix-based'] * len(sample_size) * 10
 	size_col = []
-	for i in range(10):
-		for size in sample_size:
-			size_col+=[size * total_size]*2
-			sample_ids, sample_targets = partition_sample(meta_dict, sample_dict, test_size=size)
-			t, s = get_L2UniFrac_method_time(sample_ids, meta_dict, sample_dict, Tint, lint, nodes_in_order)
-			time_col.append(t)
-			score_col.append(s)
-			t = get_traditional_method_time(sample_ids, sample_dict, meta_dict, Tint, lint, nodes_in_order)
-			time_col.append(t)
-			score_col.append(s)
+	for size in sample_size:
+		size_col+=[size * total_size]*2
+		sample_ids, sample_targets = partition_sample(meta_dict, sample_dict, test_size=size)
+		t, s = get_L2UniFrac_method_time(sample_ids, meta_dict, sample_dict, Tint, lint, nodes_in_order)
+		time_col.append(t)
+		score_col.append(s)
+		t = get_traditional_method_time(sample_ids, sample_dict, meta_dict, Tint, lint, nodes_in_order)
+		time_col.append(t)
+		score_col.append(s)
 	df['Method'] = method_col
 	df['Sample_size'] = size_col
 	df['Time'] = time_col
 	df["Fowlkes_Mallows_score"] = score_col
 	df.to_csv(save_as, sep='\t')
 	return
+
+def small_scale_df(meta_dict, sample_dict, Tint, lint, nodes_in_order, sample_size):
+	total_size = 1000
+	total_sample = random.sample(sample_dict, 1000)
+	sample_ids, sample_targets = partition_sample(meta_dict, sample_dict, test_size=sample_size)
+	L2_t, L2_s = get_L2UniFrac_method_time(sample_ids, meta_dict, sample_dict, Tint, lint, nodes_in_order)
+	M_t, M_s = get_traditional_method_time(sample_ids, sample_dict, meta_dict, Tint, lint, nodes_in_order)
+	print('size: ', total_size*sample_size)
+	print('L2 time:', L2_t)
+	print('Matrix_based time', M_t)
+	return L2_t, L2_s, M_t, M_s
 
 def partition_samples_to_dict(train_percentage, biom_file, tree_file, metadata_file, metadata_key):
 	'''
@@ -157,6 +168,7 @@ if __name__ == '__main__':
 	parser.add_argument('-bf', '--biom_file', type=str, help='Path to the biom file.', nargs='?', default='data/biom/47422_otu_table.biom')
 	parser.add_argument('-s', '--save', type=str, help="Save the dataframe file as.")
 	parser.add_argument('-c', '--num_clusters', type=int, help="Number of clusters.", nargs='?', default=5)
+	parser.add_argument('-size', '--size', type=int, help="Sample size, between 0 and 1. temp.", nargs='?', default=5)
 
 
 	args = parser.parse_args()
@@ -172,4 +184,5 @@ if __name__ == '__main__':
 
 	train_dict, test_dict = partition_samples_to_dict(80, biom_file, tree_file, metadata_file, metadata_key)
 	sample_vector = combine_train_test(train_dict, test_dict)
-	compile_dataframe(meta_dict, sample_vector, Tint, lint, nodes_in_order, save_as)
+	#compile_dataframe(meta_dict, sample_vector, Tint, lint, nodes_in_order, save_as)
+	small_scale_df(meta_dict, sample_vector, Tint, lint, nodes_in_order, args.size)
