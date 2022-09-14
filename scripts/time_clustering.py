@@ -168,7 +168,7 @@ if __name__ == '__main__':
 	parser.add_argument('-bf', '--biom_file', type=str, help='Path to the biom file.', nargs='?', default='data/biom/47422_otu_table.biom')
 	parser.add_argument('-s', '--save', type=str, help="Save the dataframe file as.")
 	parser.add_argument('-c', '--num_clusters', type=int, help="Number of clusters.", nargs='?', default=5)
-	parser.add_argument('-size', '--size', type=int, help="Sample size, between 0 and 1. temp.", nargs='?', default=5)
+	parser.add_argument('-size', '--size', type=float, help="Sample size, between 0 and 1. temp.", nargs='?', default=5)
 
 
 	args = parser.parse_args()
