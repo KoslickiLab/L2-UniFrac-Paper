@@ -31,5 +31,6 @@ def pairwise_L1EMDUniFrac_weighted(sample_dict, Tint, lint, nodes_in_order):
         sample1, sample2 = pair[0], pair[1]
         P, Q = sample_dict[sample1], sample_dict[sample2]
         unifrac = EMDUnifrac_weighted(Tint, lint, nodes_in_order, P, Q)
+        print(unifrac)
         df[sample1][sample2] = df[sample2][sample1] = unifrac
     return df
