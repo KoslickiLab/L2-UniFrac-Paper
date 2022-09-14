@@ -117,9 +117,10 @@ def small_scale_df(meta_dict, sample_dict, Tint, lint, nodes_in_order, sample_si
 	sample_ids, sample_targets = partition_sample(meta_dict, sample_dict, test_size=sample_size)
 	selected_samples = {x:sample_dict[x] for x in sample_ids}
 	print(selected_samples)
+	M_t, M_s = get_traditional_method_time(sample_ids, selected_samples, meta_dict, Tint, lint, nodes_in_order)
+
 	L2_t, L2_s = get_L2UniFrac_method_time(sample_ids, meta_dict, selected_samples, Tint, lint, nodes_in_order)
 	print('L2 time:', L2_t)
-	M_t, M_s = get_traditional_method_time(sample_ids, selected_samples, meta_dict, Tint, lint, nodes_in_order)
 	print('Matrix_based time', M_t)
 	return L2_t, L2_s, M_t, M_s
 
