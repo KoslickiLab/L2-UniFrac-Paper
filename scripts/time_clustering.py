@@ -110,19 +110,28 @@ def compile_dataframe(meta_dict, sample_dict, Tint, lint, nodes_in_order, save_a
 	df.to_csv(save_as, sep='\t')
 	return
 
-def small_scale_df(meta_dict, sample_dict, Tint, lint, nodes_in_order, sample_size):
+def small_scale_df(meta_dict, sample_dict, Tint, lint, nodes_in_order, sample_size, save_as):
 	total_size = 1000
-	total_sample = random.sample(sorted(sample_dict), 1000)
+	total_sample = {x: sample_dict[x] for x in random.sample(sorted(sample_dict), 1000)}
 	print('size: ', total_size*sample_size)
-	sample_ids, sample_targets = partition_sample(meta_dict, sample_dict, test_size=sample_size)
+	sample_ids, sample_targets = partition_sample(meta_dict, total_sample, test_size=sample_size)
 	selected_samples = {x:sample_dict[x] for x in sample_ids}
 	print(selected_samples)
 	M_t, M_s = get_traditional_method_time(sample_ids, selected_samples, meta_dict, Tint, lint, nodes_in_order)
-
 	L2_t, L2_s = get_L2UniFrac_method_time(sample_ids, meta_dict, selected_samples, Tint, lint, nodes_in_order)
 	print('L2 time:', L2_t)
 	print('Matrix_based time', M_t)
-	return L2_t, L2_s, M_t, M_s
+	col_names = ["Method", "Sample_size", "Time", "Fowlkes_Mallows_score"]
+	df = pd.DataFrame(columns=col_names, index=['L2', 'Traditional'])
+	df['L2']['Method'] = 'L2-UniFrac'
+	df['L2']['Sample_size'] = df['Traditional']['Sample_size'] = total_size*sample_size
+	df['L2']['Time'] = L2_t
+	df['L2']['Fowlkes_Mallows_score'] = L2_s
+	df['Traditional']['Method'] = 'Matrix-based'
+	df['Traditional']['Time'] = M_t
+	df['Traditioanl']['Fowlkes_Mallows_score'] = M_s
+	df.to_csv(save_as, sep='\t')
+	return
 
 def partition_samples_to_dict(train_percentage, biom_file, tree_file, metadata_file, metadata_key):
 	'''
@@ -152,7 +161,6 @@ def partition_samples_to_dict(train_percentage, biom_file, tree_file, metadata_f
 				train_dict[c][class_samples[i][0]] = class_samples[i][1]
 			if base_list[i] == 1:
 				test_dict[c][class_samples[i][0]] = class_samples[i][1]
-
 	return train_dict, test_dict
 
 def combine_train_test(train_dict, test_dict):
@@ -188,4 +196,4 @@ if __name__ == '__main__':
 	train_dict, test_dict = partition_samples_to_dict(80, biom_file, tree_file, metadata_file, metadata_key)
 	sample_vector = combine_train_test(train_dict, test_dict)
 	#compile_dataframe(meta_dict, sample_vector, Tint, lint, nodes_in_order, save_as)
-	small_scale_df(meta_dict, sample_vector, Tint, lint, nodes_in_order, args.size)
+	small_scale_df(meta_dict, sample_vector, Tint, lint, nodes_in_order, args.size, save_as)

@@ -26,8 +26,11 @@ def EMDUnifrac_weighted(Tint, lint, nodes_in_order, P, Q):
     return Z
 
 def pairwise_L1EMDUniFrac_weighted(sample_dict, Tint, lint, nodes_in_order):
-    df = pd.DataFrame(columns=list(sample_dict.keys()))
-    print(len(df))
+    df = pd.DataFrame(columns=list(sample_dict.keys()), index=list(sample_dict.keys()))
+    print(sample_dict.keys())
+    print('sample_dict length in L1EMDUniFrac function', len(sample_dict))
+    for i in df.columns:
+        df[i][i] = 0.
     for pair in it.combinations(sample_dict.keys(), 2): #all pairwise combinations
         sample1, sample2 = pair[0], pair[1]
         P, Q = sample_dict[sample1], sample_dict[sample2]
