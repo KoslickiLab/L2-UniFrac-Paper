@@ -124,7 +124,7 @@ def small_scale_df(meta_dict, sample_dict, Tint, lint, nodes_in_order, sample_si
 	col_names = ["Method", "Sample_size", "Time", "Fowlkes_Mallows_score"]
 	df = pd.DataFrame(columns=col_names, index=['L2', 'Traditional'])
 	df['Method']['L2'] = 'L2-UniFrac'
-	df['Sample_size']['L2'] = df['Sample_size']['Traditional'] = total_size*sample_size
+	df['Sample_size']['L2'] = df['Sample_size']['Traditional'] = int(total_size*sample_size)
 	df['Time']['L2'] = L2_t
 	print(df)
 	df['Fowlkes_Mallows_score']['L2'] = L2_s
