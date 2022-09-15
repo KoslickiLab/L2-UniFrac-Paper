@@ -123,15 +123,15 @@ def small_scale_df(meta_dict, sample_dict, Tint, lint, nodes_in_order, sample_si
 	print('Matrix_based time', M_t)
 	col_names = ["Method", "Sample_size", "Time", "Fowlkes_Mallows_score"]
 	df = pd.DataFrame(columns=col_names, index=['L2', 'Traditional'])
-	print(df)
-	df['L2']['Method'] = 'L2-UniFrac'
-	df['L2']['Sample_size'] = df['Traditional']['Sample_size'] = total_size*sample_size
-	df['L2']['Time'] = L2_t
-	df['L2']['Fowlkes_Mallows_score'] = L2_s
-	df['Traditional']['Method'] = 'Matrix-based'
-	df['Traditional']['Time'] = M_t
-	df['Traditioanl']['Fowlkes_Mallows_score'] = M_s
+	df[['L2','Method']] = 'L2-UniFrac'
+	df[['L2','Sample_size']] = df[['Traditional','Sample_size']] = total_size*sample_size
+	df[['L2','Time']] = L2_t
+	df[['L2','Fowlkes_Mallows_score']] = L2_s
+	df[['Traditional','Method']] = 'Matrix-based'
+	df[['Traditional','Time']] = M_t
+	df[['Traditioanl','Fowlkes_Mallows_score']] = M_s
 	df.to_csv(save_as, sep='\t')
+	print(df)
 	return
 
 def partition_samples_to_dict(train_percentage, biom_file, tree_file, metadata_file, metadata_key):
