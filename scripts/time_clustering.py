@@ -126,6 +126,7 @@ def small_scale_df(meta_dict, sample_dict, Tint, lint, nodes_in_order, sample_si
 	df[['L2','Method']] = 'L2-UniFrac'
 	df[['L2','Sample_size']] = df[['Traditional','Sample_size']] = total_size*sample_size
 	df[['L2','Time']] = L2_t
+	print(df)
 	df[['L2','Fowlkes_Mallows_score']] = L2_s
 	df[['Traditional','Method']] = 'Matrix-based'
 	df[['Traditional','Time']] = M_t
