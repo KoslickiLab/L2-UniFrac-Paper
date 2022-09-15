@@ -123,6 +123,7 @@ def small_scale_df(meta_dict, sample_dict, Tint, lint, nodes_in_order, sample_si
 	print('Matrix_based time', M_t)
 	col_names = ["Method", "Sample_size", "Time", "Fowlkes_Mallows_score"]
 	df = pd.DataFrame(columns=col_names, index=['L2', 'Traditional'])
+	print(df)
 	df['L2']['Method'] = 'L2-UniFrac'
 	df['L2']['Sample_size'] = df['Traditional']['Sample_size'] = total_size*sample_size
 	df['L2']['Time'] = L2_t
