@@ -8,6 +8,7 @@ def combine_files(dir, save_as):
     :param dir:
     :return:
     '''
+    cur_dir = os.getcwd()
     df_list = []
     files = os.listdir(dir)
     os.chdir(dir)
@@ -17,7 +18,8 @@ def combine_files(dir, save_as):
         df_list.append(df)
     combined_df = pd.concat(df_list)
     print(combined_df)
-    #df.to_csv(save_as, sep='\t')
+    os.chdir(cur_dir)
+    df.to_csv(save_as, sep='\t')
 
 
 if __name__ == '__main__':
