@@ -9,7 +9,6 @@ def combine_files(dir, save_as):
     :return:
     '''
     df_list = []
-    os.chdir(dir)
     for file in os.listdir(dir):
         print(file)
         df = pd.read_csv(file, sep='\t')
