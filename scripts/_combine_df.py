@@ -9,11 +9,13 @@ def combine_files(dir, save_as):
     :return:
     '''
     df_list = []
+    os.chdir(dir)
     for file in os.listdir(dir):
         df = pd.read_csv(file, sep='\t')
         df_list.append(df)
     combined_df = pd.concat(df_list)
     print(combined_df)
+    df.to_csv(save_as, sep='\t')
 
 
 if __name__ == '__main__':
