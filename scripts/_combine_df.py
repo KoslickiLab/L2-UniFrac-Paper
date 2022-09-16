@@ -19,7 +19,7 @@ def combine_files(dir, save_as):
     combined_df = pd.concat(df_list)
     print(combined_df)
     os.chdir(cur_dir)
-    df.to_csv(save_as, sep='\t')
+    combined_df.to_csv(save_as, sep='\t', index=False)
 
 
 if __name__ == '__main__':
