@@ -9,7 +9,9 @@ def combine_files(dir, save_as):
     :return:
     '''
     df_list = []
-    for file in os.listdir(dir):
+    files = os.listdir(dir)
+    os.chdir(dir)
+    for file in files:
         print(file)
         df = pd.read_csv(file, sep='\t')
         df_list.append(df)
