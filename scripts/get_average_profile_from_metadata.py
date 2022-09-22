@@ -36,5 +36,7 @@ if __name__ == '__main__':
 	profile_dir = args.pdir
 	metadata_key = args.phenotype
 	id_col = args.id_col
+	save_dir = args.save
 
 	meta_dict, profile_list = get_metadata_dict(metadata_file, val_col=metadata_key, key_col=id_col)
+	generate_rep_sample_from_metadata(meta_dict, profile_list, save_dir)
