@@ -11,6 +11,7 @@ from helper import get_metadata_dict, get_pheno_sample_dict, get_rep_sample_dict
 
 def generate_rep_sample_from_metadata(meta_dict, profile_list, save_dir):
 	profile_path_lst = [os.path.join(profile_dir, file) for file in os.listdir(profile_dir)]
+	print(profile_path_lst[0])
 	Tint, lint, nodes_in_order, nodes_to_index = L2U.get_wgs_tree(profile_path_lst)
 	targets = [meta_dict[i] for i in profile_list]
 	#profile list should come from meta_dict
@@ -39,4 +40,7 @@ if __name__ == '__main__':
 	save_dir = args.save
 
 	meta_dict, profile_list = get_metadata_dict(metadata_file, val_col=metadata_key, key_col=id_col)
+	print(profile_list)
+	print(len(meta_dict))
 	generate_rep_sample_from_metadata(meta_dict, profile_list, save_dir)
+
