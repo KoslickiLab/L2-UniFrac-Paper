@@ -58,6 +58,6 @@ def write_vector_to_file(vector, file_name, nodes_in_order, nodes_to_index):
 	index_to_nodes = {y:x for x, y in nodes_to_index.items()}
 	df['ID'] = [index_to_nodes[i] for i in nodes_in_order]
 	df['relative_abundance'] = vector
-	df.to_csv(file_name, sep='\t', header=False, index=None)
+	df.to_csv(file_name, sep='\t', header=True, index=None)
 	return
 
