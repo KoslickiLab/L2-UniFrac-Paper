@@ -12,13 +12,13 @@ def get_metadata_dict(meta_file, val_col = "HMgDB_diagnosis", key_col = "library
 	:param meta_file: a metadata file containing columns that can be used as keys and values
 	:param val_col: column name for values
 	:param key_col: column name for keys
-	:return: a dict with keys in key_col and values in val_col
+	:return: a dict with keys in key_col and values in val_col, and a list of profile ids
 	'''
 	meta_dict = dict()
 	df = pd.read_csv(meta_file)
 	for i, id in enumerate(df[key_col]):
 		meta_dict[id] = df[val_col][i]
-	return meta_dict
+	return meta_dict, list(meta_dict.keys())
 
 def get_pheno_sample_dict(sample_paths, targets):
 	'''
