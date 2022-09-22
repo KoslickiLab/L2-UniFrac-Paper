@@ -18,8 +18,8 @@ def generate_rep_sample_from_metadata(meta_dict, profile_list, save_dir):
 	rep_sample_dict = get_rep_sample_dict(pheno_sample_dict, Tint, lint, nodes_in_order, nodes_to_index)
 	for pheno in rep_sample_dict.keys():
 		print(pheno)
-		file_name = pheno + '.txt'
-		write_vector_to_file(rep_sample_dict[pheno], save_dir, file_name, nodes_in_order, nodes_to_index)
+		file_name = save_dir + '/' + pheno + '.txt'
+		write_vector_to_file(rep_sample_dict[pheno], file_name, nodes_in_order, nodes_to_index)
 	return
 
 

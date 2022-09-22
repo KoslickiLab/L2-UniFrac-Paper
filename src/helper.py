@@ -53,12 +53,11 @@ def get_rep_sample_dict(pheno_sample_dict, Tint, lint, nodes_in_order, nodes_to_
 		rep_sample_dict[pheno] = rep_sample
 	return rep_sample_dict
 
-def write_vector_to_file(vector, save_dir, save_name, nodes_in_order, nodes_to_index):
+def write_vector_to_file(vector, file_name, nodes_in_order, nodes_to_index):
 	df = pd.DataFrame(columns=['ID', 'relative_abundance'])
 	index_to_nodes = {y:x for x, y in nodes_to_index.items()}
 	df['ID'] = [index_to_nodes[i] for i in nodes_in_order]
-	file_name = save_dir + '/' + save_name + '.txt'
 	df['relative_abundance'] = vector
-	df.to_csv(file_name, sep='\t', header=False)
+	df.to_csv(file_name, sep='\t', header=False, index=None)
 	return
 
