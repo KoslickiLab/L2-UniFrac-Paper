@@ -12,21 +12,25 @@ def main():
     parser.add_argument('-s', '--save', type=str, help="If wants to save df for future use, file name to save as")
     parser.add_argument('-hue', '--hue', type=str, help="Hue", nargs='?', default="Method")
     parser.add_argument('-t', '--type', type=str, help="Plot type.", choices=['box', 'line'])
+    parser.add_argument('-ylim', '--ylim', type=str, help="Y axis limits", nargs='*')
+
 
     args = parser.parse_args()
     dataframe_file = args.file
     df = pd.read_table(dataframe_file)
 
-    sns.color_palette("pastel")
     x = args.x
     y = args.y
     if args.type == 'box':
         print("box plot")
+        sns.color_palette("pastel")
         sns.boxplot(x=x, y=y, hue=args.hue, data=df, palette='Set2')
     # sns.set_theme(style="ticks", palette="pastel")
     elif args.type == 'line':
         sns.lineplot(x=args.x, y=args.y, hue=args.hue, data=df)
-    # sns.lineplot(x=x, y="Silhouette", hue="method", data=df, err_style="bars", ci="sd")
+    # sns.lineplot(x=x, y="Silhouette", hue="method", data=df, err_style="bars", ci="sd"
+    if args.ylim:
+        plt.ylim(args.ylim)
     plt.savefig(args.save)
     #plt.show()
 
