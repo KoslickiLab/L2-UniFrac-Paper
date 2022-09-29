@@ -6,6 +6,7 @@ sys.path.append('L2-UniFrac/scripts')
 sys.path.append('src')
 import argparse
 import L2UniFrac as L2U
+import numpy as np
 import pandas as pd
 from helper import get_metadata_dict, get_pheno_sample_dict, get_rep_sample_dict, write_vector_to_file
 
@@ -19,12 +20,14 @@ def generate_rep_sample_from_metadata(meta_dict, profile_list, save_dir):
 	for pheno in rep_sample_dict.keys():
 		print(pheno)
 		file_name = save_dir + '/' + pheno + '.txt'
+		print('check vector sum to 1')
+		print(np.sum(rep_sample[pheno]))
 		write_vector_to_file(rep_sample_dict[pheno], file_name, nodes_in_order, nodes_to_index)
 	return
 
 
 if __name__ == '__main__':
-	parser = argparse.ArgumentParser(description='Get testing statistics of classification test.')
+	parser = argparse.ArgumentParser(description='Get representative samples from a metadata file.')
 	parser.add_argument('-m', '--meta_file', type=str, help='A metadata file.', nargs='?')
 	parser.add_argument('-id_col', '--id_col', type=str, help='Name of the id column in the metadata file.', nargs='?', default="library_id")
 	parser.add_argument('-s', '--save', type=str, help="Directory to save files under.")
