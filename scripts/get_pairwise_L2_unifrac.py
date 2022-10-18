@@ -21,7 +21,7 @@ def argument_parser():
     parser = argparse.ArgumentParser(description="Get pairwise L2-UniFrac matrix from otu table")
     parser.add_argument('-i', '--otu_file', type=str, required=True, help='Path to the input otu file in tsv format.')
     parser.add_argument('-t', '--tree_file', type=str, required=True, help='Path to tree file.')
-    parser.add_argument('-od', '--output_file', type=str, help='File path to save the distance matrix file as.')
+    parser.add_argument('-o', '--output_file', type=str, help='File path to save the distance matrix file as.')
     return parser
 
 def main():
@@ -32,7 +32,7 @@ def main():
     dim = len(sample_ids)
     dist_matrix = np.zeros(shape=(dim, dim))
     for pair in it.combinations(sample_ids, 2): #all pairwise combinations
-        sample_p, sample_q = pair[0], pair[1]
+        sample_p, sample_q = sample_vector_dict[pair[0]], sample_vector_dict[pair[1]]
         unifrac = L2U.L2UniFrac_weighted_plain(Tint, lint, nodes_in_order, sample_p, sample_q)
         i = sample_ids.index(pair[0])
         j = sample_ids.index(pair[1])
