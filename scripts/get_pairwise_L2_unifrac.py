@@ -27,8 +27,8 @@ def argument_parser():
 def main():
     parser = argument_parser()
     args = parser.parse_args()
-    sample_vector_dict, sample_ids, otus = parse_otu_table(args.otu_file, normalize=True)
     Tint, lint, nodes_in_order = parse_tree_file(args.tree_file)
+    sample_vector_dict, sample_ids = parse_otu_table(args.otu_file, nodes_in_order, normalize=True)
     dim = len(sample_ids)
     dist_matrix = np.zeros(shape=(dim, dim))
     for pair in it.combinations(sample_ids, 2): #all pairwise combinations

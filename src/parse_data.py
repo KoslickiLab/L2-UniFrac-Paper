@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from dendropy import Tree, datamodel
 
-def parse_otu_table(otu_file, Tint, lint, nodes_in_order, normalize=True):
+def parse_otu_table(otu_file, nodes_in_order, normalize=True):
 	'''
 	Parses an otu file in tsv format and returns a dict with keys being sample id and values being abundance vector
 	:param otu_file: path to an otu table file in .tsv format. Can be converted from .biom format by running
@@ -25,7 +25,7 @@ def parse_otu_table(otu_file, Tint, lint, nodes_in_order, normalize=True):
 		if normalize is True:
 			extended_vector = extended_vector/np.sum(extended_vector)
 		sample_vector_dict[sample] = extended_vector
-	return sample_vector_dict, sample_ids, otus
+	return sample_vector_dict, sample_ids
 
 def parse_tree_file(tree_str_file, suppress_internal_node_taxa=True, suppress_leaf_node_taxa=False):
 	'''
