@@ -36,8 +36,6 @@ def main():
         i = sample_ids.index(pair[0])
         j = sample_ids.index(pair[1])
         print(len(sample_p))
-        print(len(nodes_in_order))
-        print(i,j)
         unifrac = L2U.L2UniFrac_weighted_plain(Tint, lint, nodes_in_order, sample_p, sample_q)
         dist_matrix[i][j] = dist_matrix[j][i] = unifrac
     pd.DataFrame(data=dist_matrix, index=sample_ids, columns=sample_ids).to_csv(args.output_file, sep="\t")
