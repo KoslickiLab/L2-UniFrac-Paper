@@ -8,7 +8,12 @@ sys.path.append('L2-UniFrac/src')
 sys.path.append('L2-UniFrac/scripts')
 import argparse
 import L2UniFrac as L2U
-from parse_data import parse_otu_table, parse_tree_file
+try:
+    SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+    sys.path.append(os.path.dirname(SCRIPT_DIR))
+except:
+    pass
+from src.parse_data import parse_otu_table, parse_tree_file
 import itertools as it
 
 
