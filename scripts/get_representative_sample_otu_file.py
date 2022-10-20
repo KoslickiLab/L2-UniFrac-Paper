@@ -38,6 +38,7 @@ def main():
     simple_meta_dict = get_metadata_dict(args.meta_file, val_col=args.val, key_col=args.key)
     meta_samples_dict = get_meta_samples_dict(simple_meta_dict)
     rep_sample_dict = L2U.get_rep_sample_dict(sample_vector_dict, meta_samples_dict, Tint, lint, nodes_in_order)
+    print(rep_sample_dict)
     df = pd.DataFrame(rep_sample_dict, columns=sample_ids, index=nodes_in_order)
     for sample in sample_ids:
         df[sample] = sample_vector_dict[sample]
