@@ -39,6 +39,7 @@ def parse_otu_table(otu_file, nodes_in_order, normalize=True):
 	for sample in sample_ids:
 		vector = df[sample].tolist()
 		extended_vector = np.zeros(len(nodes_in_order))
+		print(sample)
 		for otu in otus:
 			i = nodes_in_order.index(otu) #index of this otu in nodes_in_order
 			extended_vector[i] = vector[otus.index(otu)]
