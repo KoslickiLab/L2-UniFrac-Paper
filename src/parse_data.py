@@ -2,6 +2,25 @@ import pandas as pd
 import numpy as np
 from dendropy import Tree, datamodel
 
+def parse_otu_table_no_extend(otu_file, normalize=True):
+	'''
+	Parses an otu file in tsv format and returns a dict with keys being sample id and values being abundance vector
+	:param otu_file: path to an otu table file in .tsv format. Can be converted from .biom format by running
+	'biom convert -i table.biom -o table.from_biom.txt --to-tsv'
+	:return:
+	'''
+	df = pd.read_table(otu_file, header=1, index_col=0) #remove first row "#Constructed from biom file"
+	sample_ids = df.columns.tolist()
+	otus = df.index.tolist()
+	otus = list(map(lambda x:str(x), otus))
+	sample_vector_dict = dict()
+	for sample in sample_ids:
+		vector = df[sample].tolist()
+		if normalize is True:
+			vector = vector/np.sum(vector)
+		sample_vector_dict[sample] = vector
+	return sample_vector_dict, sample_ids, otus
+
 def parse_otu_table(otu_file, nodes_in_order, normalize=True):
 	'''
 	Parses an otu file in tsv format and returns a dict with keys being sample id and values being abundance vector
@@ -15,6 +34,7 @@ def parse_otu_table(otu_file, nodes_in_order, normalize=True):
 	df = pd.read_table(otu_file, header=1, index_col=0) #remove first row "#Constructed from biom file"
 	sample_ids = df.columns.tolist()
 	otus = df.index.tolist()
+	otus = list(map(lambda x: str(x), otus))
 	sample_vector_dict = dict()
 	for sample in sample_ids:
 		vector = df[sample].tolist()
