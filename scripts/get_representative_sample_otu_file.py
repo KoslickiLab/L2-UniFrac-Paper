@@ -27,6 +27,7 @@ def argument_parser():
     parser.add_argument('-m', '--meta_file', type=str, required=True, help='Path to metadata file.')
     parser.add_argument('-k', '--key', type=str, help="Key column name in metadata file. Usually sample ids.")
     parser.add_argument('-v', '--val', type=str, help="Value column name in metadata file. e.g. diagnosis, environment, etc.")
+    return parser
 
 def main():
     parser = argument_parser()
