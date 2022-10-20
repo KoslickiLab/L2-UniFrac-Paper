@@ -33,7 +33,9 @@ def main():
     parser = argument_parser()
     args = parser.parse_args()
     Tint, lint, nodes_in_order = parse_tree_file(args.tree_file)
+    print("Tree parsed.")
     sample_vector_dict, sample_ids = parse_otu_table(args.otu_file, nodes_in_order, normalize=True)
+    print(sample_ids)
     #push up all the samples
     simple_meta_dict = get_metadata_dict(args.meta_file, val_col=args.val, key_col=args.key)
     meta_samples_dict = get_meta_samples_dict(simple_meta_dict)
