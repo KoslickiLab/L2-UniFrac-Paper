@@ -31,14 +31,13 @@ def parse_otu_table(otu_file, nodes_in_order, normalize=True):
 	:param nodes_in_order:
 	:return:
 	'''
-	df = pd.read_table(otu_file, header=1, index_col=0) #remove first row "#Constructed from biom file"
+	df = pd.read_table(otu_file, header=1, index_col=None) #remove first row "#Constructed from biom file"
+	df.set_index('#OTU ID')
 	sample_ids = df.columns.tolist()
 	otus = df.index.tolist()
 	otus = list(map(str, otus))
-	extended_df = pd.DataFrame(columns=sample_ids, index=nodes_in_order)
-	print(df[['4479946']])
 	print(df.head())
-	print(df['714.Soil.U.cntr.T5.3']['4479946'])
+	extended_df = pd.DataFrame(columns=sample_ids, index=nodes_in_order)
 	for sample in sample_ids:
 		print(sample)
 		for otu in otus:
