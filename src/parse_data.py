@@ -35,7 +35,7 @@ def parse_otu_table(otu_file, nodes_in_order, normalize=True):
 	sample_ids = df.columns.tolist()
 	otus = df.index.tolist()
 	otus = list(map(lambda x: str(x), otus))
-	extended_df = df.DataFrame(columns=sample_ids, index=nodes_in_order)
+	extended_df = pd.DataFrame(columns=sample_ids, index=nodes_in_order)
 	for sample in sample_ids:
 		for otu in otus:
 			extended_df[sample][otu] = df[sample][otu]
