@@ -35,17 +35,14 @@ def parse_otu_table(otu_file, nodes_in_order, normalize=True):
 	sample_ids = df.columns.tolist()
 	otus = df.index.tolist()
 	otus = list(map(lambda x: str(x), otus))
-	sample_vector_dict = dict()
+	extended_df = df.DataFrame(columns=sample_ids, index=nodes_in_order)
 	for sample in sample_ids:
-		vector = df[sample].tolist()
-		extended_vector = np.zeros(len(nodes_in_order))
-		print(sample)
 		for otu in otus:
-			i = nodes_in_order.index(otu) #index of this otu in nodes_in_order
-			extended_vector[i] = vector[otus.index(otu)]
+			extended_df[sample][otu] = df[sample][otu]
 		if normalize is True:
-			extended_vector = extended_vector/np.sum(extended_vector)
-		sample_vector_dict[sample] = extended_vector
+			extended_df[sample] = extended_df[sample]/np.sum(extended_df[sample])
+	extended_df.fillna(0., inpoly=True)
+	sample_vector_dict = extended_df.to_dict(orient='list')
 	return sample_vector_dict, sample_ids
 
 def parse_tree_file(tree_str_file, suppress_internal_node_taxa=True, suppress_leaf_node_taxa=False):
