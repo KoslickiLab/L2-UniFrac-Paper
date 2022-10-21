@@ -33,11 +33,11 @@ def parse_otu_table(otu_file, nodes_in_order, normalize=True):
 	'''
 	df = pd.read_table(otu_file, header=1, index_col=0) #remove first row "#Constructed from biom file"
 	sample_ids = df.columns.tolist()
+	print(df.head())
 	otus = df.index.tolist()
 	otus = list(map(lambda x: str(x), otus))
-	print(otus[:10])
-	print(nodes_in_order[:10])
 	extended_df = pd.DataFrame(columns=sample_ids, index=nodes_in_order)
+	print(extended_df['714.Soil.U.cntr.T5.3']['4334830'])
 	for sample in sample_ids:
 		print(sample)
 		for otu in otus:
