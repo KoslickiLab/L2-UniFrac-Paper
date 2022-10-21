@@ -43,9 +43,9 @@ def parse_otu_table(otu_file, nodes_in_order, normalize=True):
 			extended_df[sample][otu] = df[sample][otu]
 		if normalize is True:
 			extended_df[sample] = extended_df[sample]/np.sum(extended_df[sample])
-	extended_df.fillna(0., inpoly=True)
-	sample_vector_dict = extended_df.to_dict(orient='list')
-	return sample_vector_dict, sample_ids
+	extended_df.fillna(0., inplace=True)
+	#sample_vector_dict = extended_df.to_dict(orient='list')
+	return extended_df
 
 def parse_tree_file(tree_str_file, suppress_internal_node_taxa=True, suppress_leaf_node_taxa=False):
 	'''

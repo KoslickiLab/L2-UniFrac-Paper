@@ -1,6 +1,4 @@
-import argparse
 import pandas as pd
-import numpy as np
 import os
 import sys
 sys.path.append('L2-UniFrac')
@@ -13,7 +11,7 @@ try:
     sys.path.append(os.path.dirname(SCRIPT_DIR))
 except:
     pass
-from src.parse_data import parse_otu_table, parse_tree_file
+from src.parse_data import parse_tree_file
 from src.helper import get_meta_samples_dict, get_metadata_dict
 
 def argument_parser():
@@ -21,6 +19,10 @@ def argument_parser():
                                                  "produces representative samples for each phenotype under a specified"
                                                  "column in the metadata file, and writes the representative samples into"
                                                  "a new .tsv otu file.")
+    parser.add_argument('-i', '--otu_file', type=str, required=True, help='Path to the input otu file in tsv format. The'
+                                                                          'number of OTUs in the table must be the same'
+                                                                          'as that of the tree file. If not, first run'
+                                                                          'extend_otu_file.py')
     parser.add_argument('-i', '--otu_file', type=str, required=True, help='Path to the input otu file in tsv format.')
     parser.add_argument('-t', '--tree_file', type=str, required=True, help='Path to tree file.')
     parser.add_argument('-o', '--output_file', type=str, help='File path to save the new otu file as.')
@@ -33,9 +35,9 @@ def main():
     parser = argument_parser()
     args = parser.parse_args()
     Tint, lint, nodes_in_order = parse_tree_file(args.tree_file)
-    print("Tree parsed.")
-    sample_vector_dict, sample_ids = parse_otu_table(args.otu_file, nodes_in_order, normalize=True)
-    print(sample_ids)
+    df = pd.read_table(args.otu_file, sep='\t')
+    sample_ids = df.columns.tolist()
+    sample_vector_dict = df.to_dict(orient='list')
     #push up all the samples
     simple_meta_dict = get_metadata_dict(args.meta_file, val_col=args.val, key_col=args.key)
     meta_samples_dict = get_meta_samples_dict(simple_meta_dict)

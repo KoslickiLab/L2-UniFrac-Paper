@@ -23,6 +23,8 @@ def partition_sample(meta_dict, random_state, test_size=0.2):
 	samples_train, samples_test, targets_train, targets_test = train_test_split(sample_id, targets, test_size=test_size, random_state=random_state)
 	return samples_train, samples_test, targets_train, targets_test
 
+
+
 def get_pcoa(dist_matrix, sample_lst, meta_file, col_name, plot_title):
 	'''
 	Get a PCOA plot based on the distance matrix, colored according to metadata
