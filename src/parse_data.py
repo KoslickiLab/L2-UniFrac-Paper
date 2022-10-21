@@ -31,8 +31,7 @@ def parse_otu_table(otu_file, nodes_in_order, normalize=True):
 	:param nodes_in_order:
 	:return:
 	'''
-	df = pd.read_table(otu_file, header=1, index_col=None) #remove first row "#Constructed from biom file"
-	df.set_index('#OTU ID')
+	df = pd.read_table(otu_file, header=1, index_col='#OTU ID') #remove first row "#Constructed from biom file"
 	sample_ids = df.columns.tolist()
 	otus = df.index.tolist()
 	otus = list(map(str, otus))
