@@ -23,7 +23,6 @@ def argument_parser():
                                                                           'number of OTUs in the table must be the same'
                                                                           'as that of the tree file. If not, first run'
                                                                           'extend_otu_file.py')
-    parser.add_argument('-i', '--otu_file', type=str, required=True, help='Path to the input otu file in tsv format.')
     parser.add_argument('-t', '--tree_file', type=str, required=True, help='Path to tree file.')
     parser.add_argument('-o', '--output_file', type=str, help='File path to save the new otu file as.')
     parser.add_argument('-m', '--meta_file', type=str, required=True, help='Path to metadata file.')
