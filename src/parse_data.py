@@ -36,6 +36,7 @@ def parse_otu_table(otu_file, nodes_in_order, normalize=True):
 	otus = df.index.tolist()
 	otus = list(map(str, otus))
 	extended_df = pd.DataFrame(columns=sample_ids, index=nodes_in_order)
+	print(df[['4479946']])
 	print(df.head())
 	print(df['714.Soil.U.cntr.T5.3']['4479946'])
 	for sample in sample_ids:
