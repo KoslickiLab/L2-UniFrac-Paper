@@ -35,14 +35,13 @@ def main():
     args = parser.parse_args()
     Tint, lint, nodes_in_order = parse_tree_file(args.tree_file)
     df = pd.read_table(args.otu_file, sep='\t')
-    print(df.head())
-    print(df.columns)
     sample_ids = df.columns.tolist()
     sample_vector_dict = df.to_dict(orient='list')
     #push up all the samples
     simple_meta_dict = get_metadata_dict(args.meta_file, val_col=args.val, key_col=args.key)
     meta_samples_dict = get_meta_samples_dict(simple_meta_dict)
-    rep_sample_dict = L2U.get_rep_sample_dict(sample_vector_dict, meta_samples_dict, Tint, lint, nodes_in_order)
+    print(meta_samples_dict)
+    rep_sample_dict = L2U.get_representative_sample_16s(sample_vector_dict, meta_samples_dict, Tint, lint, nodes_in_order)
     print(rep_sample_dict)
     df = pd.DataFrame(rep_sample_dict, columns=sample_ids, index=nodes_in_order)
     for sample in sample_ids:
