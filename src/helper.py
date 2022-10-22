@@ -51,6 +51,7 @@ def get_metadata_dict(meta_file, val_col = "HMgDB_diagnosis", key_col = "library
 	'''
 	simple_meta_dict = dict()
 	df = pd.read_csv(meta_file)
+	print(df.columns)
 	for i, id in enumerate(df[key_col]):
 		simple_meta_dict[id] = df[val_col][i]
 	return simple_meta_dict
