@@ -35,6 +35,8 @@ def main():
     args = parser.parse_args()
     Tint, lint, nodes_in_order = parse_tree_file(args.tree_file)
     df = pd.read_table(args.otu_file, sep='\t')
+    print(df.head())
+    print(df.columns)
     sample_ids = df.columns.tolist()
     sample_vector_dict = df.to_dict(orient='list')
     #push up all the samples
