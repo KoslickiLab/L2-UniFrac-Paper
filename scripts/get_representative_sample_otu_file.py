@@ -37,16 +37,13 @@ def main():
     df = pd.read_table(args.otu_file, sep='\t')
     sample_ids = df.columns.tolist()
     sample_vector_dict = df.to_dict(orient='list')
-    print("length of sample_vector_dict: {}".format(len(sample_vector_dict)))
     #push up all the samples
     simple_meta_dict = get_metadata_dict(args.meta_file, val_col=args.val, key_col=args.key)
-    print("len of simple_meta_dict: {}".format(len(simple_meta_dict)))
     meta_samples_dict = get_meta_samples_dict(simple_meta_dict)
     rep_sample_dict = L2U.get_representative_sample_16s(sample_vector_dict, meta_samples_dict, Tint, lint, nodes_in_order)
     print(rep_sample_dict)
-    df = pd.DataFrame(rep_sample_dict, columns=sample_ids, index=nodes_in_order)
-    for sample in sample_ids:
-        df[sample] = sample_vector_dict[sample]
+    df = pd.DataFrame.from_dict(rep_sample_dict)
+    df.index = nodes_in_order
     df.to_csv(args.output_file, sep='\t')
     return
 
