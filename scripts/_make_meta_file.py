@@ -13,6 +13,7 @@ def main():
     df = pd.read_table(args.file, header=0, index_col=0)
     meta_df = pd.DataFrame(columns=['sample_name', args.env_name], index=df.columns) #col names = environment name, sample name = phenotypes
     meta_df[args.env_name] = df.columns
+    meta_df['sample_name'] = df.columns
     meta_df.to_csv(args.output, sep='\t')
 
 
