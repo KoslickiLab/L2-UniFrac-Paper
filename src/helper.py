@@ -36,12 +36,12 @@ def get_pcoa(dist_matrix, sample_lst, meta_file, col_name, plot_title):
 	'''
 	meta_df = pd.read_table(meta_file, sep='\t')
 	dm = DistanceMatrix(dist_matrix, sample_lst)
-	print(meta_df.shape)
 	filtered_meta_df = meta_df[meta_df['sample_name'].isin(sample_lst)]
 	filtered_meta_df.set_index('sample_name', inplace=True)
 	filtered_meta_df.fillna('unknown', inplace=True)
 	dist_pc = pcoa(dm)
-	return dist_pc.plot(df=filtered_meta_df, column=col_name, cmap="Set1", title=plot_title, axis_labels=('PC1', 'PC2', 'PC3'))
+	fig = dist_pc.plot(df=filtered_meta_df, column=col_name, cmap="Set1", title=plot_title, axis_labels=('PC1', 'PC2', 'PC3'))
+	return fig
 
 def get_metadata_dict(meta_file, val_col = "HMgDB_diagnosis", key_col = "library_id"):
 	'''

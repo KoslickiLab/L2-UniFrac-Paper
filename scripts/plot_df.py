@@ -49,13 +49,16 @@ def main():
         (min_y, max_y) = args.ylim
         plt.yticks(np.arange(min_y, max_y, (min_y+max_y)/10.))
         #plt.ylim(args.ylim)
+
     elif args.type == 'pcoa':
         df = pd.read_table(dataframe_file, header=0, index_col=0)
         print(df.head())
         sample_lst = df.columns.tolist()
-        pcoa = get_pcoa(df, sample_lst, args.meta_file, args.env_name, args.title)
+        fig = get_pcoa(df, sample_lst, args.meta_file, args.env_name, args.title)
+        #fig.show()
+        #fig.savefig(args.save)
     plt.savefig(args.save)
-    #plt.show()
+    plt.show()
 
 if __name__ == "__main__":
     main()
