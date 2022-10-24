@@ -54,8 +54,8 @@ def main():
         print(df.head())
         sample_lst = df.columns.tolist()
         pcoa = get_pcoa(df, sample_lst, args.meta_file, args.env_name, args.title)
-    #plt.savefig(args.save)
-    plt.show()
+    plt.savefig(args.save)
+    #plt.show()
 
 if __name__ == "__main__":
     main()
