@@ -29,7 +29,7 @@ def main():
     parser = argument_parser()
     args = parser.parse_args()
     Tint, lint, nodes_in_order = parse_tree_file(args.tree_file)
-    df = pd.read_table(args.otu_file, sep='\t')
+    df = pd.read_table(args.otu_file, sep='\t', index_col=0) #use otus as index column
     sample_ids = df.columns.tolist()
     sample_vector_dict = df.to_dict(orient='list')
     dim = len(sample_ids)
