@@ -31,6 +31,7 @@ def main():
     Tint, lint, nodes_in_order = parse_tree_file(args.tree_file)
     df = pd.read_table(args.otu_file, sep='\t', index_col=0) #use otus as index column
     sample_ids = df.columns.tolist()
+    print(sample_ids)
     sample_vector_dict = df.to_dict(orient='list')
     dim = len(sample_ids)
     dist_matrix = np.zeros(shape=(dim, dim))

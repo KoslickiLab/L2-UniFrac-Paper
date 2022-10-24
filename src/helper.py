@@ -34,11 +34,13 @@ def get_pcoa(dist_matrix, sample_lst, meta_file, col_name, plot_title):
 	:param plot_title:
 	:return:
 	'''
-	df = pd.read_table(meta_file)
-	print(df.head())
-	dm = DistanceMatrix(dist_matrix, sample_lst)
+	meta_df = pd.read_table(meta_file, sep='\t')
+	dm = DistanceMatrix(dist_matrix.values, sample_lst)
+	print(meta_df.shape)
+	filtered_meta_df = meta_df[meta_df['sample_name'].isin(sample_lst)]
+	print(filtered_meta_df.shape)
 	dist_pc = pcoa(dm)
-	return dist_pc.plot(df=df, column=col_name, cmap="Set1", title=plot_title, axis_labels=('PC1', 'PC2', 'PC3'))
+	return dist_pc.plot(df=filtered_meta_df, column=col_name, cmap="Set1", title=plot_title, axis_labels=('PC1', 'PC2', 'PC3'))
 
 def get_metadata_dict(meta_file, val_col = "HMgDB_diagnosis", key_col = "library_id"):
 	'''
@@ -51,7 +53,6 @@ def get_metadata_dict(meta_file, val_col = "HMgDB_diagnosis", key_col = "library
 	'''
 	simple_meta_dict = dict()
 	df = pd.read_csv(meta_file, sep='\t')
-	print(df.columns)
 	for i, id in enumerate(df[key_col]):
 		simple_meta_dict[id] = df[val_col][i]
 	return simple_meta_dict
