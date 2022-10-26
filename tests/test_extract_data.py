@@ -45,7 +45,7 @@ def test_parse_otu_table_no_extend():
 def test_extract_samples_direct():
     biom_file = 'data/1928_body_sites/47422_otu_table.biom'
     tree_file = 'data/trees/gg_13_5_otus_99_annotated.tree'
-    nodes_weighted, sample_ids = extract_biom(biom_file, tree_file)
+    nodes_weighted, sample_ids = extract_samples_direct(biom_file, tree_file)
     print(nodes_weighted)
 
 test_extract_samples_direct()
