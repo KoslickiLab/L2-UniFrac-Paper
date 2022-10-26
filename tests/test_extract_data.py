@@ -46,6 +46,6 @@ def test_extract_samples_direct():
     biom_file = 'data/1928_body_sites/47422_otu_table.biom'
     tree_file = 'data/trees/gg_13_5_otus_99_annotated.tree'
     nodes_weighted, sample_ids = extract.extract_samples_direct(biom_file, tree_file)
-    print(nodes_weighted)
+    print(len(nodes_weighted['1928.SRS048971.SRX020527.SRR047153']))
 
 test_extract_samples_direct()
