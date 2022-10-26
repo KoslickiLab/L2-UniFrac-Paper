@@ -42,9 +42,10 @@ def test_parse_otu_table_no_extend():
     assert len(sample_vector_dict["1928.SRS015139.SRX020561.SRR043887"]) == len(nodes_in_order)
     assert np.isclose(np.sum(sample_vector_dict["1928.SRS015139.SRX020561.SRR043887"]), 1)
 
-def test_extract_biom():
+def test_extract_samples_direct():
     biom_file = 'data/1928_body_sites/47422_otu_table.biom'
-    nodes_samples = extract_biom(biom_file)
-    print(nodes_samples)
+    tree_file = 'data/trees/gg_13_5_otus_99_annotated.tree'
+    nodes_weighted, sample_ids = extract_biom(biom_file, tree_file)
+    print(nodes_weighted)
 
-test_extract_biom()
+test_extract_samples_direct()
