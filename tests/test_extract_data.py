@@ -4,7 +4,7 @@ sys.path.append('L2-UniFrac/src')
 sys.path.append('src')
 sys.path.append('scripts')
 import numpy as np
-from parse_data import parse_otu_table, parse_tree_file, parse_otu_table_no_extend
+from parse_data import parse_otu_table, parse_otu_table_no_extend
 import biom
 from extract_data import extract_samples_direct
 
