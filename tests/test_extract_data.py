@@ -9,6 +9,11 @@ import biom
 from extract_data import *
 
 
+
+#toy sample
+toy_data = np.arange(40).reshape(10, 4)
+toy_sample_ids = ['S%d' % i for i in range(4)]
+toy_observ_ids = ['O%d' % i for i in range(10)]
 toy_sample_metadata = [{'environment': 'A'}, {'environment': 'B'},
                    {'environment': 'A'}, {'environment': 'B'}]
 toy_observ_metadata = [{'taxonomy': ['Bacteria', 'Firmicutes']},
