@@ -6,7 +6,7 @@ sys.path.append('scripts')
 import numpy as np
 from parse_data import parse_otu_table, parse_otu_table_no_extend
 import biom
-from extract_data import extract_samples_direct
+from extract_data import parse_tree_file, extract_samples_direct
 
 
 
