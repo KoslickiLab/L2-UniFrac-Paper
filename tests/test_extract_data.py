@@ -6,14 +6,9 @@ sys.path.append('scripts')
 import numpy as np
 from parse_data import parse_otu_table, parse_otu_table_no_extend
 import biom
-from extract_data import parse_tree_file, extract_samples_direct
+from extract_data import *
 
 
-
-#toy sample
-toy_data = np.arange(40).reshape(10, 4)
-toy_sample_ids = ['S%d' % i for i in range(4)]
-toy_observ_ids = ['O%d' % i for i in range(10)]
 toy_sample_metadata = [{'environment': 'A'}, {'environment': 'B'},
                    {'environment': 'A'}, {'environment': 'B'}]
 toy_observ_metadata = [{'taxonomy': ['Bacteria', 'Firmicutes']},
