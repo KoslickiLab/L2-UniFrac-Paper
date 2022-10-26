@@ -34,18 +34,12 @@ def test_otu_present():
     sample_vector_dict, sample_ids, otus = parse_otu_table_no_extend('data/714_mouse/otu_table.tsv')
     assert set(otus).issubset(set(nodes_in_order))
 
-def test_parse_otu_table_no_extend():
-    otu_file = 'data/1928_body_sites/47422_otu_table.tsv'
-    tree_file = 'data/trees/gg_13_5_otus_99_annotated.tree'
-    _, _, nodes_in_order = extract.parse_tree_file(tree_file)
-    sample_vector_dict, sample_ids, otus = parse_otu_table_no_extend(otu_file, normalize=True)
-    assert len(sample_vector_dict["1928.SRS015139.SRX020561.SRR043887"]) == len(nodes_in_order)
-    assert np.isclose(np.sum(sample_vector_dict["1928.SRS015139.SRX020561.SRR043887"]), 1)
-
 def test_extract_samples_direct():
     biom_file = 'data/1928_body_sites/47422_otu_table.biom'
     tree_file = 'data/trees/gg_13_5_otus_99_annotated.tree'
-    nodes_weighted, sample_ids = extract.extract_samples_direct(biom_file, tree_file)
-    print(len(nodes_weighted['1928.SRS048971.SRX020527.SRR047153']))
+    _, _, nodes_in_order = extract.parse_tree_file(tree_file)
+    sample_vector_dict, sample_ids = extract.extract_samples_direct(biom_file, tree_file)
+    assert len(sample_vector_dict['1928.SRS048971.SRX020527.SRR047153']) == len(nodes_in_order)
+    assert np.isclose(np.sum(sample_vector_dict["1928.SRS015139.SRX020561.SRR043887"]), 1)
+    assert len(sample_ids) == 6067
 
-test_extract_samples_direct()
