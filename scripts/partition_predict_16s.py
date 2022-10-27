@@ -146,6 +146,8 @@ def main():
 	meta_dict = get_metadata_dict(args.meta_file, val_col=args.phenotype, key_col="sample_name")
 	meta_sample_dict = get_meta_samples_dict(meta_dict)
 	#compile dataframe
+	print(sample_ids[:5])
+	print(f' no. of all sample ids: {len(sample_ids)}')
 	col_names = ["Method", "Score_type", "Score"]
 	df = pd.DataFrame(columns=col_names)
 	score_type_col = []
@@ -154,6 +156,9 @@ def main():
 	for i in range(args.num_repeats):
 		samples_train, samples_test, targets_train, targets_test = partition_samples(meta_dict, random_state=i)
 		#KMeans
+		print(f'no. of test and train samples = {len(samples_train)+len(samples_test)}')
+		print(samples_test[:5])
+
 		all_vectors = list(sample_vector_dict.values())
 		kmeans_predict = KMeans(n_clusters=args.num_clusters).fit_predict(all_vectors)
 		results = get_clustering_scores(kmeans_predict, samples_test, meta_dict, sample_ids)
