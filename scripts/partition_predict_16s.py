@@ -12,7 +12,7 @@ from sklearn.cluster import AgglomerativeClustering, KMeans
 from sklearn_extra.cluster import KMedoids
 from sklearn.metrics import accuracy_score, rand_score, precision_score, recall_score
 from sklearn.metrics.cluster import adjusted_rand_score, normalized_mutual_info_score, adjusted_mutual_info_score, fowlkes_mallows_score
-from helper import decipher_label_by_vote, decipher_label_by_proximity, partition_samples, get_metadata_dict, get_meta_samples_dict
+from helper import decipher_label_by_vote, get_label_by_proximity, partition_samples, get_metadata_dict, get_meta_samples_dict
 
 
 def get_average_sample(sample_list, Tint, lint, nodes_in_order):
@@ -102,7 +102,7 @@ def get_L2UniFrac_accuracy_results(test_ids, test_targets, Tint, lint, nodes_in_
 	results_dict = dict()
 	overall_predictions = []
 	for id in test_ids:
-		prediction = decipher_label_by_proximity(sample_vector_dict[id], rep_sample_dict, Tint, lint, nodes_in_order)
+		prediction = get_label_by_proximity(sample_vector_dict[id], rep_sample_dict, Tint, lint, nodes_in_order)
 		overall_predictions.append(prediction)
 	results_dict['accuracy_score'] = accuracy_score(test_targets, overall_predictions)
 	results_dict['rand_score'] = rand_score(test_targets, overall_predictions)
