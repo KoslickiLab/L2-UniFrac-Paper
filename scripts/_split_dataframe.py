@@ -27,7 +27,7 @@ def parse_arguments():
 def split_df(sample_vector_dict, meta_samples_dict, rep_sample_dict, nodes_in_order):
     for phenotype in meta_samples_dict:
         print(phenotype)
-        samples_in_this_pheno = [meta_samples_dict[phenotype] if meta_samples_dict[phenotype] in sample_vector_dict]
+        samples_in_this_pheno = [meta_samples_dict[phenotype] for meta_samples_dict[phenotype] in sample_vector_dict]
         print(samples_in_this_pheno)
 
 
