@@ -42,7 +42,7 @@ def main():
     rep_sample_dict = L2U.get_representative_sample_16s(sample_vector_dict, meta_samples_dict, Tint, lint,
                                                         nodes_in_order)
 
-    split_df(args.file, meta_samples_dict)
+    split_df(args.file, meta_samples_dict, rep_sample_dict, nodes_in_order)
 
 
 
