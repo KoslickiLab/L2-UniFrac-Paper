@@ -12,7 +12,7 @@ from collections import Counter
 
 
 #classification
-def partition_sample(meta_dict, random_state, test_size=0.2):
+def partition_samples(meta_dict, random_state, test_size=0.2):
 	'''
 	Partitions samples in the meta_dict into training and testing sets
 	:param meta_dict:
