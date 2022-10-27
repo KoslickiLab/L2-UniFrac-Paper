@@ -151,7 +151,7 @@ def main():
 	score_type_col = []
 	score_col = []
 	method_col = []
-	for i in range(args.num_repeat):
+	for i in range(args.num_repeats):
 		samples_train, samples_test, targets_train, targets_test = partition_samples(meta_dict, random_state=i)
 		#KMeans
 		all_vectors = sample_vector_dict.values().tolist()
