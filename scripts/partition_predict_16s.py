@@ -143,7 +143,7 @@ def main():
 	args = parser.parse_args()
 	Tint, lint, nodes_in_order = parse_tree_file(tree_file)
 	sample_vector_dict, sample_ids = extract_samples_direct(args.biom_file, tree_file)
-	meta_dict = get_metadata_dict(args.meta_file, val_col=args.phenotype, keys="sample_name")
+	meta_dict = get_metadata_dict(args.meta_file, val_col=args.phenotype, key_col="sample_name")
 	meta_sample_dict = get_meta_samples_dict(meta_dict)
 	#compile dataframe
 	col_names = ["Method", "Score_type", "Score"]
