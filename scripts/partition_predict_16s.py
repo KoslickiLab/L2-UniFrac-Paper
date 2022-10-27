@@ -149,6 +149,7 @@ def main():
 	meta_dict = get_metadata_dict(args.meta_file, val_col=args.phenotype, key_col="sample_name")
 	meta_dict = {k:meta_dict[k] for k in sample_ids}
 	meta_sample_dict = get_meta_samples_dict(meta_dict)
+	print(meta_sample_dict.keys())
 	#compile dataframe
 	col_names = ["Method", "Score_type", "Score"]
 	df = pd.DataFrame(columns=col_names)
