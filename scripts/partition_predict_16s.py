@@ -144,6 +144,7 @@ def main():
 	Tint, lint, nodes_in_order = parse_tree_file(tree_file)
 	sample_vector_dict, sample_ids = extract_samples_direct(args.biom_file, tree_file)
 	meta_dict = get_metadata_dict(args.meta_file, val_col=args.phenotype, key_col="sample_name")
+	meta_dict = {k:meta_dict[k] for k in sample_ids}
 	meta_sample_dict = get_meta_samples_dict(meta_dict)
 	#compile dataframe
 	print(sample_ids[:5])
