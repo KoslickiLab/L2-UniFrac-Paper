@@ -104,6 +104,8 @@ def get_L2UniFrac_accuracy_results(test_ids, test_targets, Tint, lint, nodes_in_
 	for id in test_ids:
 		prediction = get_label_by_proximity(sample_vector_dict[id], rep_sample_dict, Tint, lint, nodes_in_order)
 		overall_predictions.append(prediction)
+	print('overall prediction ', overall_predictions[:5])
+	print('test targets', test_targets[:5])
 	results_dict['accuracy_score'] = accuracy_score(test_targets, overall_predictions)
 	results_dict['rand_score'] = rand_score(test_targets, overall_predictions)
 	results_dict['adjusted_rand_score'] = adjusted_rand_score(test_targets, overall_predictions)
@@ -147,8 +149,6 @@ def main():
 	meta_dict = {k:meta_dict[k] for k in sample_ids}
 	meta_sample_dict = get_meta_samples_dict(meta_dict)
 	#compile dataframe
-	print(sample_ids[:5])
-	print(f' no. of all sample ids: {len(sample_ids)}')
 	col_names = ["Method", "Score_type", "Score"]
 	df = pd.DataFrame(columns=col_names)
 	score_type_col = []
@@ -157,9 +157,6 @@ def main():
 	for i in range(args.num_repeats):
 		samples_train, samples_test, targets_train, targets_test = partition_samples(meta_dict, random_state=i)
 		#KMeans
-		print(f'no. of test and train samples = {len(samples_train)+len(samples_test)}')
-		print(samples_test[:5])
-
 		all_vectors = list(sample_vector_dict.values())
 		kmeans_predict = KMeans(n_clusters=args.num_clusters).fit_predict(all_vectors)
 		results = get_clustering_scores(kmeans_predict, samples_test, meta_dict, sample_ids)
