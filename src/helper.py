@@ -8,6 +8,7 @@ import pandas as pd
 from skbio.stats.ordination import pcoa
 from skbio import DistanceMatrix #to install: pip install scikit-bio
 from sklearn.model_selection import train_test_split
+from collections import Counter
 
 
 #classification
@@ -23,7 +24,43 @@ def partition_sample(meta_dict, random_state, test_size=0.2):
 	samples_train, samples_test, targets_train, targets_test = train_test_split(sample_id, targets, test_size=test_size, random_state=random_state)
 	return samples_train, samples_test, targets_train, targets_test
 
+def decipher_label_by_vote(predictions, index_sample_dict, group_name, meta_dict):
+	'''
+	Predict sample for traditional clustering-based method.
+	Given a list of predictions and a group name, return predicted class of the group by majority vote
+	:param predictions: a list of predicted classes obtained by clustering. e.g.[0,1,0,0,1...0]
+	:param index_sample_dict: maps each position of the prediction to its sample name
+	:param group_name: An integer. Predicted group name produced from clustering results. e.g. 0, 1
+	:param meta_dict: maps a sample to its phenotype. Can be produced from 'get_metadata_dict' from helper
+	:return: label predicted by majority vote. e.g. 'skin', 'gut'
+	'''
+	indices_this_group = [i for i in range(len(predictions)) if predictions[i] == group_name] #indices of predictions that equals to group_name given
+	predicted_labels = [meta_dict[index_sample_dict[i]] for i in indices_this_group] #real labels of these samples
+	c = Counter(predicted_labels)
+	predicted_by_vote = c.most_common(1)[0][0]
+	return predicted_by_vote
 
+def get_label_by_proximity(test_sample, rep_sample_dict, Tint, lint, nodes_in_order):
+	'''
+	Predict sample in L2-UniFrac classification method.
+	Given a test_sample and a rep_sample_dict, compute the L2-UniFrac between test_sample and each of the rep_samples in
+	rep_sample_dict, and assign the phenotype of which the rep_sample produces the least L2-UniFrac distance to the
+	test_sample
+	:param test_sample: a vector representation of a sample
+	:param rep_sample_dict: {phenotye: vector}
+	:param Tint: A dict showing node information of the tree
+	:param lint: A dict showing branch information of the tree
+	:param nodes_in_order: a list showing the ordering of the nodes on the tree from leaf up
+	:return: One of the phenotypes in the keys of rep_sample_dict
+	'''
+	min_unifrac = 1000
+	label = ""
+	for phenotype in rep_sample_dict:
+		L2unifrac = L2U.L2UniFrac_weighted_plain(Tint, lint, nodes_in_order, test_sample, rep_sample_dict[phenotype])
+		if L2unifrac < min_unifrac:
+			min_unifrac = L2unifrac
+			label = phenotype
+	return label
 
 def get_pcoa(dist_matrix, sample_lst, meta_file, col_name, plot_title):
 	'''
