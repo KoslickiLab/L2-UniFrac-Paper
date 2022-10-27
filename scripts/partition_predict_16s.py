@@ -61,7 +61,7 @@ def get_clustering_scores(predictions, test_ids, meta_dict, sample_ids):
 	for group in set(predictions):
 		label = decipher_label_by_vote(predictions, index_sample_dict, group, meta_dict)
 		group_label_dict[group] = label
-
+	print(group_label_dict)
 	test_indices = [sample_index_dict[sample_id] for sample_id in test_ids]
 	predicted_group_test = [predictions[i] for i in test_indices]
 	predicted_labels = [group_label_dict[group] for group in predicted_group_test]
