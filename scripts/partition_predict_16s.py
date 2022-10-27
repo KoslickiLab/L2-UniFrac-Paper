@@ -67,6 +67,8 @@ def get_clustering_scores(predictions, test_ids, meta_dict, sample_ids):
 	predicted_labels = [group_label_dict[group] for group in predicted_group_test]
 	true_labels = [meta_dict[i] for i in test_ids]
 	results_dict = dict()
+	print('overall prediction ', predicted_group_test[:5])
+	print('test targets', true_labels[:5])
 	results_dict['accuracy_score'] = accuracy_score(true_labels, predicted_labels)
 	results_dict['rand_score'] = rand_score(true_labels, predicted_group_test)
 	results_dict['adjusted_rand_score'] = adjusted_rand_score(true_labels, predicted_group_test)
@@ -104,8 +106,7 @@ def get_L2UniFrac_accuracy_results(test_ids, test_targets, Tint, lint, nodes_in_
 	for id in test_ids:
 		prediction = get_label_by_proximity(sample_vector_dict[id], rep_sample_dict, Tint, lint, nodes_in_order)
 		overall_predictions.append(prediction)
-	print('overall prediction ', overall_predictions[:5])
-	print('test targets', test_targets[:5])
+
 	results_dict['accuracy_score'] = accuracy_score(test_targets, overall_predictions)
 	results_dict['rand_score'] = rand_score(test_targets, overall_predictions)
 	results_dict['adjusted_rand_score'] = adjusted_rand_score(test_targets, overall_predictions)
