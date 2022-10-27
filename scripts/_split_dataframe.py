@@ -39,10 +39,12 @@ def main():
     Tint, lint, nodes_in_order = parse_tree_file(args.tree_file)
     meta_samples_dict = get_meta_samples_dict(meta_dict)
     sample_vector_dict, sample_ids = extract_samples_direct(args.biom_file, args.tree_file)
+
+    split_df(args.file, meta_samples_dict, 'p' , nodes_in_order)
+
     rep_sample_dict = L2U.get_representative_sample_16s(sample_vector_dict, meta_samples_dict, Tint, lint,
                                                         nodes_in_order)
 
-    split_df(args.file, meta_samples_dict, rep_sample_dict, nodes_in_order)
 
 
 
