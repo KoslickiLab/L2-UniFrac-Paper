@@ -154,7 +154,7 @@ def main():
 	for i in range(args.num_repeats):
 		samples_train, samples_test, targets_train, targets_test = partition_samples(meta_dict, random_state=i)
 		#KMeans
-		all_vectors = sample_vector_dict.values().tolist()
+		all_vectors = list(sample_vector_dict.values())
 		kmeans_predict = KMeans(n_clusters=args.num_clusters).fit_predict(all_vectors)
 		results = get_clustering_scores(kmeans_predict, samples_test, meta_dict, sample_ids)
 		for score_type in results.keys():
