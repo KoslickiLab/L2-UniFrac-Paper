@@ -12,7 +12,7 @@ try:
 except:
     pass
 import itertools as it
-from src.parse_data import parse_tree_file
+from extract_data import parse_tree_file
 import pandas as pd
 
 def argument_parser():
