@@ -37,7 +37,7 @@ def split_df(sample_vector_dict, meta_samples_dict, rep_sample_dict, nodes_in_or
                 this_meta_dict[sample] = phenotype
         samples_in_this_pheno[phenotype] = rep_sample_dict[phenotype]
         this_meta_dict[phenotype] = "representative_sample"
-        df = pd.Dataframe.from_dict(samples_in_this_pheno)
+        df = pd.DataFrame.from_dict(samples_in_this_pheno)
         df.set_index(nodes_in_order, inplace=True)
         meta_df = pd.DataFrame.from_dict(meta_samples_dict)
         out_meta_file = os.path.join(out_dir, phenotype + '_and_representative_meta.tsv')
