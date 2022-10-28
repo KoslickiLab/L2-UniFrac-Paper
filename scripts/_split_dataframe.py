@@ -27,8 +27,14 @@ def parse_arguments():
 def split_df(sample_vector_dict, meta_samples_dict, rep_sample_dict, nodes_in_order):
     for phenotype in meta_samples_dict:
         print(phenotype)
-        samples_in_this_pheno = [meta_samples_dict[phenotype] for meta_samples_dict[phenotype] in sample_vector_dict]
-        print(samples_in_this_pheno)
+        samples_in_this_pheno = dict()
+        for sample in meta_samples_dict[phenotype]:
+            samples_in_this_pheno[sample] = sample_vector_dict[sample]
+        samples_in_this_pheno[phenotype] = rep_sample_dict[phenotype]
+        df = pd.Dataframe.from_dict(samples_in_this_pheno)
+        df.set_index(nodes_in_order, inplace=True)
+        print(df.head())
+
 
 
 
@@ -39,11 +45,11 @@ def main():
     Tint, lint, nodes_in_order = parse_tree_file(args.tree_file)
     meta_samples_dict = get_meta_samples_dict(meta_dict)
     sample_vector_dict, sample_ids = extract_samples_direct(args.biom_file, args.tree_file)
-
-    split_df(sample_vector_dict, meta_samples_dict, 'p' , nodes_in_order)
-
     rep_sample_dict = L2U.get_representative_sample_16s(sample_vector_dict, meta_samples_dict, Tint, lint,
                                                         nodes_in_order)
+    split_df(sample_vector_dict, meta_samples_dict, rep_sample_dict, nodes_in_order)
+
+
 
 
 
