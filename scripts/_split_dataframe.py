@@ -41,6 +41,8 @@ def split_df(sample_vector_dict, meta_samples_dict, rep_sample_dict, nodes_in_or
         print(df.head())
         #df.set_index(nodes_in_order, inplace=True)
         meta_df = pd.DataFrame.from_dict(this_meta_dict, orient="index")
+        meta_df.reset_index(inplace=True)
+        meta_df.columns = ['sample_name','environment']
         print(meta_df.head())
         out_meta_file = os.path.join(out_dir, phenotype + '_and_representative_meta.tsv')
         meta_df.to_csv(out_meta_file, sep='\t')
