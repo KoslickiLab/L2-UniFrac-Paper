@@ -104,6 +104,7 @@ def get_L2UniFrac_accuracy_results(test_ids, test_targets, Tint, lint, nodes_in_
 	results_dict = dict()
 	overall_predictions = []
 	for id in test_ids:
+		print(sample_vector_dict[id])
 		prediction = get_label_by_proximity(sample_vector_dict[id], rep_sample_dict, Tint, lint, nodes_in_order)
 		overall_predictions.append(prediction)
 
@@ -158,6 +159,14 @@ def main():
 	method_col = []
 	for i in range(args.num_repeats):
 		samples_train, samples_test, targets_train, targets_test = partition_samples(meta_dict, random_state=i)
+		# L2UniFrac
+		rep_sample_dict = get_rep_sample_dict(meta_sample_dict, sample_vector_dict, Tint, lint, nodes_in_order)
+		results = get_L2UniFrac_accuracy_results(samples_test, targets_test, Tint, lint, nodes_in_order,
+												 rep_sample_dict, sample_vector_dict)
+		for score_type in results.keys():
+			method_col.append("L2UniFrac")
+			score_type_col.append(score_type)
+			score_col.append(results[score_type])
 		#KMeans
 		all_vectors = list(sample_vector_dict.values())
 		kmeans_predict = KMeans(n_clusters=args.num_clusters).fit_predict(all_vectors)
@@ -173,13 +182,7 @@ def main():
 			method_col.append("KMedoids")
 			score_type_col.append(score_type)
 			score_col.append(results[score_type])
-		#L2UniFrac
-		rep_sample_dict = get_rep_sample_dict(meta_sample_dict, sample_vector_dict, Tint, lint, nodes_in_order)
-		results = get_L2UniFrac_accuracy_results(samples_test, targets_test, Tint, lint, nodes_in_order, rep_sample_dict, sample_vector_dict)
-		for score_type in results.keys():
-			method_col.append("L2UniFrac")
-			score_type_col.append(score_type)
-			score_col.append(results[score_type])
+
 	df["Method"] = method_col
 	df["Score_type"] = score_type_col
 	df["Score"] = score_col
