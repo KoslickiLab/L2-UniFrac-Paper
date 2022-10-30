@@ -62,7 +62,7 @@ def get_label_by_proximity(test_sample, rep_sample_dict, Tint, lint, nodes_in_or
 			label = phenotype
 	return label
 
-def get_pcoa(dist_matrix, sample_lst, meta_file, col_name, plot_title):
+def get_pcoa(dist_matrix, sample_lst, meta_file, col_name, plot_title, cmap='Set1'):
 	'''
 	Get a PCOA plot based on the distance matrix, colored according to metadata
 	:param dist_matrix:
@@ -77,7 +77,8 @@ def get_pcoa(dist_matrix, sample_lst, meta_file, col_name, plot_title):
 	filtered_meta_df.set_index('sample_name', inplace=True)
 	filtered_meta_df.fillna('unknown', inplace=True)
 	dist_pc = pcoa(dm)
-	fig = dist_pc.plot(df=filtered_meta_df, column=col_name, cmap="Set1", title=plot_title, axis_labels=('PC1', 'PC2', 'PC3'))
+
+	fig = dist_pc.plot(df=filtered_meta_df, column=col_name, cmap=cmap, title=plot_title, axis_labels=('PC1', 'PC2', 'PC3'))
 	return fig
 
 def get_metadata_dict(meta_file, val_col = "HMgDB_diagnosis", key_col = "library_id"):

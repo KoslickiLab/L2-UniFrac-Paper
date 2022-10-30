@@ -20,7 +20,7 @@ def main():
     parser.add_argument('-x', '--x', type=str, help="x axis.")
     parser.add_argument('-y', '--y', type=str, help="y axis.")
     parser.add_argument('-s', '--save', type=str, help="If wants to save df for future use, file name to save as")
-    parser.add_argument('-hue', '--hue', type=str, help="Hue", nargs='?', default="Method")
+    parser.add_argument('-hue', '--hue', type=str, help="Hue")
     parser.add_argument('-t', '--type', type=str, help="Plot type.", choices=['box', 'line', 'pcoa'])
     parser.add_argument('-ylim', '--ylim', type=float, help="Y axis limits", nargs='*')
     #pcoa
@@ -29,6 +29,7 @@ def main():
     #parser.add_argument('-k', '--key', type=str, help="Key column name in metadata file.")
     #parser.add_argument('-v', '--val', type=str, help="Value column name in metadata file.")
     parser.add_argument('-m', '--meta_file', type=str, help="Metadata file for pcoa plot.")
+    parser.add_argument('-cmap', '--cmap', type=str, help="Color map.", nargs='?', default='Set1')
 
 
     args = parser.parse_args()
@@ -54,7 +55,7 @@ def main():
         df = pd.read_table(dataframe_file, header=0, index_col=0)
         print(df.head())
         sample_lst = df.columns.tolist()
-        fig = get_pcoa(df, sample_lst, args.meta_file, args.env_name, args.title)
+        fig = get_pcoa(df, sample_lst, args.meta_file, args.env_name, args.title, args.cmap)
         #fig.show()
         #fig.savefig(args.save)
     plt.savefig(args.save)
