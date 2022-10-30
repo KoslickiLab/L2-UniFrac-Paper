@@ -62,6 +62,9 @@ def get_label_by_proximity(test_sample, rep_sample_dict, Tint, lint, nodes_in_or
 			label = phenotype
 	return label
 
+def get_dict_from_lists(list1, list2):
+	return dict(zip(list1, list2))
+
 def get_pcoa(dist_matrix, sample_lst, meta_file, col_name, plot_title, cmap='Set1'):
 	'''
 	Get a PCOA plot based on the distance matrix, colored according to metadata
@@ -125,7 +128,7 @@ def get_pheno_sample_dict(sample_paths, targets):
 			pheno_sample_dict[pheno] = [sample_paths[i]]
 	return pheno_sample_dict
 
-def get_rep_sample_dict(pheno_sample_dict, Tint, lint, nodes_in_order, nodes_to_index):
+def get_rep_sample_dict_wgs(pheno_sample_dict, Tint, lint, nodes_in_order, nodes_to_index):
 	'''
 	Compute the representative sample using the L2 UniFrac method for each phenotype in pheno_sample_dict,
 	and return it in a dict. WGS version.

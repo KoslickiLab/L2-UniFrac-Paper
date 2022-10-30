@@ -12,24 +12,7 @@ from sklearn.cluster import AgglomerativeClustering, KMeans
 from sklearn_extra.cluster import KMedoids
 from sklearn.metrics import accuracy_score, rand_score, precision_score, recall_score
 from sklearn.metrics.cluster import adjusted_rand_score, normalized_mutual_info_score, adjusted_mutual_info_score, fowlkes_mallows_score
-from helper import decipher_label_by_vote, get_label_by_proximity, partition_samples, get_metadata_dict, get_meta_samples_dict
-
-
-def get_average_sample(sample_list, Tint, lint, nodes_in_order):
-	'''
-
-	:param sample_list: a list of vectors of which the average sample vector is to be computed
-	:return: average vector
-	'''
-	all_vectors = []
-	for vector in sample_list:
-		pushed_vector = L2U.push_up(vector, Tint, lint, nodes_in_order)
-		#print("len of pushed vector:", len(pushed_vector))
-		all_vectors.append(pushed_vector)
-	mean_vector = L2U.mean_of_vectors(all_vectors)
-	average_sample_vector = L2U.inverse_push_up(mean_vector, Tint, lint, nodes_in_order)
-	#print(len(average_sample_vector))
-	return average_sample_vector
+from helper import decipher_label_by_vote, get_label_by_proximity, partition_samples, get_metadata_dict, get_meta_samples_dict, get_dict_from_lists
 
 def get_score_by_clustering_method(clustering_method, test_ids, meta_dict, sample_ids, distance_matrix_file, n_clusters):
 	distance_matrix = pd.read_csv(distance_matrix_file, header=None)
@@ -84,22 +67,6 @@ def get_clustering_scores(predictions, test_ids, meta_dict, sample_ids):
 	return results_dict
 
 
-def get_rep_sample_dict(meta_sample_dict, sample_vector_dict, Tint, lint, nodes_in_order):
-	'''
-	Given a dict of phenotype:sample_ids, compute the representative vector for each phenotype and return as a dict
-	:param meta_sample_dict: {phenotype: [sample_ids]}
-	:param Tint:
-	:param lint:
-	:param nodes_in_order:
-	:param nodes_to_index:
-	:return: {phenotype:rep_sample}
-	'''
-	rep_sample_dict = dict()
-	for pheno in meta_sample_dict.keys():
-		rep_sample = L2U.get_representative_sample_16s(sample_vector_dict, meta_sample_dict, Tint, lint, nodes_in_order)
-		rep_sample_dict[pheno] = rep_sample
-	return rep_sample_dict
-
 def get_L2UniFrac_accuracy_results(test_ids, test_targets, Tint, lint, nodes_in_order, rep_sample_dict, sample_vector_dict):
 	results_dict = dict()
 	overall_predictions = []
@@ -148,7 +115,7 @@ def main():
 	Tint, lint, nodes_in_order = parse_tree_file(tree_file)
 	sample_vector_dict, sample_ids = extract_samples_direct(args.biom_file, tree_file)
 	meta_dict = get_metadata_dict(args.meta_file, val_col=args.phenotype, key_col="sample_name")
-	meta_dict = {k:meta_dict[k] for k in sample_ids}
+	meta_dict = {k:meta_dict[k] for k in sample_ids} #filter meta_dict
 	meta_sample_dict = get_meta_samples_dict(meta_dict)
 	print(meta_sample_dict.keys())
 	#compile dataframe
@@ -160,7 +127,8 @@ def main():
 	for i in range(args.num_repeats):
 		samples_train, samples_test, targets_train, targets_test = partition_samples(meta_dict, random_state=i)
 		# L2UniFrac
-		rep_sample_dict = get_rep_sample_dict(meta_sample_dict, sample_vector_dict, Tint, lint, nodes_in_order)
+		train_sample_vector_dict = {k: sample_vector_dict[k] for k in samples_train}
+		rep_sample_dict = L2U.get_representative_sample_16s(train_sample_vector_dict, meta_sample_dict, Tint, lint, nodes_in_order)
 		results = get_L2UniFrac_accuracy_results(samples_test, targets_test, Tint, lint, nodes_in_order,
 												 rep_sample_dict, sample_vector_dict)
 		for score_type in results.keys():
