@@ -94,7 +94,11 @@ def get_metadata_dict(meta_file, val_col = "HMgDB_diagnosis", key_col = "library
 	:return: A dictionary with keys being values of key_col and values being values of val_col. e.g. sample_id:phenotype
 	'''
 	simple_meta_dict = dict()
-	df = pd.read_csv(meta_file, sep='\t')
+	if meta_file.endswith('.csv'):
+		df = pd.read_csv(meta_file)
+	else:
+		df = pd.read_csv(meta_file, sep='\t')
+	print(df.head())
 	for i, id in enumerate(df[key_col]):
 		simple_meta_dict[id] = df[val_col][i]
 	return simple_meta_dict
