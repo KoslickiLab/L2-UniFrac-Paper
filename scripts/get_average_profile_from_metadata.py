@@ -23,8 +23,8 @@ def generate_rep_sample_from_metadata(meta_dict, profile_dir, save_dir):
 	for profile_name in profile_list:
 		if not profile_name.endswith('.profile'):
 			profile_list.remove(profile_name)
-	profile_name_list = list(map(lambda x: x.strip('.')[0], profile_list))
-	print("quick check on profile list:", profile_list[:5])
+	profile_name_list = list(map(lambda x: x.split('.')[0], profile_list))
+	print("quick check on profile name list:", profile_name_list[:5])
 	profile_path_lst = [os.path.join(profile_dir, file) for file in profile_list]
 	Tint, lint, nodes_in_order, nodes_to_index = L2U.get_wgs_tree(profile_path_lst)
 	targets = [meta_dict[i] for i in profile_name_list]
