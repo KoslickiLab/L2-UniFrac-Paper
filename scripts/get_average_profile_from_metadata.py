@@ -34,8 +34,7 @@ def generate_rep_sample_from_metadata(meta_dict, profile_dir, save_dir):
 	print(rep_sample_dict)
 	for pheno in rep_sample_dict.keys():
 		print(pheno)
-		print(type(pheno))
-		file_name = save_dir + '/' + pheno + '.txt'
+		file_name = save_dir + '/' + str(pheno) + '.txt'
 		write_vector_to_file(rep_sample_dict[pheno], file_name, nodes_in_order, nodes_to_index)
 	return
 
