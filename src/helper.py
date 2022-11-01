@@ -145,8 +145,6 @@ def get_rep_sample_dict_wgs(pheno_sample_dict, Tint, lint, nodes_in_order, nodes
 	'''
 	rep_sample_dict = dict()
 	for pheno in pheno_sample_dict.keys():
-		if pheno is None:
-			continue
 		profile_path_list = pheno_sample_dict[pheno]
 		rep_sample = L2U.get_representative_sample_wgs(profile_path_list, Tint, lint, nodes_in_order, nodes_to_index)
 		rep_sample_dict[pheno] = rep_sample
