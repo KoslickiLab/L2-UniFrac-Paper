@@ -181,7 +181,6 @@ def get_species_abundance_from_profile(file_path):
 	#normalize
 	for i in abund_dict:
 		abund_dict[i]/= total_abund_sum
-	print(np.sum(list(abund_dict.values())))
 	return abund_dict
 
 def convert_profiles_to_otu(profile_dir, out_file):
@@ -193,10 +192,11 @@ def convert_profiles_to_otu(profile_dir, out_file):
 	:return:
 	'''
 	profiles = [file for file in os.listdir(profile_dir) if file.endswith('.profile')]
+	ids = list(map(lambda x:x.split('.')[0], profiles))
 	outfile_handler = open(out_file, 'w+')
 	outfile_handler.write('#Converted from profile \n')
 	outfile_handler.close()
-	header_list = ['#OTU ID'] + profiles
+	header_list = ['#OTU ID'] + ids
 	all_otus = set()
 	#first get all otus
 	for profile in profiles:
@@ -208,7 +208,7 @@ def convert_profiles_to_otu(profile_dir, out_file):
 		file_path = os.path.join(profile_dir, profile)
 		abund_dict = get_species_abundance_from_profile(file_path)
 		for taxid in abund_dict:
-			df[profile][taxid] = abund_dict[taxid]
+			df[profile.split('.')[0]][taxid] = abund_dict[taxid]
 	df.fillna(0., inplace=True)
 	print(df)
 	df.to_csv(out_file, index=True, mode='a', header=True, sep='\t')
