@@ -9,6 +9,7 @@ from skbio.stats.ordination import pcoa
 from skbio import DistanceMatrix #to install: pip install scikit-bio
 from sklearn.model_selection import train_test_split
 from collections import Counter
+import numpy as np
 
 
 #classification
@@ -157,4 +158,58 @@ def write_vector_to_file(vector, file_name, nodes_in_order, nodes_to_index):
 	df['relative_abundance'] = vector
 	df.to_csv(file_name, sep='\t', header=True, index=None)
 	return
+
+def get_species_abundance_from_profile(file_path):
+	'''
+	Parse a profile file and obtain a dict of taxids of all species and their respective abundances
+	:param file_path: a CAMI format profile
+	:return: a dict of taxids of all species and their respective abundances
+	'''
+	abund_dict = dict()
+	with open(file_path) as read_handler:
+		for line in read_handler:
+			if len(line.strip()) == 0 or line.startswith("#") or line.startswith("@"):
+				continue
+			line = line.rstrip('\n')
+			line = line.split()
+			taxid = line[0]
+			rank = line[1]
+			abundance = line[-1]
+			if rank == 'species':
+				abund_dict[taxid] = float(abundance)
+	total_abund_sum = np.sum(list(abund_dict.values()))
+	#normalize
+	for i in abund_dict:
+		abund_dict[i]/= total_abund_sum
+	print(np.sum(list(abund_dict.values())))
+	return abund_dict
+
+def convert_profiles_to_otu(profile_dir, out_file):
+	'''
+	This function takes in a directory containing profiles and for each profile, calls get_species_abundance_from_profile
+	to get abund_dict, merges all of them into one single otu file
+	:param profile_dir: a directory containing all profiles to be included in the output otu_file
+	:param out_file: file name to save the resulting otu file as
+	:return:
+	'''
+	profiles = [file for file in os.listdir(profile_dir) if file.endswith('.profile')]
+	outfile_handler = open(out_file, 'w+')
+	outfile_handler.write('#Converted from profile \n')
+	outfile_handler.close()
+	header_list = ['#OTU ID'] + profiles
+	all_otus = set()
+	#first get all otus
+	for profile in profiles:
+		file_path = os.path.join(profile_dir, profile)
+		abund_dict = get_species_abundance_from_profile(file_path)
+		all_otus.update(list(abund_dict.keys()))
+	df = pd.DataFrame(columns=header_list, index=all_otus)
+	for profile in profiles:
+		file_path = os.path.join(profile_dir, profile)
+		abund_dict = get_species_abundance_from_profile(file_path)
+		for taxid in abund_dict:
+			df[profile][taxid] = abund_dict[taxid]
+	df.fillna(0., inplace=True)
+	print(df)
+	df.to_csv(out_file, index=True, mode='a', header=True, sep='\t')
 
