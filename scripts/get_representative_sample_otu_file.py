@@ -11,7 +11,7 @@ try:
     sys.path.append(os.path.dirname(SCRIPT_DIR))
 except:
     pass
-from src.parse_data import parse_tree_file
+from extract_data import parse_tree_file
 from src.helper import get_meta_samples_dict, get_metadata_dict
 
 def argument_parser():
@@ -34,7 +34,7 @@ def main():
     parser = argument_parser()
     args = parser.parse_args()
     Tint, lint, nodes_in_order = parse_tree_file(args.tree_file)
-    df = pd.read_table(args.otu_file, sep='\t')
+    df = pd.read_table(args.otu_file, sep='\t', index_col=0)
     sample_ids = df.columns.tolist()
     sample_vector_dict = df.to_dict(orient='list')
     #push up all the samples
