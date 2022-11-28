@@ -151,6 +151,14 @@ def get_rep_sample_dict_wgs(pheno_sample_dict, Tint, lint, nodes_in_order, nodes
 		rep_sample_dict[pheno] = rep_sample
 	return rep_sample_dict
 
+def get_rep_sample_dict_wgs_component_wise_mean(pheno_sample_dict,nodes_to_index):
+	rep_sample_dict = dict()
+	for pheno in pheno_sample_dict.keys():
+		profile_path_list = pheno_sample_dict[pheno]
+		rep_sample = L2U.get_representative_sample_wgs_component_mean(profile_path_list, nodes_to_index)
+		rep_sample_dict[pheno] = rep_sample
+	return rep_sample_dict
+
 def write_vector_to_file(vector, file_name, nodes_in_order, nodes_to_index):
 	df = pd.DataFrame(columns=['ID', 'relative_abundance'])
 	index_to_nodes = {y:x for x, y in nodes_to_index.items()}
