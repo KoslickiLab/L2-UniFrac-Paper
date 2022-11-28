@@ -29,7 +29,7 @@ def generate_rep_sample_from_metadata(meta_dict, profile_dir, save_dir):
 	targets = [meta_dict[i] for i in profile_name_list]
 	#profile list should come from meta_dict
 	pheno_sample_dict = get_pheno_sample_dict(profile_path_lst, targets)
-	rep_sample_dict = get_rep_sample_dict_wgs_component_wise_mean(pheno_sample_dict, Tint, lint, nodes_in_order, nodes_to_index)
+	rep_sample_dict = get_rep_sample_dict_wgs_component_wise_mean(pheno_sample_dict, nodes_to_index)
 	print(rep_sample_dict)
 	for pheno in rep_sample_dict.keys():
 		file_name = save_dir + '/' + str(pheno) + '_direct.txt'
