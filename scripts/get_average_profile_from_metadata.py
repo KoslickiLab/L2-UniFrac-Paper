@@ -24,7 +24,6 @@ def generate_rep_sample_from_metadata(meta_dict, profile_dir, save_dir):
 		if not profile_name.endswith('.profile'):
 			profile_list.remove(profile_name)
 	profile_name_list = list(map(lambda x: x.split('.')[0], profile_list))
-	print("quick check on profile name list:", profile_name_list[:5])
 	profile_path_lst = [os.path.join(profile_dir, file) for file in profile_list]
 	Tint, lint, nodes_in_order, nodes_to_index = L2U.get_wgs_tree(profile_path_lst)
 	targets = [meta_dict[i] for i in profile_name_list]
@@ -33,7 +32,6 @@ def generate_rep_sample_from_metadata(meta_dict, profile_dir, save_dir):
 	rep_sample_dict = get_rep_sample_dict_wgs(pheno_sample_dict, Tint, lint, nodes_in_order, nodes_to_index)
 	print(rep_sample_dict)
 	for pheno in rep_sample_dict.keys():
-		print(pheno)
 		file_name = save_dir + '/' + str(pheno) + '.txt'
 		write_vector_to_file(rep_sample_dict[pheno], file_name, nodes_in_order, nodes_to_index)
 	return
