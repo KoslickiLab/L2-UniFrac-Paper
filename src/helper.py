@@ -173,7 +173,7 @@ def write_rep_samples_to_file(rep_sample_dict, file_name, nodes_in_order, nodes_
 	index_to_nodes = {y:x for x, y in nodes_to_index.items()}
 	df['taxid'] = [index_to_nodes[i] for i in nodes_in_order]
 	for environment in rep_sample_dict:
-		df['relative_abundance'] = list(rep_sample_dict[environment])
+		df[environment] = list(rep_sample_dict[environment])
 	df.to_csv(file_name, sep='\t', header=True, index=None)
 	return
 
