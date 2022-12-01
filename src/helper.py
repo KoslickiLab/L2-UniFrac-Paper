@@ -159,11 +159,21 @@ def get_rep_sample_dict_wgs_component_wise_mean(pheno_sample_dict,nodes_to_index
 		rep_sample_dict[pheno] = rep_sample
 	return rep_sample_dict
 
-def write_vector_to_file(vector, file_name, nodes_in_order, nodes_to_index):
-	df = pd.DataFrame(columns=['ID', 'relative_abundance'])
+def write_rep_samples_to_file(rep_sample_dict, file_name, nodes_in_order, nodes_to_index):
+	'''
+	Write representative samples to a combined file. Abundances are only found on speices level.
+	:param rep_sample_dict: a dictionary of environment:vector
+	:param file_name:file name to save the output file as
+	:param nodes_in_order:list of node names according to which the vector is in order
+	:param nodes_to_index: a dict hat maps nodes to index
+	:return:
+	'''
+	environments = list(rep_sample_dict.keys())
+	df = pd.DataFrame(columns=['taxid'].extend(environments))
 	index_to_nodes = {y:x for x, y in nodes_to_index.items()}
-	df['ID'] = [index_to_nodes[i] for i in nodes_in_order]
-	df['relative_abundance'] = vector
+	df['taxid'] = [index_to_nodes[i] for i in nodes_in_order]
+	for environment in rep_sample_dict:
+		df['relative_abundance'] = list(rep_sample_dict[environment])
 	df.to_csv(file_name, sep='\t', header=True, index=None)
 	return
 
