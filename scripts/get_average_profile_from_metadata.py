@@ -8,7 +8,7 @@ import argparse
 import L2UniFrac as L2U
 import numpy as np
 import pandas as pd
-from helper import get_metadata_dict, get_pheno_sample_dict, get_rep_sample_dict_wgs, write_vector_to_file
+from helper import get_metadata_dict, get_pheno_sample_dict, get_rep_sample_dict_wgs, write_rep_samples_to_file
 
 
 def generate_rep_sample_from_metadata(meta_dict, profile_dir, outfile_name):
@@ -30,7 +30,7 @@ def generate_rep_sample_from_metadata(meta_dict, profile_dir, outfile_name):
 	#profile list should come from meta_dict
 	pheno_sample_dict = get_pheno_sample_dict(profile_path_lst, targets)
 	rep_sample_dict = get_rep_sample_dict_wgs(pheno_sample_dict, Tint, lint, nodes_in_order, nodes_to_index)
-	write_vector_to_file(rep_sample_dict, outfile_name, nodes_in_order, nodes_to_index)
+	write_rep_samples_to_file(rep_sample_dict, outfile_name, nodes_in_order, nodes_to_index)
 	return
 
 
