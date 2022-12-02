@@ -14,26 +14,29 @@ import argparse
 
 def parse_detail(abundance_file, save_as):
     df = pd.read_table(abundance_file, header=0)
+    print(df)
     col_names = ['otu_id', 'lineage']
     col_names.extend(df.columns[1:].tolist()) #not including the first column taxid
-    print(col_names)
     combined_df = pd.DataFrame(columns=col_names)
     taxon_col = []
+    otu_id_col = []
     for taxid in df['taxid']:
         if taxid == -1 or 'species' not in ncbi.get_rank([taxid]).values():
             df.drop(df[df['taxid'] == taxid].index, axis=0, inplace=True) #remove this row
         else:
+            otu_id_col.append(str(taxid))
             lineage = ncbi.get_lineage(taxid)
             name_path = get_name_path(lineage)
             # convert lineage to scientific names
             # concatenate values in lineage_translator with ';' in the order of lineage
             taxon_col.append(name_path)
-    combined_df['lineage'] = taxon_col
-    combined_df['otu_id'] = df['taxid'].astype('str')
     for environment in df.columns[1:]:
         combined_df[environment] = df[environment]
+    combined_df['lineage'] = taxon_col
+    combined_df['otu_id'] = otu_id_col
     combined_df.to_csv(save_as, sep='\t', index=False)
     print(combined_df)
+
 
 def get_name_path(lineage):
     valid_ranks = ['superkingdom', 'phylum', 'class', 'order', 'family', 'genus','species']
