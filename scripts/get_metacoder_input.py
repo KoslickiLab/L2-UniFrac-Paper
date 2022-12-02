@@ -14,7 +14,7 @@ import argparse
 
 def parse_detail(abundance_file, save_as):
     df = pd.read_table(abundance_file, header=0)
-    col_names = ['otu_id', 'lineage', 'total']
+    col_names = ['otu_id', 'lineage']
     col_names.extend(df.columns[1:].tolist()) #not including the first column taxid
     print(col_names)
     combined_df = pd.DataFrame(columns=col_names)
