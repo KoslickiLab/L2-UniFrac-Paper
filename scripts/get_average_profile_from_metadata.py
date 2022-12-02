@@ -26,6 +26,7 @@ def generate_rep_sample_from_metadata(meta_dict, profile_dir, outfile_name):
 	profile_name_list = list(map(lambda x: x.split('.')[0], profile_list))
 	profile_path_lst = [os.path.join(profile_dir, file) for file in profile_list]
 	Tint, lint, nodes_in_order, nodes_to_index = L2U.get_wgs_tree(profile_path_lst)
+	print(meta_dict)
 	targets = [meta_dict[i] for i in profile_name_list]
 	#profile list should come from meta_dict
 	pheno_sample_dict = get_pheno_sample_dict(profile_path_lst, targets)
