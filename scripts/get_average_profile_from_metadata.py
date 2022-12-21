@@ -33,10 +33,12 @@ def generate_rep_sample_from_metadata(meta_dict, profile_dir, outfile_name, out_
 	if out_format == 'otu':
 		write_rep_samples_to_file(rep_sample_dict, outfile_name, nodes_in_order, nodes_to_index)
 	else:
-		rep_profiles_dict = L2U.build_profiles_from_dict(rep_sample_dict, nodes_in_order)
+		index_to_nodes = {v: k for k, v in nodes_to_index.items()}
+		rep_profiles_dict = L2U.build_profiles_from_dict(rep_sample_dict, nodes_in_order, index_to_nodes)
 		for id, profile in rep_profiles_dict.items():
+			profile._add_up()
 			out_file_name = outfile_name.split('.')[0] + '_' + str(id) + '.profile'
-			profile.write_file(out_file_name)
+			profile.write_CAMI_file(out_file_name)
 	return
 
 
@@ -47,7 +49,7 @@ if __name__ == '__main__':
 	parser.add_argument('-s', '--save', type=str, help="Save output file as.")
 	parser.add_argument('-d', '--pdir', type=str, help="Directory of profiles")
 	parser.add_argument('-p', '--phenotype', type=str, help='A selected phenotype corresponding to a column name in the metadata file.', nargs='?', default="HMgDB_diagnosis")
-	parser.add_argument('-f','--out_format', type=str, help='The format of output files. Choices: cami, otu. If otu is chosen, '
+	parser.add_argument('-f', '--out_format', type=str, help='The format of output files. Choices: cami, otu. If otu is chosen, '
 														'-s flag is required. Otherwise, -o is required.', choices=['cami', 'otu'], nargs='?', default='cami')
 
 	args = parser.parse_args()
