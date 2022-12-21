@@ -58,6 +58,10 @@ if __name__ == '__main__':
 	metadata_key = args.phenotype
 	id_col = args.id_col
 	outfile_name = args.save
+	if args.leaves_only == 'y':
+		leaves_only = True
+	else:
+		leaves_only = False
 
 	meta_dict = get_metadata_dict(metadata_file, val_col=metadata_key, key_col=id_col)
 	rep_sample_dict = generate_rep_sample_from_metadata(meta_dict, profile_dir, outfile_name, args.out_format, args.leaves_only)
