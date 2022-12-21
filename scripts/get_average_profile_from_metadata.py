@@ -35,7 +35,7 @@ def generate_rep_sample_from_metadata(meta_dict, profile_dir, outfile_name, out_
 	else:
 		rep_profiles_dict = L2U.build_profiles_from_dict(rep_sample_dict, nodes_in_order)
 		for id, profile in rep_profiles_dict.items():
-			out_file_name = out_file_name.split('.')[0] + '_' + str(id) + '.profile'
+			out_file_name = outfile_name.split('.')[0] + '_' + str(id) + '.profile'
 			profile.write_file(out_file_name)
 	return
 
@@ -45,7 +45,6 @@ if __name__ == '__main__':
 	parser.add_argument('-m', '--meta_file', type=str, help='A metadata file.', nargs='?')
 	parser.add_argument('-id_col', '--id_col', type=str, help='Name of the id column in the metadata file.', nargs='?', default="library_id")
 	parser.add_argument('-s', '--save', type=str, help="Save output file as.")
-	parser.add_argument('-o', '--out_dir', type=str, help="Save output files under this directory.")
 	parser.add_argument('-d', '--pdir', type=str, help="Directory of profiles")
 	parser.add_argument('-p', '--phenotype', type=str, help='A selected phenotype corresponding to a column name in the metadata file.', nargs='?', default="HMgDB_diagnosis")
 	parser.add_argument('-f','--out_format', type=str, help='The format of output files. Choices: cami, otu. If otu is chosen, '
