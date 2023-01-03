@@ -10,6 +10,8 @@ from skbio import DistanceMatrix #to install: pip install scikit-bio
 from sklearn.model_selection import train_test_split
 from collections import Counter
 import numpy as np
+from ete3 import NCBITaxa
+ncbi = NCBITaxa()
 
 
 #classification
@@ -65,6 +67,44 @@ def get_label_by_proximity(test_sample, rep_sample_dict, Tint, lint, nodes_in_or
 
 def get_dict_from_lists(list1, list2):
 	return dict(zip(list1, list2))
+
+
+def get_profile_path_list(profile_dir):
+	'''
+	Returns a list of paths to the individual profiles in a given directory
+	:param profile_dir: a directory containing profiles. Can contain other type of files
+	:return:
+	'''
+	profile_list = os.listdir(profile_dir)
+	for profile_name in profile_list:
+		if not profile_name.endswith('.profile'):
+			profile_list.remove(profile_name)
+	profile_path_lst = [os.path.join(profile_dir, file) for file in profile_list]
+	return profile_path_lst
+
+
+def get_taxonomy_in_order(nodes_in_order, nodes_to_index):
+	'''
+	Maps nodes in nodes_in_order to scientific names
+	:param nodes_in_order: a list of nodes
+	:return: a list of taxonomy
+	'''
+	index_to_nodes = {y:x for x, y in nodes_to_index.items()}
+	taxid_list = [int(index_to_nodes[i]) for i in nodes_in_order]
+	taxonomy_in_order = [ncbi.get_taxid_translator([i])[i] if i != -1 else 'root' for i in taxid_list]
+	print(len(taxonomy_in_order))
+	return taxonomy_in_order
+
+
+
+def get_profile_name_list(profile_dir):
+	profile_list = os.listdir(profile_dir)
+	for profile_name in profile_list:
+		if not profile_name.endswith('.profile'):
+			profile_list.remove(profile_name)
+	profile_name_list = list(map(lambda x: x.split('.')[0], profile_list))
+	return profile_name_list
+
 
 def get_pcoa(dist_matrix, sample_lst, meta_file, col_name, plot_title, cmap='Set1'):
 	'''
