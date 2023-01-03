@@ -4,8 +4,8 @@ sys.path.append('L2-UniFrac/src')
 sys.path.append('L2-UniFrac/scripts')
 sys.path.append('src')
 import argparse
-from parse_data import parse_df
-from extract_data import parse_tree_file, extract_samples_direct
+from extract_data import parse_tree_file
+from extract_data import extract_samples_direct
 import L2UniFrac as L2U
 import pandas as pd
 from sklearn.cluster import AgglomerativeClustering, KMeans
