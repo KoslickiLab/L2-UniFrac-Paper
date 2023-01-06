@@ -1,0 +1,11 @@
+###required packages without version
+biom-format
+dendropy
+numpy
+matplotlib
+motu-profiler
+scikit-learn-extra
+seaborn
+scikit-bio
+ete3
+
