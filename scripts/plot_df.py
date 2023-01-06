@@ -58,6 +58,7 @@ def main():
         fig = get_pcoa(df, sample_lst, args.meta_file, args.env_name, args.title, args.cmap)
         #fig.show()
         #fig.savefig(args.save)
+    plt.xticks(rotation=45)
     plt.savefig(args.save)
     plt.show()
 
