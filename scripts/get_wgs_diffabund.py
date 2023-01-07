@@ -23,8 +23,8 @@ def parse_arguments():
 
 def get_diff_abund_plot(Tint, lint, nodes_in_order, nodes_to_index, P, Q, P_label, Q_label):
 	(Z, diffabund) = L2U.L2UniFrac_weighted(Tint, lint, nodes_in_order, P, Q)
-	taxonomy_in_order = get_taxonomy_in_order(nodes_in_order, nodes_to_index)
-	fig = L2U.plot_diffab(nodes_in_order, taxonomy_in_order, diffabund, P_label, Q_label, plot_zeros=False, thresh=0.03)
+	taxid_in_order = get_taxonomy_in_order(nodes_in_order, nodes_to_index)
+	fig = L2U.plot_diffab_by_tax(nodes_in_order, taxid_in_order, diffabund, P_label, Q_label)
 	return fig
 
 

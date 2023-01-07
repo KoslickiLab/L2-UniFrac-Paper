@@ -85,15 +85,13 @@ def get_profile_path_list(profile_dir):
 
 def get_taxonomy_in_order(nodes_in_order, nodes_to_index):
 	'''
-	Maps nodes in nodes_in_order to scientific names
+	Maps nodes in nodes_in_order to taxid
 	:param nodes_in_order: a list of nodes
-	:return: a list of taxonomy
+	:return: a list of taxid
 	'''
 	index_to_nodes = {y:x for x, y in nodes_to_index.items()}
 	taxid_list = [int(index_to_nodes[i]) for i in nodes_in_order]
-	taxonomy_in_order = [ncbi.get_taxid_translator([i])[i] if i != -1 else 'root' for i in taxid_list]
-	print(len(taxonomy_in_order))
-	return taxonomy_in_order
+	return taxid_list
 
 
 
