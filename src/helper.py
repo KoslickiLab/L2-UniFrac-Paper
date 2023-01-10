@@ -165,7 +165,8 @@ def get_pheno_sample_dict(sample_paths, targets):
 	'''
 	pheno_sample_dict = dict()
 	for i, pheno in enumerate(targets):
-		if pheno == np.nan:
+		if pheno is np.nan:
+			print("nan found. ignore")
 			continue
 		elif pheno in pheno_sample_dict:
 			pheno_sample_dict[pheno].append(sample_paths[i])
