@@ -54,7 +54,7 @@ def main(my_args):
 		print(P_label)
 		print(Q_label)
 		print(my_args.prefix)
-		file_name = my_args.prefix + P_label + "_" + Q_label + "_diffabund.png"
+		file_name = my_args.prefix + '_' + P_label + "_" + Q_label + "_diffabund.png"
 		full_file_name = os.path.join(my_args.save_dir, file_name)
 		P, Q = rep_sample_dict[P_label], rep_sample_dict[Q_label]
 		fig = get_diff_abund_plot(Tint, lint, nodes_in_order, nodes_to_index, P, Q, P_label, Q_label, my_args.tax_rank.lower())
