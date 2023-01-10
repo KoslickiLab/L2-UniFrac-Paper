@@ -36,6 +36,8 @@ def main(my_args):
 	targets = [meta_dict[i] for i in profile_name_list]
 	pheno_sample_dict = get_pheno_sample_dict(profile_path_list, targets)
 	rep_sample_dict = get_rep_sample_dict_wgs_component_wise_mean(pheno_sample_dict, nodes_to_index)
+	for key in rep_sample_dict.keys():
+		print(key, type(key))
 	for pair in it.combinations(rep_sample_dict, 2):  #all pairwise combinations of rep vectors
 		P_label, Q_label = pair[0], pair[1]
 		P, Q = rep_sample_dict[P_label], rep_sample_dict[Q_label]
