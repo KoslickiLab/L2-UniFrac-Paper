@@ -163,12 +163,12 @@ def get_pheno_sample_dict(sample_paths, targets):
 	:param targets: a list of targets (phenotypes)
 	:return: {phenotype:[list of samples]}
 	'''
-	i = 0
+	ct = 0
 	pheno_sample_dict = dict()
 	for i, pheno in enumerate(targets):
 		if pheno is np.nan:
-			i+=1
-			print(i)
+			ct+=1
+			print(ct)
 			continue
 		elif pheno in pheno_sample_dict:
 			pheno_sample_dict[pheno].append(sample_paths[i])
