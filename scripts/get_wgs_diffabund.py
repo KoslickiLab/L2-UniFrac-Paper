@@ -49,6 +49,9 @@ def main(my_args):
 	rep_sample_dict = get_rep_sample_dict_wgs_component_wise_mean(pheno_sample_dict, nodes_to_index)
 	for pair in it.combinations(rep_sample_dict, 2):  #all pairwise combinations of rep vectors
 		P_label, Q_label = pair[0], pair[1]
+		print(P_label)
+		print(Q_label)
+		print(my_args.prefix)
 		file_name = my_args.prefix + P_label + "_" + Q_label + "_diffabund.png"
 		full_file_name = os.path.join(my_args.save_dir, file_name)
 		P, Q = rep_sample_dict[P_label], rep_sample_dict[Q_label]
