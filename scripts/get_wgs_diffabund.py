@@ -33,7 +33,7 @@ def get_diff_abund_plot(Tint, lint, nodes_in_order, nodes_to_index, P, Q, P_labe
 	(Z, diffabund) = L2U.L2UniFrac_weighted(Tint, lint, nodes_in_order, P, Q)
 	taxid_in_order = get_taxonomy_in_order(nodes_in_order, nodes_to_index)
 	fig = L2U.plot_diffab_by_tax(nodes_in_order, taxid_in_order, diffabund, P_label, Q_label, max_tax_rank = max_tax_rank,
-								 thresh=0.0005, includeTemp=False)
+								 thresh=0.0005, includeTemp=False, show=False)
 	return fig
 
 
