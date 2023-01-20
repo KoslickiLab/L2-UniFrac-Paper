@@ -6,7 +6,6 @@ sys.path.append('L2-UniFrac')
 sys.path.append('L2-UniFrac/src')
 sys.path.append('L2-UniFrac/scripts')
 sys.path.append('src')
-import argparse
 import numpy as np
 from math import floor
 import L2UniFrac as L2U
