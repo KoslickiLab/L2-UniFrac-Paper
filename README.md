@@ -11,12 +11,18 @@ git clone https://github.com/KoslickiLab/L2-UniFrac.git
 ```
 
 ### 1. L2UniFrac clustering comparison
-``
-python script/time_clustering.py 
-``
+```
+bash reproduce_clustering.sh
+```
 ### 2. Finding representative samples
-
+```
+bash reproduce_representative_pcoa.sh
+```
 ### 3. Classification
-
+```
+bash reproduce_classification_16s_body_sites.sh
+```
 ### 4. Differential abundance analysis
-
+```angular2html
+python scripts/get_wgs_diffabund.py -m data/hmgdb_adenoma_bioproject266076.csv -d data/adenoma_266076/profiles -s data/adenoma_266076 -t phylum -prefix adenoma_phylum
+```

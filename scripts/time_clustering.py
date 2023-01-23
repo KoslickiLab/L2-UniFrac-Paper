@@ -175,12 +175,12 @@ def combine_train_test(train_dict, test_dict):
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Get testing statistics of classification test.')
-	parser.add_argument('-m', '--meta_file', type=str, help='A metadata file.', nargs='?', default='data/metadata/P_1928_65684500_raw_meta.txt')
+	parser.add_argument('-m', '--meta_file', type=str, help='A metadata file.', nargs='?', default='data/1928_body_sites/P_1928_65684500_raw_meta.txt')
 	parser.add_argument('-p', '--phenotype', type=str, help='A selected phenotype corresponding to a column name in the metadata file.', nargs='?', default="body_site")
-	parser.add_argument('-bf', '--biom_file', type=str, help='Path to the biom file.', nargs='?', default='data/biom/47422_otu_table.biom')
+	parser.add_argument('-bf', '--biom_file', type=str, help='Path to the biom file.', nargs='?', default='data/102_body_sites/47422_otu_table.biom')
 	parser.add_argument('-s', '--save', type=str, help="Save the dataframe file as.")
 	parser.add_argument('-c', '--num_clusters', type=int, help="Number of clusters.", nargs='?', default=5)
-	parser.add_argument('-size', '--size', type=float, help="Sample size, between 0 and 1. temp.", nargs='?', default=5)
+	parser.add_argument('-size', '--size', type=float, help="Sample size, between 0 and 1.")
 
 
 	args = parser.parse_args()
