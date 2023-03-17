@@ -2,7 +2,6 @@ import os
 import itertools as it
 import numpy as np
 import sys
-
 import pandas as pd
 
 epsilon = sys.float_info.epsilon
@@ -43,7 +42,7 @@ def push_up(P, Tint, lint, nodes_in_order):
     print(P)
     for i in range(len(nodes_in_order) - 1):
         if lint[i, Tint[i]] == 0:
-            lint[i, Tint[i]] = np.epsilon
+            lint[i, Tint[i]] = epsilon
         P_pushed[Tint[i]] += P_pushed[i] # push mass up
         P_pushed[i] *= lint[i, Tint[i]]  # multiply mass at this node by edge length above it
     return P_pushed
