@@ -25,7 +25,7 @@ def count_L1_UniFrac_negatives(meta_sample_dict, sample_vector_dict, Tint, lint,
         env_col.append(pheno)
         neg_count_col.append(neg_count)
     df['environment'] = env_col
-    df['# of negatives in average L1 vector'] = neg_count_col
+    df['# of negative in average L1 vector'] = neg_count_col
     print(df)
     df.to_csv(outfile, sep='\t')
 
