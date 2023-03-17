@@ -15,6 +15,8 @@ def count_L1_UniFrac_negatives(meta_sample_dict, sample_vector_dict, Tint, lint,
     neg_count_col = []
     env_col = []
     for pheno in meta_sample_dict:
+        print(pheno)
+        print(f"no. of samples: {len(meta_sample_dict[pheno])}")
         pushed_up_vectors = [L1U.push_up(sample_vector_dict[x], Tint, lint, nodes_in_order) for x in meta_sample_dict[pheno]
                              if x in sample_vector_dict]
         average_vector = L1U.median_of_vectors(pushed_up_vectors)
