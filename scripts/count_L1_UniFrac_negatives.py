@@ -5,7 +5,6 @@ sys.path.append('L2-UniFrac/scripts')
 sys.path.append('src')
 
 import argparse
-import numpy as np
 from extract_data import parse_tree_file, extract_samples_direct
 import L1UniFrac as L1U
 from helper import get_metadata_dict, get_meta_samples_dict
@@ -39,6 +38,6 @@ if __name__ == '__main__':
     tree_file = 'data/trees/gg_13_5_otus_99_annotated.tree'
     Tint, lint, nodes_in_order = parse_tree_file(tree_file)
     sample_vector_dict, sample_ids = extract_samples_direct(args.biom_file, tree_file)
-    meta_dict = get_metadata_dict(args.meta_file, val_col=args.phenotype, key_col="sample_name")
+    meta_dict = get_metadata_dict(args.meta_file, val_col="body_site", key_col="sample_name")
     meta_sample_dict = get_meta_samples_dict(meta_dict)
     count_L1_UniFrac_negatives(meta_sample_dict, Tint, lint, nodes_in_order, args.save)
