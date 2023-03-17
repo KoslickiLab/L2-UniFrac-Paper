@@ -16,7 +16,7 @@ def count_L1_UniFrac_negatives(meta_sample_dict, sample_vector_dict, Tint, lint,
     env_col = []
     for pheno in meta_sample_dict:
 
-        pushed_up_vectors = [L1U.push_up(x, Tint, lint, nodes_in_order) for x in sample_vector_dict[meta_sample_dict[pheno]]]
+        pushed_up_vectors = [L1U.push_up(sample_vector_dict[x], Tint, lint, nodes_in_order) for x in meta_sample_dict[pheno]]
         average_vector = L1U.median_of_vectors(pushed_up_vectors)
         neg_count = len(list(filter(lambda x: (x < 0), average_vector)))
         env_col.append(pheno)
