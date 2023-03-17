@@ -40,6 +40,7 @@ def pairwise_L1EMDUniFrac_weighted(sample_dict, Tint, lint, nodes_in_order):
 
 def push_up(P, Tint, lint, nodes_in_order):
     P_pushed = P
+    print(P)
     for i in range(len(nodes_in_order) - 1):
         if lint[i, Tint[i]] == 0:
             lint[i, Tint[i]] = np.epsilon
