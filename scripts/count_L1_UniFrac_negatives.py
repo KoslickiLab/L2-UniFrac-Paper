@@ -2,6 +2,8 @@ import sys
 sys.path.append('L2-UniFrac')
 sys.path.append('L2-UniFrac/src')
 sys.path.append('L2-UniFrac/scripts')
+sys.path.append('src')
+
 import argparse
 import numpy as np
 from extract_data import parse_tree_file, extract_samples_direct
