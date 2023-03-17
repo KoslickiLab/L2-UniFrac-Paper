@@ -40,13 +40,11 @@ def pairwise_L1EMDUniFrac_weighted(sample_dict, Tint, lint, nodes_in_order):
 
 def push_up(P, Tint, lint, nodes_in_order):
     P_pushed = P
-    print(P_pushed)
-    print(type(P_pushed[0]))
     for i in range(len(nodes_in_order) - 1):
         if lint[i, Tint[i]] == 0:
             lint[i, Tint[i]] = np.epsilon
-        P_pushed[Tint[i]] += float(P_pushed[i])  # push mass up
-        P_pushed[i] *= float(lint[i, Tint[i]])  # multiply mass at this node by edge length above it
+        P_pushed[Tint[i]] += P_pushed[i] # push mass up
+        P_pushed[i] *= lint[i, Tint[i]]  # multiply mass at this node by edge length above it
     return P_pushed
 
 def median_of_vectors(L):

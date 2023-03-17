@@ -10,12 +10,13 @@ import L1UniFrac as L1U
 from helper import get_metadata_dict, get_meta_samples_dict
 import pandas as pd
 
-def count_L1_UniFrac_negatives(meta_sample_dict, Tint, lint, nodes_in_order, outfile):
+def count_L1_UniFrac_negatives(meta_sample_dict, sample_vector_dict, Tint, lint, nodes_in_order, outfile):
     df = pd.DataFrame(columns=['environment', '# of negative in average L1 vector'])
     neg_count_col = []
     env_col = []
     for pheno in meta_sample_dict:
-        pushed_up_vectors = [L1U.push_up(x, Tint, lint, nodes_in_order) for x in meta_sample_dict[pheno]]
+
+        pushed_up_vectors = [L1U.push_up(x, Tint, lint, nodes_in_order) for x in sample_vector_dict[meta_sample_dict[pheno]]]
         average_vector = L1U.median_of_vectors(pushed_up_vectors)
         neg_count = len(list(filter(lambda x: (x < 0), average_vector)))
         env_col.append(pheno)
@@ -40,4 +41,4 @@ if __name__ == '__main__':
     sample_vector_dict, sample_ids = extract_samples_direct(args.biom_file, tree_file)
     meta_dict = get_metadata_dict(args.meta_file, val_col="body_site", key_col="sample_name")
     meta_sample_dict = get_meta_samples_dict(meta_dict)
-    count_L1_UniFrac_negatives(meta_sample_dict, Tint, lint, nodes_in_order, args.save)
+    count_L1_UniFrac_negatives(meta_sample_dict, sample_vector_dict, Tint, lint, nodes_in_order, args.save)
