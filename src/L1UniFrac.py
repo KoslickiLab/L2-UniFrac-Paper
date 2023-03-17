@@ -52,3 +52,17 @@ def median_of_vectors(L):
     :return: a vector with each entry i being the median of vectors of L at position i
     '''
     return np.median(L, axis=0)
+
+def inverse_push_up(P, Tint, lint, nodes_in_order):
+    P_pushed = np.zeros(P.shape)  # don't want to stomp on P
+    for i in range(len(nodes_in_order) - 1):
+        if lint[i, Tint[i]] == 0:
+            edge_length = epsilon
+        else:
+            edge_length = lint[i, Tint[i]]
+        p_val = P[i]
+        P_pushed[i] += 1/edge_length * p_val  # re-adjust edge lengths
+        P_pushed[Tint[i]] -= 1/edge_length * p_val  # propagate mass upward, via subtraction, only using immediate descendants
+    root = len(nodes_in_order) - 1
+    P_pushed[root] += P[root]
+    return P_pushed
