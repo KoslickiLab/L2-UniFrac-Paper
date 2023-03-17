@@ -30,7 +30,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Given an OTU file, get average L1-UniFrac vector and count how many '
                                                  'negative values in the vector.')
     parser.add_argument('-f', '--biom_file', type=str, default='data/1928_body_sites/47422_otu_table.biom')
-    parser.add_argument('-m', '--meta_file', type=str, default='sample_vector_dict, sample_ids = extract_samples_direct(args.biom_file, tree_file')
+    parser.add_argument('-m', '--meta_file', type=str, default='data/1928_body_sites/P_1928_65684500_raw_meta.txt')
     parser.add_argument('-s', '--save', type=str, default='data/1928_body_sites/L1_negative_counts')
     args = parser.parse_args()
 
