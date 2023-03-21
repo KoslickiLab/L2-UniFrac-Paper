@@ -9,6 +9,12 @@ conda activate L2UniFrac
 python -m pip install -r requirements.txt
 git clone https://github.com/KoslickiLab/L2-UniFrac.git
 ```
+### Download data
+```angular2html
+wget https://zenodo.org/record/7563168/files/L1-UniFrac-Out.csv -o data/L1-UniFrac-Out.csv
+wget https://zenodo.org/record/7566079/files/L2-UniFrac-Out.csv -o data/L2-UniFrac-Out.csv
+
+```
 
 ### 1. L2UniFrac clustering comparison
 ```

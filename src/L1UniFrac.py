@@ -2,7 +2,6 @@ import os
 import itertools as it
 import numpy as np
 import sys
-
 import pandas as pd
 
 epsilon = sys.float_info.epsilon
@@ -37,3 +36,33 @@ def pairwise_L1EMDUniFrac_weighted(sample_dict, Tint, lint, nodes_in_order):
         unifrac = EMDUnifrac_weighted(Tint, lint, nodes_in_order, P, Q)
         df[sample1][sample2] = df[sample2][sample1] = unifrac
     return df
+
+def push_up(P, Tint, lint, nodes_in_order):
+    P_pushed = P
+    for i in range(len(nodes_in_order) - 1):
+        if lint[i, Tint[i]] == 0:
+            lint[i, Tint[i]] = epsilon
+        P_pushed[Tint[i]] += P_pushed[i] # push mass up
+        P_pushed[i] *= lint[i, Tint[i]]  # multiply mass at this node by edge length above it
+    return P_pushed
+
+def median_of_vectors(L):
+    '''
+    :param L: a list of vectors
+    :return: a vector with each entry i being the median of vectors of L at position i
+    '''
+    return np.median(L, axis=0)
+
+def inverse_push_up(P, Tint, lint, nodes_in_order):
+    P_pushed = np.zeros(P.shape)  # don't want to stomp on P
+    for i in range(len(nodes_in_order) - 1):
+        if lint[i, Tint[i]] == 0:
+            edge_length = epsilon
+        else:
+            edge_length = lint[i, Tint[i]]
+        p_val = P[i]
+        P_pushed[i] += 1/edge_length * p_val  # re-adjust edge lengths
+        P_pushed[Tint[i]] -= 1/edge_length * p_val  # propagate mass upward, via subtraction, only using immediate descendants
+    root = len(nodes_in_order) - 1
+    P_pushed[root] += P[root]
+    return P_pushed
