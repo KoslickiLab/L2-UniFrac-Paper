@@ -23,9 +23,9 @@ def argument_parser():
                                                                           'number of OTUs in the table must be the same'
                                                                           'as that of the tree file. If not, first run'
                                                                           'extend_otu_file.py')
-    parser.add_argument('-t', '--tree_file', type=str, required=True, help='Path to tree file.', default='data/trees/gg_13_5_otus_99_annotated.tree')
+    parser.add_argument('-t', '--tree_file', type=str, help='Path to tree file.', default='data/trees/gg_13_5_otus_99_annotated.tree')
     parser.add_argument('-o', '--output_file', type=str, help='File path to save the distance matrix file as.')
-    parser.add_argument('-L1', '--L1', type=int, default=0, help='pairwise L1 UniFrac instead of L2.')
+    parser.add_argument('-L1', '--L1UniFrac', type=int, default=0, help='pairwise L1 UniFrac instead of L2. Default L2. L1 if set to 1.')
     return parser
 
 def main():
