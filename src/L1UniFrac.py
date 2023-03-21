@@ -17,7 +17,7 @@ def EMDUnifrac_weighted(Tint, lint, nodes_in_order, P, Q):
     '''
     num_nodes = len(nodes_in_order)
     Z = 0
-    partial_sums = P - Q
+    partial_sums = [float(e1) - float(e2) for (e1, e2) in zip(P, Q)]
     for i in range(num_nodes - 1):
         val = partial_sums[i]
         partial_sums[Tint[i]] += val
