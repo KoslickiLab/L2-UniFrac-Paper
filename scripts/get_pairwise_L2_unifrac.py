@@ -39,8 +39,7 @@ def main():
     sample_vector_dict = df.to_dict(orient='list')
     dim = len(sample_ids)
     dist_matrix = np.zeros(shape=(dim, dim))
-    print(f"L1UniFrac: {args.L1}")
-    if args.L1 == 1:
+    if args.L1UniFrac == 1:
         df = L1U.pairwise_L1EMDUniFrac_weighted(sample_vector_dict, Tint, lint, nodes_in_order)
         df.to_csv(args.output_file, sep='\t')
     else:
