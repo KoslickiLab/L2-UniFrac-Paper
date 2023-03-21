@@ -21,7 +21,7 @@ def main():
     parser.add_argument('-y', '--y', type=str, help="y axis.")
     parser.add_argument('-s', '--save', type=str, help="If wants to save df for future use, file name to save as")
     parser.add_argument('-hue', '--hue', type=str, help="Hue")
-    parser.add_argument('-t', '--type', type=str, help="Plot type.", choices=['box', 'line', 'pcoa'])
+    parser.add_argument('-t', '--type', type=str, help="Plot type.", choices=['box', 'line', 'pcoa', '2Dpcoa'])
     parser.add_argument('-ylim', '--ylim', type=float, help="Y axis limits", nargs='*')
     #pcoa
     parser.add_argument('-env', '--env_name', type=str, help="Name of the phenotype. i.e. environment, treatment, etc.")
@@ -55,9 +55,22 @@ def main():
         df = pd.read_table(dataframe_file, header=0, index_col=0)
         print(df.head())
         sample_lst = df.columns.tolist()
-        fig = get_pcoa(df, sample_lst, args.meta_file, args.env_name, args.title, args.cmap)
+        fig, dist_pc = get_pcoa(df, sample_lst, args.meta_file, args.env_name, args.title, args.cmap, plot=True)
         #fig.show()
         #fig.savefig(args.save)
+    elif args.type == '2Dpcoa':
+        df = pd.read_table(dataframe_file, header=0, index_col=0)
+        sample_lst = df.columns.tolist()
+        fig, pcoa_results = get_pcoa(df, sample_lst, args.meta_file, args.env_name, args.title, args.cmap)
+        ordination = pcoa_results.samples[['PC1', 'PC2']]
+        meta_df = pd.read_table(args.meta_file)
+        merged_df = ordination.merge(meta_df, left_index=True, right_on="sample_name", how="left")
+        print(merged_df)
+        fig = sns.scatterplot(data=merged_df, x="PC1", y="PC2", hue=args.env_name)
+        fig = fig.get_figure()
+        fig.savefig(args.save)
+        plt.show()
+        return
     plt.xticks(rotation=45)
     plt.savefig(args.save)
     plt.show()

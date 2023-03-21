@@ -104,7 +104,7 @@ def get_profile_name_list(profile_dir):
 	return profile_name_list
 
 
-def get_pcoa(dist_matrix, sample_lst, meta_file, col_name, plot_title, cmap='Set1'):
+def get_pcoa(dist_matrix, sample_lst, meta_file, col_name, plot_title, cmap='Set1', plot=False):
 	'''
 	Get a PCOA plot based on the distance matrix, colored according to metadata
 	:param dist_matrix:
@@ -119,9 +119,10 @@ def get_pcoa(dist_matrix, sample_lst, meta_file, col_name, plot_title, cmap='Set
 	filtered_meta_df.set_index('sample_name', inplace=True)
 	filtered_meta_df.fillna('unknown', inplace=True)
 	dist_pc = pcoa(dm)
-
-	fig = dist_pc.plot(df=filtered_meta_df, column=col_name, cmap=cmap, title=plot_title, axis_labels=('PC1', 'PC2', 'PC3'))
-	return fig
+	fig = 0
+	if plot:
+		fig = dist_pc.plot(df=filtered_meta_df, column=col_name, cmap=cmap, title=plot_title, axis_labels=('PC1', 'PC2', 'PC3'))
+	return fig, dist_pc
 
 def get_metadata_dict(meta_file, val_col = "HMgDB_diagnosis", key_col = "library_id"):
 	'''
