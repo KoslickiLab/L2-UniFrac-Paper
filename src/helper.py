@@ -12,6 +12,8 @@ from collections import Counter
 import numpy as np
 from ete3 import NCBITaxa
 ncbi = NCBITaxa()
+from itertools import combinations
+import matplotlib.pyplot as plt
 
 
 #classification
@@ -272,3 +274,28 @@ def convert_profiles_to_otu(profile_dir, out_file):
 	print(df)
 	df.to_csv(out_file, index=True, mode='a', header=True, sep='\t')
 
+def get_scatter_plot_from_2_dist_matrices(dist_matrix1, dist_matrix2, save_as):
+	'''
+	Get scatter plot that compares 2 distance matrices, with each point representing a pair and each axis representing
+	a metric. e.g. x axis = L1UniFrac, y axis = L2UniFrac
+	:param dist_matrix1:
+	:param dist_matrix2:
+	:return:
+	'''
+	df1 = pd.read_table(dist_matrix1, index_col=0)
+	df2 = pd.read_table(dist_matrix2, index_col=0)
+	data_dict = dict()
+	for pair in combinations(df1.columns, 2):
+		s1 = pair[0]
+		s2 = pair[1]
+		x = df1[s1][s2]
+		y = df2[s1][s2]
+		data_dict[x] = y
+	corr_coef_matrix = np.corrcoef(list(data_dict.keys()), list(data_dict.values()))
+	corr_coef = np.round(corr_coef_matrix[0][1], 3)
+	plt.scatter(data_dict.keys(), data_dict.values(), marker=".", alpha=.3, color="xkcd:sky blue", s=1)
+	plt.title(f"Correlation coefficient: {corr_coef}")
+	plt.xlabel("L1UniFrac distance")
+	plt.ylabel("L2UniFrac distance")
+	plt.savefig(save_as)
+	plt.show()
