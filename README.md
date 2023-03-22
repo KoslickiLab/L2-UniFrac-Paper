@@ -31,4 +31,10 @@ bash reproduce_classification_16s_body_sites.sh
 ### 4. Differential abundance analysis
 ```angular2html
 python scripts/get_wgs_diffabund.py -m data/hmgdb_adenoma_bioproject266076.csv -d data/adenoma_266076/profiles -s data/adenoma_266076 -t phylum -prefix adenoma_phylum
+python scripts/get_wgs_diffabund.py -m data/hmgdb_adenoma_bioproject266076.csv -d data/adenoma_266076/profiles -s data/adenoma_266076 -t phylum -prefix adenoma_genus
+
+```
+### 5. Compare L1 and L2 UniFrac
+```angular2html
+python scripts/compare_L1_L1.py
 ```
