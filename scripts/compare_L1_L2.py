@@ -1,6 +1,4 @@
 import argparse
-import matplotlib.pyplot as plt
-import os
 import sys
 
 # try:

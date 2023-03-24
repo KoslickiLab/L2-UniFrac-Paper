@@ -66,3 +66,26 @@ def inverse_push_up(P, Tint, lint, nodes_in_order):
     root = len(nodes_in_order) - 1
     P_pushed[root] += P[root]
     return P_pushed
+
+def get_L1_representative_sample_16s(sample_vector_dict, meta_samples_dict, Tint, lint, nodes_in_order):
+    '''
+    Computes the representative vector for each phenotype in meta_samples_dict and returns a dict
+    :param sample_vector_dict: {sample_id: vector}
+    :param meta_samples_dict: {phenotype: [samples]}
+    :param Tint:
+    :param lint:
+    :param nodes_in_order:
+    :return: {phenotype: rep_sample vector}
+    '''
+    rep_sample_dict = dict()
+    for phenotype in meta_samples_dict.keys():
+        pushed_vectors = []
+        for sample in meta_samples_dict[phenotype]:
+            if sample in sample_vector_dict:
+                pushed_vector = push_up(sample_vector_dict[sample], Tint, lint, nodes_in_order)
+                pushed_vectors.append(pushed_vector)
+            median_vector = median_of_vectors(pushed_vectors)
+            rep_sample = inverse_push_up(median_vector, Tint, lint, nodes_in_order)
+        rep_sample_dict[phenotype] = rep_sample
+        print(np.sum(rep_sample))
+    return rep_sample_dict

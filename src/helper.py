@@ -299,3 +299,16 @@ def get_scatter_plot_from_2_dist_matrices(dist_matrix1, dist_matrix2, save_as):
 	plt.ylabel("L2UniFrac distance")
 	plt.savefig(save_as)
 	plt.show()
+
+def get_scatter_plot_for_L1_L2_vectors(L1_rep_sample_dict, L2_rep_sample_dict, save_prefix):
+
+	for pheno in L1_rep_sample_dict:
+		plt.scatter(L1_rep_sample_dict[pheno], L2_rep_sample_dict[pheno], marker=".", color="xkcd:sky blue")
+		plt.xlabel("L1UniFrac distance")
+		plt.ylabel("L2UniFrac distance")
+		save_name = save_prefix + "_" + pheno + ".png"
+		corr_coeff_matrix = np.corrcoef(L1_rep_sample_dict[pheno], L2_rep_sample_dict[pheno])
+		corr_coeff = corr_coeff_matrix[0][1]
+		plt.title(f"Correlation coefficient: {corr_coeff}")
+		plt.savefig(save_name)
+	return
