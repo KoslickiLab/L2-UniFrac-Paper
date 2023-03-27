@@ -52,7 +52,7 @@ def main():
     df = pd.DataFrame.from_dict(rep_sample_dict)
     df.index = nodes_in_order
     df.to_csv(args.output_file, sep='\t')
-    condensed_df = df.drop([i for i in df.index if i.startswih('temp')])
+    condensed_df = df.drop([i for i in df.index if i.startswith('temp')])
     print(condensed_df)
     if args.L1_average:
         L1_rep_sample_dict = L1U.get_L1_representative_sample_16s(sample_vector_dict, meta_samples_dict, Tint, lint,
