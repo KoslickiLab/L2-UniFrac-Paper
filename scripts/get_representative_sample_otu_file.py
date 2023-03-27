@@ -60,7 +60,7 @@ def main():
         df = pd.DataFrame.from_dict(L1_rep_sample_dict)
         df.index = nodes_in_order
         new_outfile_name = args.output_file.split('.')[0] + "_L1.txt"
-        condensed_df = df.drop([i for i in df.index if i.startswih('temp')])
+        condensed_df = df.drop([i for i in df.index if i.startswith('temp')])
         condensed_df.to_csv(new_outfile_name, sep='\t')
     return
 
